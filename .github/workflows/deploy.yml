@@ -35,14 +35,6 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.HOSTINGER_SSH_KEY }}
 
-      - name: Trust Hostinger host
-        env:
-          SSH_HOST: ${{ secrets.HOSTINGER_HOST }}
-          SSH_PORT: ${{ secrets.HOSTINGER_PORT }}
-        run: |
-          mkdir -p ~/.ssh
-          ssh-keyscan -p "${SSH_PORT:-65002}" -H "$SSH_HOST" >> ~/.ssh/known_hosts
-
       - name: Deploy frontend via rsync
         env:
           SSH_USER: ${{ secrets.HOSTINGER_USER }}
@@ -51,7 +43,10 @@ jobs:
         run: |
           set -euo pipefail
           PORT="${SSH_PORT:-65002}"
-          SSH_CMD="ssh -p $PORT"
+          # accept-new agrega la host key al primer encuentro sin prompt,
+          # evita un step separado de ssh-keyscan (que Hostinger a veces filtra
+          # desde IPs de cloud providers como GitHub Actions runners).
+          SSH_CMD="ssh -p $PORT -o StrictHostKeyChecking=accept-new"
           TARGET="$SSH_USER@$SSH_HOST"
           ROOT="~/domains/prooq.com/public_html"
 
