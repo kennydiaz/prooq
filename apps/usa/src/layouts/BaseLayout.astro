@@ -1,5 +1,6 @@
 ---
 import '@prooq/styles/globals.css';
+import '@prooq/styles/sections.css';
 import { CountriesMenu, Footer, Header } from '@prooq/ui';
 
 export interface Props {
@@ -8,6 +9,7 @@ export interface Props {
 }
 
 const { title, description } = Astro.props;
+const BASE = import.meta.env.BASE_URL.replace(/\/?$/, '/');
 ---
 
 <!doctype html>
@@ -25,12 +27,23 @@ const { title, description } = Astro.props;
     />
   </head>
   <body>
-    <Header country="usa">
+    <Header country="usa" logoSrc={`${BASE}images/logo.png`} logoAlt="PROOQ LLC">
       <CountriesMenu slot="countries-menu" current="usa" label="🌐 Countries" />
     </Header>
     <main>
       <slot />
     </main>
-    <Footer country="usa" />
+    <Footer
+      country="usa"
+      contact={{
+        email: 'info@prooq.com',
+        phone: '+1 (708) 540-0888',
+        whatsapp: '+1 (708) 540-0888',
+        address: '2512 N 72nd Ct, Elmwood Park, IL — USA',
+      }}
+      copyrightName="PROOQ LLC"
+      socialTitle="Follow Us on Social Media"
+      socialSubtitle="Stay connected and discover the latest updates"
+    />
   </body>
 </html>

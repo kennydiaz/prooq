@@ -1,13 +1,329 @@
 ---
+import { HeroParallax } from '@prooq/ui';
 import BaseLayout from '../layouts/BaseLayout.astro';
+
+const BASE = import.meta.env.BASE_URL.replace(/\/?$/, '/');
+
+const services = [
+  {
+    icon: '🌐',
+    title: 'Desarrollo Web',
+    description: 'Soluciones web profesionales para empresas y negocios.',
+    features: ['Landing pages', 'Sitios corporativos', 'E-commerce', 'Aplicaciones web'],
+  },
+  {
+    icon: '💻',
+    title: 'Instalación y Activación de Software',
+    description: 'Instalación profesional de software y paquetes empresariales.',
+    features: [
+      'Licencias originales',
+      'Suite ofimática',
+      'Software contable',
+      'Soporte post-instalación',
+    ],
+  },
+  {
+    icon: '📡',
+    title: 'Redes y Conectividad',
+    description: 'Optimización y configuración de redes empresariales y residenciales.',
+    features: [
+      'Wi-Fi empresarial',
+      'Switches y routers',
+      'Cableado estructurado',
+      'Diagnóstico de red',
+    ],
+  },
+  {
+    icon: '🖨️',
+    title: 'Impresoras y Periféricos',
+    description: 'Instalación y configuración de impresoras y periféricos de oficina.',
+    features: ['Impresoras multifunción', 'Escáneres', 'POS y lectoras', 'Mantenimiento'],
+  },
+  {
+    icon: '🔒',
+    title: 'Seguridad Digital',
+    description: 'Protección y optimización de sistemas y dispositivos.',
+    features: ['Antivirus empresariales', 'Firewalls', 'Backups automáticos', 'Auditorías'],
+  },
+  {
+    icon: '🖥️',
+    title: 'Servicios Remotos y Asistencia Técnica',
+    description: 'Soporte y soluciones rápidas sin visita presencial.',
+    features: [
+      'Acceso remoto seguro',
+      'Soporte por chat/video',
+      'Diagnóstico en línea',
+      'Reparaciones express',
+    ],
+  },
+  {
+    icon: '☁️',
+    title: 'Servicios en la Nube',
+    description: 'Configuración y gestión de servicios cloud empresariales.',
+    features: [
+      'Microsoft 365',
+      'Google Workspace',
+      'Almacenamiento en la nube',
+      'Migración a la nube',
+    ],
+  },
+  {
+    icon: '⚡',
+    title: 'Optimización y Mantenimiento Digital',
+    description: 'Mejora de rendimiento y mantenimiento profesional de sistemas.',
+    features: [
+      'Tuning de rendimiento',
+      'Limpieza de sistemas',
+      'Actualizaciones',
+      'Plan preventivo',
+    ],
+  },
+  {
+    icon: '🛠️',
+    title: 'Asesorías y Configuraciones Especiales',
+    description: 'Soluciones personalizadas y configuración de dispositivos inteligentes.',
+    features: [
+      'Setup IoT/Smart Home',
+      'Personalización avanzada',
+      'Migración de datos',
+      'Recuperación de información',
+    ],
+  },
+  {
+    icon: '🤖',
+    title: 'Agentes Inteligentes con n8n (NUEVO)',
+    description: 'Automatización avanzada y agentes inteligentes para empresas.',
+    features: ['Workflows N8N', 'Chatbots IA', 'Integraciones API', 'Procesos automatizados'],
+  },
+];
+
+const stats = [
+  { value: '25+', label: 'Años de experiencia' },
+  { value: '500+', label: 'Clientes atendidos' },
+  { value: '1999', label: 'Fundada en Venezuela' },
+];
+
+const team = [
+  { name: 'Kenny', role: 'Especialista en Redes', photo: `${BASE}images/team/kenny.jpg` },
+  { name: 'Angelo', role: 'Desarrollador', photo: `${BASE}images/team/angelo.jpg` },
+  { name: 'Daniel', role: 'Soporte Técnico', photo: `${BASE}images/team/daniel.jpg` },
+  { name: 'Fernando', role: 'Experto en Seguridad', photo: `${BASE}images/team/fernando.jpg` },
+  { name: 'Irwin', role: 'Técnico de Campo', photo: `${BASE}images/team/irwin.jpg` },
+  { name: 'Dahian', role: 'Asistencia Remota', photo: `${BASE}images/team/dahian.jpg` },
+  { name: 'Lázaro', role: 'Instalaciones', photo: `${BASE}images/team/lazaro.jpg` },
+];
+
+const portfolio = [
+  {
+    name: 'aerovisionstudio.com',
+    description: 'Servicios de drones, fotografía aérea y producción audiovisual.',
+    url: 'https://aerovisionstudio.com',
+  },
+  {
+    name: 'prooq.com',
+    description: 'Soluciones tecnológicas, seguridad electrónica, infraestructura y sistemas.',
+    url: 'https://prooq.com',
+  },
+  {
+    name: 'bgselectrician.com',
+    description: 'Manpower & Staffing para contratistas eléctricos.',
+    url: 'https://bgselectrician.com',
+  },
+  {
+    name: 'mansionperruna.com',
+    description: 'Hotel canino, guardería y servicios premium para mascotas.',
+    url: 'https://mansionperruna.com',
+  },
+  {
+    name: 'vieniqua.com',
+    description: 'Restaurante de comida italiana.',
+    url: 'https://vieniqua.com',
+  },
+  {
+    name: 'cleanfactorypty.com',
+    description: 'Servicios profesionales de limpieza de zapatillas.',
+    url: 'https://cleanfactorypty.com',
+  },
+  {
+    name: 'varasgrillandbar.com',
+    description: 'Restaurante, bar y parrilla con menú y reservas digitales.',
+    url: 'https://varasgrillandbar.com',
+  },
+  {
+    name: 'makanolake.com',
+    description: 'Cabañas agroturísticas junto al Lago San Carlos.',
+    url: 'https://makanolake.com',
+  },
+  {
+    name: 'tallerqsexpress.com',
+    description: 'Taller automotriz, mecánica rápida y diagnósticos.',
+    url: 'https://tallerqsexpress.com',
+  },
+  {
+    name: 'bootsgloves.com',
+    description:
+      'Servicios profesionales de demolición, retiro de escombros y limpieza en Atlanta, Georgia.',
+    url: 'https://bootsgloves.com',
+  },
+  {
+    name: 'dastvnetwork.com',
+    description: 'Tecnología de marketing y publicidad digital.',
+    url: 'https://dastvnetwork.com',
+  },
+  {
+    name: 'bgs50.com',
+    description: 'Plataforma de servicios y soluciones para la industria.',
+    url: 'https://bgs50.com',
+  },
+] as const;
+
+const locationDetails = [
+  { icon: '📍', title: 'Sede Principal', text: 'Puerto La Cruz, Venezuela' },
+  { icon: '🌎', title: 'Cobertura', text: 'Venezuela y Caribe' },
+  { icon: '⏰', title: 'Horario', text: 'Lun - Vie: 8:00 - 17:00' },
+];
 ---
 
 <BaseLayout
-  title="PROOQ Venezuela"
-  description="PROOQ Venezuela — Servicios tecnológicos y soluciones digitales en Caracas."
+  title="PROOQ Venezuela — Tecnología y Soluciones Digitales | Puerto La Cruz"
+  description="PROOQ S.A. — Especialistas en redes, seguridad digital, software y automatización en Venezuela. Fundada en 1999."
 >
-  <h1>PROOQ Venezuela</h1>
-  <p>
-    TODO Fase 3: portar prooq/venezuela/index.html — espejo estructural de USA.
-  </p>
+  <HeroParallax
+    title="PROOQ"
+    subtitle="Soluciones tecnológicas integrales para empresas"
+    description="Especialistas en cableado estructurado, seguridad electrónica y automatización empresarial en Venezuela"
+    cta={{ label: 'Conoce nuestros servicios', href: '#servicios' }}
+  >
+    <div class="hero-extras">
+      <a href="#contacto" class="cta-secondary">Contáctanos</a>
+      <p class="hero-location">📍 Puerto La Cruz, Venezuela 🇻🇪</p>
+    </div>
+  </HeroParallax>
+
+  <section id="servicios" class="section section-services">
+    <div class="section-container">
+      <h2 class="section-title fade-in">Servicios Especiales</h2>
+      <p class="section-subtitle fade-in">Soluciones tecnológicas integrales para empresas modernas</p>
+      <div class="services-grid">
+        {services.map((s) => (
+          <article class="service-card fade-in">
+            <div class="service-icon" aria-hidden="true">{s.icon}</div>
+            <h3>{s.title}</h3>
+            <p>{s.description}</p>
+            <ul>
+              {s.features.map((f) => <li>{f}</li>)}
+            </ul>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section section-about">
+    <div class="section-container">
+      <div class="about-grid">
+        <div class="fade-in">
+          <h2 class="section-title">Sobre PROOQ S.A.</h2>
+          <p>
+            PROOQ S.A. es una empresa líder en cableado estructurado, seguridad electrónica
+            y automatización de sistemas empresariales. Fundada en Venezuela en 1999, nos
+            especializamos en ofrecer soluciones tecnológicas integrales para mejorar la
+            eficiencia y seguridad de negocios en diversos sectores.
+          </p>
+          <p>
+            Más de dos décadas acompañando a empresas venezolanas con servicios de redes,
+            telecomunicaciones, ciberseguridad y consultoría técnica.
+          </p>
+          <div class="stats">
+            {stats.map((s) => (
+              <div class="stat">
+                <span class="stat-value">{s.value}</span>
+                <span class="stat-label">{s.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="equipo" class="section section-team">
+    <div class="section-container">
+      <h2 class="section-title fade-in">Nuestro Equipo</h2>
+      <p class="section-subtitle fade-in">Profesionales comprometidos con la calidad técnica</p>
+      <div class="team-grid">
+        {team.map((m) => (
+          <article class="team-member fade-in">
+            <img src={m.photo} alt={m.name} loading="lazy" />
+            <h3>{m.name}</h3>
+            <p>{m.role}</p>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section id="portafolio" class="section section-portfolio">
+    <div class="section-container">
+      <h2 class="section-title fade-in">Portafolio de Sitios Web Desarrollados</h2>
+      <p class="section-subtitle fade-in">
+        Una selección de sitios web diseñados y desarrollados por nuestro equipo. Cada proyecto
+        refleja nuestro compromiso con la innovación, la calidad y la excelencia tecnológica.
+      </p>
+      <div class="portfolio-grid">
+        {portfolio.map((p) => (
+          <article class="portfolio-card fade-in">
+            <h3>{p.name}</h3>
+            <p>{p.description}</p>
+            <a href={p.url} target="_blank" rel="noopener noreferrer" class="portfolio-link">
+              Visitar sitio →
+            </a>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section id="ubicacion" class="section section-location">
+    <div class="section-container">
+      <div class="location-grid">
+        <div class="fade-in">
+          <h2 class="section-title">Ubicados en Puerto La Cruz</h2>
+          <p>
+            Desde Puerto La Cruz, servimos a empresas en toda Venezuela con soluciones
+            tecnológicas de vanguardia y soporte técnico especializado.
+          </p>
+          <div class="location-details">
+            {locationDetails.map((d) => (
+              <div class="location-detail">
+                <span class="detail-icon" aria-hidden="true">{d.icon}</span>
+                <div>
+                  <h4>{d.title}</h4>
+                  <p>{d.text}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 </BaseLayout>
+
+<script>
+  // Fade-in al scroll — IntersectionObserver replicado del V1.
+  const elements = document.querySelectorAll('.fade-in');
+  const observer = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+          observer.unobserve(entry.target);
+        }
+      }
+    },
+    { threshold: 0.1, rootMargin: '0px 0px -50px 0px' },
+  );
+
+  for (const el of elements) observer.observe(el);
+</script>

@@ -1,13 +1,312 @@
 ---
+import { HeroParallax } from '@prooq/ui';
 import BaseLayout from '../layouts/BaseLayout.astro';
+
+const BASE = import.meta.env.BASE_URL.replace(/\/?$/, '/');
+
+const services = [
+  {
+    icon: '📹',
+    title: 'Electronic Security',
+    description: 'Advanced solutions to protect your home and business.',
+    features: [
+      'CCTV & video surveillance',
+      'Access control systems',
+      'Smart alarms',
+      '24/7 monitoring',
+    ],
+  },
+  {
+    icon: '🔌',
+    title: 'Wired Networks',
+    description: 'Installation and maintenance of high-quality structured cabling and networks.',
+    features: [
+      'Cat6/Cat7 cabling',
+      'Network design',
+      'Switch & router config',
+      'Maintenance plans',
+    ],
+  },
+  {
+    icon: '🧑‍💻',
+    title: 'Administrative Systems',
+    description: 'Custom software to optimize your business management.',
+    features: ['ERP integration', 'Custom dashboards', 'Workflow automation', 'Data analytics'],
+  },
+  {
+    icon: '🛠️',
+    title: 'Technical Support',
+    description: 'Specialized technical support for all our services.',
+    features: [
+      'On-site visits',
+      'Remote troubleshooting',
+      'SLA support plans',
+      'Emergency response',
+    ],
+  },
+  {
+    icon: '🤖',
+    title: 'Automation & Smart Control',
+    description: 'Solutions to automate processes, buildings, and security systems.',
+    features: ['Building automation', 'IoT integration', 'Smart sensors', 'Process control'],
+  },
+  {
+    icon: '🔒',
+    title: 'Cybersecurity & Data Protection',
+    description:
+      'Protect your information with access control, encryption, and continuous monitoring.',
+    features: ['Threat detection', 'Encryption at rest', 'Access policies', 'Compliance audits'],
+  },
+  {
+    icon: '🌐',
+    title: 'Network & Server Infrastructure',
+    description: 'Design and management of local, remote, and cloud networks.',
+    features: [
+      'Server deployment',
+      'VPN & remote access',
+      'Cloud infrastructure',
+      'Load balancing',
+    ],
+  },
+  {
+    icon: '💡',
+    title: 'Technology Consulting',
+    description: 'We advise companies on efficient technology adoption.',
+    features: ['Digital transformation', 'Tech stack audits', 'Vendor selection', 'Roadmaps'],
+  },
+  {
+    icon: '🛠️',
+    title: 'Comprehensive Projects',
+    description: 'End-to-end implementations from design to deployment.',
+    features: [
+      'Project management',
+      'Multi-vendor coordination',
+      'Phased rollouts',
+      'Post-launch support',
+    ],
+  },
+];
+
+const stats = [
+  { value: '20+', label: 'Years of experience' },
+  { value: '100+', label: 'Clients served' },
+  { value: '24/7', label: 'Support availability' },
+];
+
+const team = [
+  { name: 'Kenny', role: 'Network Specialist', photo: `${BASE}images/team/kenny.jpg` },
+  { name: 'Kenny Jr.', role: 'Junior Technician', photo: `${BASE}images/team/kennyjr.jpg` },
+  { name: 'Angelo', role: 'Systems Developer', photo: `${BASE}images/team/angelo.jpg` },
+  { name: 'Fernando', role: 'Security Expert', photo: `${BASE}images/team/fernando.jpg` },
+  { name: 'Gregorio', role: 'IT Consultant', photo: `${BASE}images/team/meza.png` },
+  { name: 'Daniel', role: 'Technical Support', photo: `${BASE}images/team/daniel.jpg` },
+];
+
+const portfolio = [
+  {
+    name: 'aerovisionstudio.com',
+    description: 'Drone services, aerial photography and audiovisual production.',
+    url: 'https://aerovisionstudio.com',
+  },
+  {
+    name: 'prooq.com',
+    description: 'Technology solutions, electronic security, infrastructure and systems.',
+    url: 'https://prooq.com',
+  },
+  {
+    name: 'bgselectrician.com',
+    description: 'Manpower & staffing for electrical contractors.',
+    url: 'https://bgselectrician.com',
+  },
+  {
+    name: 'mansionperruna.com',
+    description: 'Premium dog hotel, daycare and pet services.',
+    url: 'https://mansionperruna.com',
+  },
+  { name: 'vieniqua.com', description: 'Italian restaurant.', url: 'https://vieniqua.com' },
+  {
+    name: 'cleanfactorypty.com',
+    description: 'Professional sneaker cleaning services.',
+    url: 'https://cleanfactorypty.com',
+  },
+  {
+    name: 'varasgrillandbar.com',
+    description: 'Restaurant, bar and grill with digital menu and reservations.',
+    url: 'https://varasgrillandbar.com',
+  },
+  {
+    name: 'makanolake.com',
+    description: 'Agro-tourism cabins by Lake San Carlos.',
+    url: 'https://makanolake.com',
+  },
+  {
+    name: 'tallerqsexpress.com',
+    description: 'Auto shop, quick mechanics and diagnostics.',
+    url: 'https://tallerqsexpress.com',
+  },
+  {
+    name: 'bootsgloves.com',
+    description: 'Professional demolition, debris removal and cleanup in Atlanta, GA.',
+    url: 'https://bootsgloves.com',
+  },
+  {
+    name: 'dastvnetwork.com',
+    description: 'Marketing technology and digital advertising.',
+    url: 'https://dastvnetwork.com',
+  },
+  {
+    name: 'bgs50.com',
+    description: 'Platform of services and solutions for industry.',
+    url: 'https://bgs50.com',
+  },
+] as const;
+
+const locationDetails = [
+  { icon: '📍', title: 'Main Office', text: '2512 N 72nd Ct, Elmwood Park, IL' },
+  { icon: '🌎', title: 'Coverage', text: 'United States & Caribbean' },
+  { icon: '⏰', title: 'Office Hours', text: 'Mon - Fri: 8:00 - 17:00 CT' },
+];
 ---
 
 <BaseLayout
-  title="PROOQ USA"
-  description="PROOQ USA — Technology services and digital solutions based in Chicago."
+  title="PROOQ LLC — Technology Solutions in Chicago, IL"
+  description="Specialists in structured cabling, electronic security, and business automation. Based in Elmwood Park, IL serving the United States."
 >
-  <h1>PROOQ USA</h1>
-  <p>
-    TODO Fase 3: portar prooq/eeuu/index.html — hero, servicios, gallery, downloads, chat N8N.
-  </p>
+  <HeroParallax
+    title="PROOQ"
+    subtitle="Comprehensive technology solutions for businesses"
+    description="Specialists in structured cabling, electronic security, and business automation in the United States"
+    cta={{ label: 'Discover our services', href: '#servicios' }}
+  >
+    <div class="hero-extras">
+      <a href="#contacto" class="cta-secondary">Contact us</a>
+      <p class="hero-location">📍 Elmwood Park, IL — United States 🇺🇸</p>
+    </div>
+  </HeroParallax>
+
+  <section id="servicios" class="section section-services">
+    <div class="section-container">
+      <h2 class="section-title fade-in">Special Services</h2>
+      <p class="section-subtitle fade-in">Comprehensive technology solutions for modern businesses</p>
+      <div class="services-grid">
+        {services.map((s) => (
+          <article class="service-card fade-in">
+            <div class="service-icon" aria-hidden="true">{s.icon}</div>
+            <h3>{s.title}</h3>
+            <p>{s.description}</p>
+            <ul>
+              {s.features.map((f) => <li>{f}</li>)}
+            </ul>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section section-about">
+    <div class="section-container">
+      <div class="about-grid">
+        <div class="fade-in">
+          <h2 class="section-title">About PROOQ LLC</h2>
+          <p>
+            Empowering US businesses with reliable, scalable technology infrastructure. From
+            our office in Elmwood Park, IL we serve clients across the United States in
+            structured cabling, electronic security and business automation.
+          </p>
+          <p>
+            We combine technical expertise with personalized service, helping organizations
+            modernize their operations and stay secure in an increasingly connected world.
+          </p>
+          <div class="stats">
+            {stats.map((s) => (
+              <div class="stat">
+                <span class="stat-value">{s.value}</span>
+                <span class="stat-label">{s.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="equipo" class="section section-team">
+    <div class="section-container">
+      <h2 class="section-title fade-in">Our Team</h2>
+      <p class="section-subtitle fade-in">The professionals behind every PROOQ project</p>
+      <div class="team-grid">
+        {team.map((m) => (
+          <article class="team-member fade-in">
+            <img src={m.photo} alt={m.name} loading="lazy" />
+            <h3>{m.name}</h3>
+            <p>{m.role}</p>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section id="portafolio" class="section section-portfolio">
+    <div class="section-container">
+      <h2 class="section-title fade-in">Web Portfolio</h2>
+      <p class="section-subtitle fade-in">
+        A selection of websites designed and developed by our team. Each project reflects our
+        commitment to innovation, quality and technical excellence.
+      </p>
+      <div class="portfolio-grid">
+        {portfolio.map((p) => (
+          <article class="portfolio-card fade-in">
+            <h3>{p.name}</h3>
+            <p>{p.description}</p>
+            <a href={p.url} target="_blank" rel="noopener noreferrer" class="portfolio-link">
+              Visit site →
+            </a>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section id="ubicacion" class="section section-location">
+    <div class="section-container">
+      <div class="location-grid">
+        <div class="fade-in">
+          <h2 class="section-title">Based in Elmwood Park, IL</h2>
+          <p>
+            From the Chicago metro area, we serve businesses across the United States with
+            cutting-edge technology solutions.
+          </p>
+          <div class="location-details">
+            {locationDetails.map((d) => (
+              <div class="location-detail">
+                <span class="detail-icon" aria-hidden="true">{d.icon}</span>
+                <div>
+                  <h4>{d.title}</h4>
+                  <p>{d.text}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 </BaseLayout>
+
+<script>
+  // Fade-in al scroll — IntersectionObserver replicado del V1.
+  const elements = document.querySelectorAll('.fade-in');
+  const observer = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+          observer.unobserve(entry.target);
+        }
+      }
+    },
+    { threshold: 0.1, rootMargin: '0px 0px -50px 0px' },
+  );
+
+  for (const el of elements) observer.observe(el);
+</script>

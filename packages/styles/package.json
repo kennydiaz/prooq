@@ -5,7 +5,8 @@
   "type": "module",
   "exports": {
     "./globals.css": "./globals.css",
-    "./tokens.css": "./tokens.css"
+    "./tokens.css": "./tokens.css",
+    "./sections.css": "./sections.css"
   },
   "peerDependencies": {
     "tailwindcss": "^4.0.0"
