@@ -1,0 +1,14 @@
+---
+import type { Country } from '@prooq/config/tailwind.preset';
+
+export interface Props {
+  current?: Country;
+}
+
+const { current } = Astro.props;
+---
+
+<nav class="prooq-countries-menu" data-current={current}>
+  <!-- TODO Fase 1: portear prooq/{sucursal}/js/components/countries-menu.js.
+       Selector con banderas (ptyflag.png, usaflag.jpg, espflag.jpg, venflag.jpg). -->
+</nav>

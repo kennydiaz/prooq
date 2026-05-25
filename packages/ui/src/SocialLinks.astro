@@ -1,0 +1,15 @@
+---
+export interface Props {
+  variant?: 'icons' | 'full';
+  exclude?: readonly string[];
+}
+
+const { variant = 'icons', exclude = [] } = Astro.props;
+---
+
+<ul class="prooq-social-links" data-variant={variant}>
+  <!-- TODO Fase 1: importar SOCIAL_LINKS de @prooq/config/social y renderizar
+       los 9 canales (YouTube, Instagram, Facebook, X, LinkedIn, TikTok, GitHub,
+       Google Business, WhatsApp). Ver §13 de PROOQ_V2_MIGRATION.md.
+       Filtrar con `exclude`, alternar markup según `variant`. -->
+</ul>

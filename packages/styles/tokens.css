@@ -1,0 +1,28 @@
+/* Design tokens — fuente única consumida desde Tailwind v4 (@theme) y desde TS (packages/config/tailwind.preset.ts).
+   Si cambias un valor aquí, sincroniza también tailwind.preset.ts. */
+
+@theme {
+  /* Colores de marca */
+  --color-brand: #0a2540;
+  --color-brand-accent: #00d4ff;
+  --color-brand-neon: #39ff14;
+
+  /* Superficies */
+  --color-surface: #0b0f17;
+  --color-surface-raised: #111827;
+
+  /* Texto */
+  --color-text: #e5e7eb;
+  --color-text-muted: #9ca3af;
+
+  /* Tipografías */
+  --font-display: "Orbitron", system-ui, sans-serif;
+  --font-body: "Montserrat", system-ui, sans-serif;
+  --font-portal: "Poppins", system-ui, sans-serif;
+
+  /* Radios y elevaciones */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 1rem;
+  --shadow-neon: 0 0 12px rgb(0 212 255 / 0.5);
+}

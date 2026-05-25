@@ -1,0 +1,18 @@
+---
+export interface Props {
+  bgImage: string;
+  title: string;
+  subtitle?: string;
+}
+
+const { bgImage, title, subtitle } = Astro.props;
+---
+
+<section
+  class="prooq-hero-parallax"
+  style={`--hero-bg: url(${bgImage})`}
+>
+  <h1>{title}</h1>
+  {subtitle && <p>{subtitle}</p>}
+  <!-- TODO Fase 1: portear css/hero-parallax.css + js/parallax.js del V1 -->
+</section>

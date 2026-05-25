@@ -1,0 +1,24 @@
+{
+  "name": "prooq/api",
+  "description": "PROOQ V2 backend — Slim 4 + PDO/MySQL para api.prooq.com",
+  "type": "project",
+  "license": "proprietary",
+  "require": {
+    "php": "^8.3",
+    "ext-pdo": "*",
+    "ext-curl": "*",
+    "ext-json": "*",
+    "slim/slim": "^4.14",
+    "slim/psr7": "^1.7",
+    "vlucas/phpdotenv": "^5.6"
+  },
+  "autoload": {
+    "psr-4": {
+      "Prooq\\Api\\": "src/"
+    }
+  },
+  "config": {
+    "sort-packages": true,
+    "optimize-autoloader": true
+  }
+}

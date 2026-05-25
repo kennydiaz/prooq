@@ -1,0 +1,23 @@
+{
+  "name": "@prooq/esp",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "typecheck": "astro check"
+  },
+  "dependencies": {
+    "@prooq/config": "workspace:*",
+    "@prooq/data-client": "workspace:*",
+    "@prooq/styles": "workspace:*",
+    "@prooq/ui": "workspace:*"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.0",
+    "astro": "^5.0.0",
+    "typescript": "^5.7.0"
+  }
+}

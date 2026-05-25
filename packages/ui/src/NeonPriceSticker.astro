@@ -1,0 +1,15 @@
+---
+export interface Props {
+  price: string;
+  currency?: string;
+  label?: string;
+}
+
+const { price, currency = 'USD', label } = Astro.props;
+---
+
+<div class="prooq-neon-price-sticker">
+  {label && <span class="label">{label}</span>}
+  <span class="price">{currency} {price}</span>
+  <!-- TODO Fase 1: portear css/neon-price-sticker.css del V1 (animación neón) -->
+</div>

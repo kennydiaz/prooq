@@ -1,0 +1,21 @@
+---
+import type { Country } from '@prooq/config/tailwind.preset';
+
+export interface Props {
+  webhookUrl: string;
+  country?: Country;
+  greeting?: string;
+}
+
+const { webhookUrl, country, greeting } = Astro.props;
+---
+
+<div
+  class="prooq-chat-fab"
+  data-webhook={webhookUrl}
+  data-country={country}
+  data-greeting={greeting}
+>
+  <!-- TODO Fase 1: portear prooq/{sucursal}/js/chat-fab.js + chat-widget-standalone.html.
+       Integración N8N via webhookUrl. country se envía como source_site en chat_logs. -->
+</div>

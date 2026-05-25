@@ -1,0 +1,13 @@
+---
+import type { Country } from '@prooq/config/tailwind.preset';
+
+export interface Props {
+  country?: Country;
+}
+
+const { country } = Astro.props;
+---
+
+<footer class="prooq-footer" data-country={country}>
+  <!-- TODO Fase 1: footer común — incluir <SocialLinks /> + contacto local por sucursal -->
+</footer>

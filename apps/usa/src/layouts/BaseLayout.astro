@@ -1,0 +1,28 @@
+---
+import '@prooq/styles/globals.css';
+import { Header, Footer } from '@prooq/ui';
+
+export interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description ?? title} />
+    <title>{title}</title>
+  </head>
+  <body>
+    <Header country="usa" />
+    <main>
+      <slot />
+    </main>
+    <Footer country="usa" />
+  </body>
+</html>

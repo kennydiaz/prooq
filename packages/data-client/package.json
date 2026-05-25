@@ -1,0 +1,21 @@
+{
+  "name": "@prooq/data-client",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./clients": "./src/clients.ts",
+    "./downloads": "./src/downloads.ts",
+    "./chat": "./src/chat.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@prooq/config": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0"
+  }
+}

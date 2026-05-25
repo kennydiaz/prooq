@@ -1,0 +1,47 @@
+name: Deploy to Hostinger
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build all apps
+        run: pnpm build
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.HOSTINGER_HOST }}
+          username: ${{ secrets.HOSTINGER_USER }}
+          key: ${{ secrets.HOSTINGER_SSH_KEY }}
+          script: |
+            set -e
+            cd ~/prooq-v2 && git pull
+            rsync -av --delete apps/portal/dist/ ~/public_html/
+            rsync -av --delete apps/pty/dist/    ~/domains/pty.prooq.com/public_html/
+            rsync -av --delete apps/usa/dist/    ~/domains/usa.prooq.com/public_html/
+            rsync -av --delete apps/esp/dist/    ~/domains/esp.prooq.com/public_html/
+            rsync -av --delete apps/ven/dist/    ~/domains/ven.prooq.com/public_html/
+            cd ~/domains/api.prooq.com && composer install --no-dev --optimize-autoloader

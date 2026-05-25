@@ -1,0 +1,13 @@
+---
+import type { Country } from '@prooq/config/tailwind.preset';
+
+export interface Props {
+  country?: Country;
+}
+
+const { country } = Astro.props;
+---
+
+<header class="prooq-header" data-country={country}>
+  <!-- TODO Fase 1: extraer de prooq/{sucursal}/includes/nav.php + css/header.css -->
+</header>

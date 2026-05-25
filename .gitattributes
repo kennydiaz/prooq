@@ -1,0 +1,26 @@
+# Normaliza a LF en el repo; los archivos se convierten a EOL nativo en checkout.
+* text=auto eol=lf
+
+# Forzar LF (scripts que correran en servers Linux)
+*.sh        text eol=lf
+*.bash      text eol=lf
+
+# Forzar CRLF (solo se ejecutan en Windows)
+*.bat       text eol=crlf
+*.cmd       text eol=crlf
+
+# Binarios — no tocar
+*.png       binary
+*.jpg       binary
+*.jpeg      binary
+*.gif       binary
+*.ico       binary
+*.webp      binary
+*.mp4       binary
+*.webm      binary
+*.pdf       binary
+*.zip       binary
+*.woff      binary
+*.woff2     binary
+*.db        binary
+*.sqlite    binary

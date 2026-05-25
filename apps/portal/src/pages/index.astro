@@ -1,0 +1,30 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const branches = [
+  { code: 'pty', flag: '🇵🇦', name: 'Panamá',          url: 'https://pty.prooq.com' },
+  { code: 'usa', flag: '🇺🇸', name: 'Estados Unidos',  url: 'https://usa.prooq.com' },
+  { code: 'esp', flag: '🇪🇸', name: 'España',          url: 'https://esp.prooq.com' },
+  { code: 'ven', flag: '🇻🇪', name: 'Venezuela',       url: 'https://ven.prooq.com' },
+] as const;
+---
+
+<BaseLayout
+  title="PROOQ — Presencia Global"
+  description="Portal corporativo de PROOQ S.A. con sucursales en Panamá, Estados Unidos, España y Venezuela."
+>
+  <main>
+    <!-- TODO Fase 6: portar prooq/index.html — video world.mp4 de fondo + tarjetas con foto y bandera por sucursal. -->
+    <h1>PROOQ</h1>
+    <ul>
+      {branches.map((b) => (
+        <li>
+          <a href={b.url}>
+            <span>{b.flag}</span>
+            <span>{b.name}</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </main>
+</BaseLayout>

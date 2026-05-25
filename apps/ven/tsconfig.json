@@ -1,0 +1,5 @@
+{
+  "extends": ["astro/tsconfigs/strict", "@prooq/config/tsconfig.base.json"],
+  "include": [".astro/types.d.ts", "**/*"],
+  "exclude": ["dist"]
+}

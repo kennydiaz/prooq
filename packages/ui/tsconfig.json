@@ -1,0 +1,5 @@
+{
+  "extends": "@prooq/config/tsconfig.base.json",
+  "include": ["src/**/*", "astro.config.ts"],
+  "exclude": ["dist", ".astro", "node_modules"]
+}

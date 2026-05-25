@@ -1,0 +1,9 @@
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ index.php [QSA,L]
+
+# Negar acceso a archivos sensibles si Apache los sirviera por error.
+<FilesMatch "^(\.env|composer\.(json|lock))$">
+    Require all denied
+</FilesMatch>
