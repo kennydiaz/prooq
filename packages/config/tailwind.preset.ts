@@ -1,20 +1,35 @@
 // Tokens espejo del @theme de packages/styles/tokens.css.
 // Tailwind v4 vive en CSS, pero estos valores se consumen también desde
 // Astro frontmatter, Alpine.js y scripts de build — por eso el duplicado en TS.
+// Si cambias un valor aquí, sincroniza también tokens.css.
 
 export const colors = {
   brand: {
-    DEFAULT: '#0a2540',
-    accent: '#00d4ff',
-    neon: '#39ff14',
+    DEFAULT: '#003cff',
+    deep: '#00014d',
+    darker: '#0028cc',
+    light: '#4d9fff',
+  },
+  accent: {
+    cyan: '#00ffe7',
+    cyanSoft: '#00c6ff',
+    neon: '#00ffae',
+    neonGreen: '#00ff63',
+    gold: '#c9a227',
+    amber: '#ffb300',
   },
   surface: {
-    DEFAULT: '#0b0f17',
-    raised: '#111827',
+    DEFAULT: '#050d1f',
+    raised: '#0a1833',
+    deep: '#001f54',
   },
   text: {
-    DEFAULT: '#e5e7eb',
-    muted: '#9ca3af',
+    DEFAULT: '#ffffff',
+    soft: '#ececec',
+    secondary: '#e0e0e0',
+    muted: '#94a3b8',
+    subtle: '#64748b',
+    onLight: '#111111',
   },
 } as const;
 
