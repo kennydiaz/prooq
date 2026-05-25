@@ -1,7 +1,8 @@
 /* Design tokens — extraídos del V1 (prooq/panama/css/*.css) el 2026-05-25.
-   Fuente única para Tailwind v4 (@theme). El espejo TS vive en packages/config/tailwind.preset.ts. */
+   CSS custom properties planas (no @theme) — Tailwind v4 se agregará cuando
+   necesitemos utility classes. El espejo TS vive en packages/config/tailwind.preset.ts. */
 
-@theme {
+:root {
   /* Marca: azul vivo (CTA) + neón cyan/verde (acentos, sticker, glow) + gold (headings) */
   --color-brand: #003cff;
   --color-brand-deep: #00014d;
