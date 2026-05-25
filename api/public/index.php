@@ -27,7 +27,6 @@ $app->add(new Cors());
 
 (require __DIR__ . '/../src/Routes/clients.php')($app);
 (require __DIR__ . '/../src/Routes/downloads.php')($app);
-(require __DIR__ . '/../src/Routes/ebop.php')($app);
 (require __DIR__ . '/../src/Routes/chat.php')($app);
 
 $app->run();
