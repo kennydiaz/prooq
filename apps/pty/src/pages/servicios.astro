@@ -1,0 +1,232 @@
+---
+import { NeonPriceSticker } from '@prooq/ui';
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+interface DigitalService {
+  icon: string;
+  title: string;
+  description: string;
+  features: readonly string[];
+  highlight?: boolean;
+}
+
+const services: readonly DigitalService[] = [
+  {
+    icon: '🌐',
+    title: 'Desarrollo Web',
+    description: 'Soluciones web profesionales para empresas y negocios.',
+    features: [
+      'Landing pages',
+      'Sitios corporativos y empresariales',
+      'E-commerce',
+      'Webs administrables (WordPress / CMS personalizados)',
+      'Formularios dinámicos e integraciones',
+      'SEO básico e implementación de Analytics',
+    ],
+  },
+  {
+    icon: '💻',
+    title: 'Instalación y Activación de Software',
+    description: 'Instalación profesional de software y paquetes empresariales.',
+    features: [
+      'Microsoft Office / Office 365',
+      'Antivirus',
+      'Configuración de software empresarial',
+      'Activación de licencias',
+      'Actualización y mantenimiento',
+    ],
+  },
+  {
+    icon: '🔌',
+    title: 'Redes Cableadas y WiFi',
+    description: 'Instalación y configuración de redes empresariales.',
+    features: [
+      'Redes cableadas y WiFi',
+      'Configuración de routers y switches',
+      'Diagnóstico y optimización',
+      'Instalación de puntos de red',
+    ],
+  },
+  {
+    icon: '📹',
+    title: 'Seguridad Electrónica',
+    description: 'Videovigilancia y control de acceso profesional.',
+    features: [
+      'Videovigilancia (CCTV)',
+      'Control de acceso',
+      'Alarmas y sensores',
+      'Integración con móviles',
+    ],
+  },
+  {
+    icon: '🛠️',
+    title: 'Asistencia Técnica',
+    description: 'Soporte especializado y mantenimiento preventivo.',
+    features: [
+      'Soporte remoto y presencial',
+      'Solución de incidencias',
+      'Mantenimiento preventivo',
+      'Asesoría técnica',
+    ],
+  },
+  {
+    icon: '🤖',
+    title: 'Automatización e IA',
+    description: 'Automatización de procesos y agentes inteligentes con n8n.',
+    features: [
+      'Automatización de procesos',
+      'Integración de sistemas',
+      'Agentes inteligentes (n8n)',
+      'Desarrollo de scripts',
+    ],
+    highlight: true,
+  },
+  {
+    icon: '🔒',
+    title: 'Ciberseguridad',
+    description: 'Protección de datos y auditoría de sistemas.',
+    features: [
+      'Protección de datos',
+      'Firewall y seguridad perimetral',
+      'Auditoría de sistemas',
+      'Capacitación en ciberseguridad',
+    ],
+  },
+  {
+    icon: '💡',
+    title: 'Consultoría Tecnológica',
+    description: 'Asesoría tecnológica y propuestas de mejora.',
+    features: [
+      'Evaluación de infraestructura',
+      'Propuestas de mejora',
+      'Selección de tecnología',
+      'Implementación de soluciones',
+    ],
+  },
+  {
+    icon: '🏗️',
+    title: 'E-BOP — Gestión de Obra',
+    description:
+      'Producto propio: control total de personal, materiales, cronograma y reportes desde cualquier lugar.',
+    features: [
+      'Gestión de personal en obra',
+      'Inventario de materiales',
+      'Cronogramas dinámicos',
+      'Reportes desde móvil',
+      'Dashboard ejecutivo',
+    ],
+    highlight: true,
+  },
+];
+---
+
+<BaseLayout
+  title="Servicios Digitales — PROOQ Panamá"
+  description="Catálogo completo de servicios digitales de PROOQ Panamá: desarrollo web, redes, seguridad electrónica, automatización con n8n, ciberseguridad y más."
+>
+  <section class="section section-services servicios-page">
+    <div class="section-container">
+      <h1 class="section-title fade-in">Servicios Digitales</h1>
+      <p class="section-subtitle fade-in">
+        Soluciones técnicas integrales para empresas: desde redes y seguridad hasta automatización
+        con IA. Cotización personalizada por proyecto — pregúntanos sin compromiso.
+      </p>
+
+      <div class="services-grid">
+        {services.map((s) => (
+          <article class={`service-card fade-in${s.highlight ? ' service-card-featured' : ''}`}>
+            <div class="service-icon" aria-hidden="true">{s.icon}</div>
+            <h3>{s.title}</h3>
+            <p>{s.description}</p>
+            <ul>
+              {s.features.map((f) => <li>{f}</li>)}
+            </ul>
+            <div class="service-cta">
+              <NeonPriceSticker label="Cotización" price="Gratis" />
+            </div>
+          </article>
+        ))}
+      </div>
+
+      <aside class="services-note fade-in">
+        <h2>¿No encuentras lo que buscas?</h2>
+        <p>
+          Hacemos proyectos a medida. Si necesitas algo fuera del catálogo, contáctanos y armamos
+          la solución contigo.
+        </p>
+        <a href="#contact" class="cta-secondary">Conversemos</a>
+      </aside>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .servicios-page {
+    padding-top: 8rem;
+  }
+
+  .service-card {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .service-card-featured {
+    border-color: rgb(0 255 231 / 0.3);
+    background: linear-gradient(
+      180deg,
+      var(--color-surface-raised) 0%,
+      rgb(0 60 255 / 0.08) 100%
+    );
+  }
+
+  .service-card-featured:hover {
+    border-color: var(--color-accent-cyan);
+    box-shadow: 0 16px 40px rgb(0 255 231 / 0.18);
+  }
+
+  .service-cta {
+    margin-top: auto;
+    padding-top: 1.25rem;
+    display: flex;
+    justify-content: flex-start;
+  }
+
+  .services-note {
+    margin-top: 4rem;
+    padding: 2rem;
+    text-align: center;
+    background: var(--color-surface-raised);
+    border: 1px solid rgb(255 255 255 / 0.06);
+    border-radius: var(--radius-lg);
+  }
+
+  .services-note h2 {
+    font-family: var(--font-display);
+    color: var(--color-text);
+    font-size: 1.5rem;
+    margin: 0 0 0.5rem;
+  }
+
+  .services-note p {
+    color: var(--color-text-muted);
+    margin: 0 0 1.5rem;
+    line-height: 1.6;
+  }
+</style>
+
+<script>
+  const elements = document.querySelectorAll('.fade-in');
+  const observer = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+          observer.unobserve(entry.target);
+        }
+      }
+    },
+    { threshold: 0.05, rootMargin: '0px 0px -50px 0px' },
+  );
+
+  for (const el of elements) observer.observe(el);
+</script>
