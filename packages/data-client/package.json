@@ -7,7 +7,8 @@
     ".": "./src/index.ts",
     "./clients": "./src/clients.ts",
     "./downloads": "./src/downloads.ts",
-    "./chat": "./src/chat.ts"
+    "./chat": "./src/chat.ts",
+    "./ebop": "./src/ebop.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit"
