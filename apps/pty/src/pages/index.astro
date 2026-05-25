@@ -1,25 +1,334 @@
 ---
 import { ChatFab, HeroParallax } from '@prooq/ui';
 import BaseLayout from '../layouts/BaseLayout.astro';
+
+const BASE = import.meta.env.BASE_URL.replace(/\/?$/, '/');
+
+const services = [
+  {
+    icon: '🏗️',
+    title: 'E-BOP — Gestión de Obra en Tiempo Real',
+    description:
+      'Control total de personal, materiales, cronograma y reportes desde cualquier lugar.',
+    features: [
+      'Gestión de personal',
+      'Inventario de materiales',
+      'Cronogramas dinámicos',
+      'Reportes desde móvil',
+    ],
+  },
+  {
+    icon: '👥',
+    title: 'Traffic by PROOQ',
+    description: 'Monitoreo y gestión de personas en espacios para mayor seguridad y eficiencia.',
+    features: ['Conteo de afluencia', 'Heatmaps', 'Alertas en tiempo real', 'Dashboards web'],
+  },
+  {
+    icon: '🤖',
+    title: 'Agentes Inteligentes con n8n',
+    description: 'Automatización avanzada y agentes inteligentes para empresas.',
+    features: ['Workflows N8N', 'Chatbots IA', 'Integraciones API', 'Procesos automatizados'],
+  },
+  {
+    icon: '📹',
+    title: 'Seguridad Electrónica',
+    description: 'Soluciones avanzadas de videovigilancia y control de acceso para tu negocio.',
+    features: [
+      'CCTV / Videovigilancia',
+      'Control de acceso',
+      'Alarmas inteligentes',
+      'Monitoreo 24/7',
+    ],
+  },
+  {
+    icon: '🌐',
+    title: 'Desarrollo Web',
+    description: 'Soluciones web profesionales para empresas y negocios.',
+    features: ['Landing pages', 'Sitios corporativos', 'E-commerce', 'Aplicaciones web'],
+  },
+  {
+    icon: '🔒',
+    title: 'Ciberseguridad y Protección de Datos',
+    description: 'Control de accesos, encriptación y monitoreo continuo para tu empresa.',
+    features: [
+      'Threat detection',
+      'Encriptación at rest',
+      'Políticas de acceso',
+      'Auditorías de cumplimiento',
+    ],
+  },
+  {
+    icon: '🔌',
+    title: 'Redes Cableadas e Infraestructura',
+    description: 'Diseño y administración de redes locales, remotas y en la nube.',
+    features: [
+      'Cableado Cat6/Cat7',
+      'Switches y routers',
+      'Redes locales / cloud',
+      'VPN y acceso remoto',
+    ],
+  },
+  {
+    icon: '🧑‍💻',
+    title: 'Sistemas Administrativos',
+    description: 'Software a medida para optimizar la gestión de tu empresa.',
+    features: ['Integración ERP', 'Dashboards', 'Automatización de procesos', 'Analítica de datos'],
+  },
+  {
+    icon: '🛠️',
+    title: 'Automatización y Control Inteligente',
+    description: 'Soluciones para automatizar procesos, edificios y sistemas de seguridad.',
+    features: [
+      'Automatización de edificios',
+      'IoT',
+      'Sensores inteligentes',
+      'Control de procesos',
+    ],
+  },
+  {
+    icon: '💡',
+    title: 'Consultoría Tecnológica',
+    description: 'Asesoramos a empresas en la adopción eficiente de tecnología.',
+    features: [
+      'Transformación digital',
+      'Auditorías técnicas',
+      'Selección de proveedores',
+      'Roadmaps tecnológicos',
+    ],
+  },
+];
+
+const stats = [
+  { value: '25+', label: 'Años de experiencia' },
+  { value: '200+', label: 'Clientes en Panamá' },
+  { value: '15+', label: 'Profesionales' },
+];
+
+const team = [
+  { name: 'Kenny', role: 'Especialista en Redes', photo: `${BASE}images/team/kenny.jpg` },
+  { name: 'Fernando', role: 'Experto en Seguridad', photo: `${BASE}images/team/fernando.jpg` },
+  { name: 'Angelo', role: 'Desarrollo de Sistemas', photo: `${BASE}images/team/angelo.jpg` },
+  { name: 'Daniel', role: 'Soporte Técnico', photo: `${BASE}images/team/daniel.jpg` },
+  { name: 'Irwin', role: 'Infraestructura', photo: `${BASE}images/team/irwin.jpg` },
+  { name: 'Lázaro', role: 'Coordinador de Proyectos', photo: `${BASE}images/team/lazaro.jpg` },
+];
+
+const portfolio = [
+  {
+    name: 'aerovisionstudio.com',
+    description: 'Servicios de drones, fotografía aérea y producción audiovisual.',
+    url: 'https://aerovisionstudio.com',
+  },
+  {
+    name: 'prooq.com',
+    description: 'Soluciones tecnológicas, seguridad electrónica, infraestructura y sistemas.',
+    url: 'https://prooq.com',
+  },
+  {
+    name: 'bgselectrician.com',
+    description: 'Manpower & Staffing para contratistas eléctricos.',
+    url: 'https://bgselectrician.com',
+  },
+  {
+    name: 'mansionperruna.com',
+    description: 'Hotel canino, guardería y servicios premium para mascotas.',
+    url: 'https://mansionperruna.com',
+  },
+  {
+    name: 'vieniqua.com',
+    description: 'Restaurante de comida italiana.',
+    url: 'https://vieniqua.com',
+  },
+  {
+    name: 'cleanfactorypty.com',
+    description: 'Servicios profesionales de limpieza de zapatillas.',
+    url: 'https://cleanfactorypty.com',
+  },
+  {
+    name: 'varasgrillandbar.com',
+    description: 'Restaurante, bar y parrilla con menú y reservas digitales.',
+    url: 'https://varasgrillandbar.com',
+  },
+  {
+    name: 'makanolake.com',
+    description: 'Cabañas agroturísticas junto al Lago San Carlos.',
+    url: 'https://makanolake.com',
+  },
+  {
+    name: 'tallerqsexpress.com',
+    description: 'Taller automotriz, mecánica rápida y diagnósticos.',
+    url: 'https://tallerqsexpress.com',
+  },
+  {
+    name: 'bootsgloves.com',
+    description:
+      'Servicios profesionales de demolición, retiro de escombros y limpieza en Atlanta, Georgia.',
+    url: 'https://bootsgloves.com',
+  },
+  {
+    name: 'dastvnetwork.com',
+    description: 'Tecnología de marketing y publicidad digital.',
+    url: 'https://dastvnetwork.com',
+  },
+  {
+    name: 'bgs50.com',
+    description: 'Plataforma de servicios y soluciones para la industria.',
+    url: 'https://bgs50.com',
+  },
+] as const;
+
+const locationDetails = [
+  { icon: '📍', title: 'Sede Principal', text: 'Ciudad de Panamá, Panamá' },
+  { icon: '🌎', title: 'Cobertura', text: 'Panamá y Centroamérica' },
+  { icon: '⏰', title: 'Horario', text: 'Lun - Vie: 8:00 - 17:00' },
+];
 ---
 
 <BaseLayout
-  title="PROOQ Panamá"
-  description="PROOQ Panamá — Servicios tecnológicos, e-BOP, HubCore y chat IA en Ciudad de Panamá."
+  title="PROOQ S.A. — Soluciones Tecnológicas en Panamá"
+  description="PROOQ Panamá: e-BOP, Traffic, seguridad electrónica, redes, automatización y chat IA. Ciudad de Panamá."
 >
   <HeroParallax
     title="PROOQ"
     subtitle="Soluciones tecnológicas integrales para empresas"
     description="Especialistas en cableado estructurado, seguridad electrónica y automatización empresarial en Panamá"
-    cta={{ label: 'Conoce nuestros servicios', href: '#gallery' }}
-  />
+    cta={{ label: 'Conoce nuestros servicios', href: '#servicios' }}
+  >
+    <div class="hero-extras">
+      <a href="#contacto" class="cta-secondary">Contáctanos</a>
+      <p class="hero-location">📍 Ciudad de Panamá, Panamá 🇵🇦</p>
+    </div>
+  </HeroParallax>
 
-  <section id="gallery">
-    <p>
-      TODO Fase 4: portar prooq/panama/index.php — servicios, formulario e-BOP,
-      clientes (desde MySQL), descargas, HubCore.
-    </p>
+  <section id="servicios" class="section section-services">
+    <div class="section-container">
+      <h2 class="section-title fade-in">Nuestros Servicios</h2>
+      <p class="section-subtitle fade-in">
+        Productos propios (E-BOP, Traffic, Agentes IA) y servicios técnicos integrales para empresas en Panamá.
+      </p>
+      <div class="services-grid">
+        {services.map((s) => (
+          <article class="service-card fade-in">
+            <div class="service-icon" aria-hidden="true">{s.icon}</div>
+            <h3>{s.title}</h3>
+            <p>{s.description}</p>
+            <ul>
+              {s.features.map((f) => <li>{f}</li>)}
+            </ul>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section section-about">
+    <div class="section-container">
+      <div class="about-grid">
+        <div class="fade-in">
+          <h2 class="section-title">Sobre PROOQ S.A.</h2>
+          <p>
+            PROOQ S.A. es la sede principal del grupo, con base en Ciudad de Panamá. Desde aquí
+            coordinamos las operaciones regionales y desarrollamos nuestros productos propios:
+            E-BOP (gestión de obra), Traffic by PROOQ (control de afluencia) y agentes
+            inteligentes con n8n.
+          </p>
+          <p>
+            Combinamos infraestructura técnica (cableado estructurado, seguridad electrónica,
+            redes) con software a medida y consultoría para empresas que necesitan modernizar
+            sus operaciones.
+          </p>
+          <div class="stats">
+            {stats.map((s) => (
+              <div class="stat">
+                <span class="stat-value">{s.value}</span>
+                <span class="stat-label">{s.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="equipo" class="section section-team">
+    <div class="section-container">
+      <h2 class="section-title fade-in">Nuestro Equipo</h2>
+      <p class="section-subtitle fade-in">Los profesionales detrás de cada proyecto PROOQ</p>
+      <div class="team-grid">
+        {team.map((m) => (
+          <article class="team-member fade-in">
+            <img src={m.photo} alt={m.name} loading="lazy" />
+            <h3>{m.name}</h3>
+            <p>{m.role}</p>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section id="portafolio" class="section section-portfolio">
+    <div class="section-container">
+      <h2 class="section-title fade-in">Portafolio Web</h2>
+      <p class="section-subtitle fade-in">
+        Una selección de sitios diseñados y desarrollados por nuestro equipo. Cada proyecto
+        refleja nuestro compromiso con la calidad, la innovación y la excelencia técnica.
+      </p>
+      <div class="portfolio-grid">
+        {portfolio.map((p) => (
+          <article class="portfolio-card fade-in">
+            <h3>{p.name}</h3>
+            <p>{p.description}</p>
+            <a href={p.url} target="_blank" rel="noopener noreferrer" class="portfolio-link">
+              Visitar sitio →
+            </a>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section id="ubicacion" class="section section-location">
+    <div class="section-container">
+      <div class="location-grid">
+        <div class="fade-in">
+          <h2 class="section-title">Ubicados en Ciudad de Panamá</h2>
+          <p>
+            Sede principal del grupo PROOQ. Atendemos clientes en todo Panamá y la región
+            centroamericana con soluciones tecnológicas integrales.
+          </p>
+          <div class="location-details">
+            {locationDetails.map((d) => (
+              <div class="location-detail">
+                <span class="detail-icon" aria-hidden="true">{d.icon}</span>
+                <div>
+                  <h4>{d.title}</h4>
+                  <p>{d.text}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
   </section>
 
   <ChatFab country="pty" />
 </BaseLayout>
+
+<script>
+  // Fade-in al scroll — IntersectionObserver replicado del V1.
+  const elements = document.querySelectorAll('.fade-in');
+  const observer = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+          observer.unobserve(entry.target);
+        }
+      }
+    },
+    { threshold: 0.1, rootMargin: '0px 0px -50px 0px' },
+  );
+
+  for (const el of elements) observer.observe(el);
+</script>
