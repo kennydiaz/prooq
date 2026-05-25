@@ -1,13 +1,234 @@
 ---
 import type { Country } from '@prooq/config/tailwind.preset';
 
-export interface Props {
-  country?: Country;
+export interface NavItem {
+  label: string;
+  href: string;
 }
 
-const { country } = Astro.props;
+export interface Props {
+  country?: Country;
+  logoSrc?: string;
+  logoAlt?: string;
+  navItems?: readonly NavItem[];
+}
+
+const DEFAULT_NAV_BY_COUNTRY: Record<Country, readonly NavItem[]> = {
+  pty: [
+    { label: 'Inicio', href: '/' },
+    { label: 'Galería', href: '/gallery' },
+    { label: 'Descargas', href: '/downloads' },
+    { label: 'Servicios Digitales', href: '/servicios' },
+    { label: 'Clientes', href: '/clientes' },
+    { label: 'Contacto', href: '/#contact' },
+  ],
+  usa: [
+    { label: 'Home', href: '/' },
+    { label: 'Gallery', href: '/gallery' },
+    { label: 'Downloads', href: '/downloads' },
+    { label: 'Services', href: '/servicios' },
+    { label: 'Contact', href: '/#contact' },
+  ],
+  esp: [
+    { label: 'Inicio', href: '/' },
+    { label: 'Contacto', href: '/#contact' },
+  ],
+  ven: [
+    { label: 'Inicio', href: '/' },
+    { label: 'Galería', href: '/gallery' },
+    { label: 'Descargas', href: '/downloads' },
+    { label: 'Servicios', href: '/servicios' },
+    { label: 'Contacto', href: '/#contact' },
+  ],
+};
+
+const {
+  country,
+  logoSrc,
+  logoAlt = 'PROOQ',
+  navItems = country ? DEFAULT_NAV_BY_COUNTRY[country] : [{ label: 'Inicio', href: '/' }],
+} = Astro.props;
 ---
 
-<header class="prooq-header" data-country={country}>
-  <!-- TODO Fase 1: extraer de prooq/{sucursal}/includes/nav.php + css/header.css -->
+<header class="site-header" data-country={country}>
+  <div class="nav-container">
+    <a href="/" class="site-logo">
+      {logoSrc
+        ? <img src={logoSrc} alt={logoAlt} />
+        : <span class="site-wordmark">{logoAlt}</span>
+      }
+    </a>
+
+    <button
+      class="menu-toggle"
+      type="button"
+      aria-label="Abrir menú"
+      aria-controls="primary-navigation"
+      aria-expanded="false"
+    >
+      <span class="menu-icon" aria-hidden="true"></span>
+      Menú
+    </button>
+
+    <nav
+      class="main-nav"
+      id="primary-navigation"
+      aria-label="Menú principal"
+      data-open="false"
+    >
+      {navItems.map((item) => (
+        <a href={item.href} class="nav-link">{item.label}</a>
+      ))}
+      <slot name="countries-menu" />
+    </nav>
+  </div>
 </header>
+
+<style>
+  .site-header {
+    position: fixed;
+    inset: 0 0 auto 0;
+    z-index: 1000;
+    background: rgb(0 0 0 / 0.3);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 0.5rem 2rem;
+    transition: background 0.3s ease;
+  }
+
+  .nav-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .site-logo {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+  }
+
+  .site-logo img {
+    height: 100px;
+    width: auto;
+    display: block;
+    transition: transform 0.25s ease;
+  }
+
+  .site-logo:hover img {
+    transform: scale(1.03);
+  }
+
+  .site-wordmark {
+    font-family: var(--font-display);
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--color-text);
+    letter-spacing: 0.05em;
+  }
+
+  .main-nav {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+  }
+
+  .nav-link {
+    color: var(--color-text);
+    text-decoration: none;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-md);
+    transition: background 0.3s ease;
+  }
+
+  .nav-link:hover {
+    background: rgb(255 255 255 / 0.1);
+  }
+
+  .menu-toggle {
+    display: none;
+    background: transparent;
+    border: 1px solid rgb(255 255 255 / 0.25);
+    color: var(--color-text);
+    padding: 8px 12px;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    line-height: 1;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .menu-icon {
+    width: 22px;
+    height: 2px;
+    background: var(--color-text);
+    display: inline-block;
+    position: relative;
+  }
+
+  .menu-icon::before,
+  .menu-icon::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    width: 22px;
+    height: 2px;
+    background: var(--color-text);
+  }
+
+  .menu-icon::before { top: -6px; }
+  .menu-icon::after  { top:  6px; }
+
+  @media (max-width: 768px) {
+    .menu-toggle {
+      display: inline-flex;
+    }
+
+    .main-nav {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 100%;
+      margin-top: 8px;
+      display: none;
+      flex-direction: column;
+      background: linear-gradient(180deg, rgb(0 0 0 / 0.95) 0%, var(--color-surface-deep) 100%);
+      padding: 12px;
+      border-radius: var(--radius-md);
+      border: 1px solid rgb(255 255 255 / 0.1);
+    }
+
+    .main-nav[data-open="true"] {
+      display: flex;
+    }
+
+    .nav-link {
+      padding: 10px 12px;
+    }
+
+    .nav-container {
+      position: relative;
+    }
+  }
+</style>
+
+<script>
+  // Hamburger toggle — un solo listener por toggle, en cada navegación Astro hidrata de nuevo.
+  document.querySelectorAll<HTMLButtonElement>('.menu-toggle').forEach((btn) => {
+    const navId = btn.getAttribute('aria-controls');
+    if (!navId) return;
+    const nav = document.getElementById(navId);
+    if (!nav) return;
+
+    btn.addEventListener('click', () => {
+      const isOpen = nav.dataset.open === 'true';
+      const next = !isOpen;
+      nav.dataset.open = String(next);
+      btn.setAttribute('aria-expanded', String(next));
+    });
+  });
+</script>
