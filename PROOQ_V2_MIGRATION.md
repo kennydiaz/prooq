@@ -70,7 +70,7 @@
 ## 3. Arquitectura nueva (monorepo)
 
 ```
-prooq-v2/
+prooq/
 ├── apps/
 │   ├── portal/                 # Portal raíz (prooq.com) — Astro
 │   ├── pty/                    # prooq.com/pty — Astro + APIs PHP (Panamá)
@@ -164,7 +164,7 @@ El alcance funcional es idéntico entre las 4 sucursales — solo cambian datos 
 
 ### Fase 0 — Setup (Semana 1)
 - [ ] Crear cuenta Hostinger (plan **Business Web Hosting** mínimo).
-- [ ] Crear repo `prooq-v2` en GitHub.
+- [x] Crear repo `prooq` en GitHub (privado, github.com/kennydiaz/prooq — creado 2026-05-25).
 - [ ] Scaffold monorepo (ver §10 "Archivos para arrancar").
 - [ ] Configurar SSH keys Hostinger ↔ GitHub Actions.
 - [ ] Configurar Cloudflare con dominio `prooq.com` (todavía apuntando a GoDaddy).
@@ -371,7 +371,7 @@ jobs:
           username: ${{ secrets.HOSTINGER_USER }}
           key: ${{ secrets.HOSTINGER_SSH_KEY }}
           script: |
-            cd ~/prooq-v2 && git pull
+            cd ~/prooq && git pull
             rsync -av --delete --exclude pty --exclude usa --exclude esp --exclude ven --exclude api \
                 apps/portal/dist/ ~/public_html/
             rsync -av --delete apps/pty/dist/ ~/public_html/pty/
@@ -397,7 +397,7 @@ jobs:
 
 ## 10. 📦 Archivos para arrancar `prooqV2` (bootstrap)
 
-Esta es la lista exacta de archivos a crear en el repo nuevo `prooq-v2/` el día 1. Sin contenido todavía — solo el esqueleto vacío para luego ir llenando.
+Esta es la lista exacta de archivos a crear en el repo nuevo `prooq/` el día 1. Sin contenido todavía — solo el esqueleto vacío para luego ir llenando.
 
 ### Raíz del repo
 - `package.json` — workspace root + scripts (`build`, `dev`, `lint`)

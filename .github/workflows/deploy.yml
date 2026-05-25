@@ -38,7 +38,7 @@ jobs:
           key: ${{ secrets.HOSTINGER_SSH_KEY }}
           script: |
             set -e
-            cd ~/prooq-v2 && git pull
+            cd ~/prooq && git pull
             # Portal en la raiz; --delete-excluded NO se usa aqui para preservar
             # /pty, /usa, /esp, /ven y /api que rsync no debe tocar.
             rsync -av --delete --exclude pty --exclude usa --exclude esp --exclude ven --exclude api \
