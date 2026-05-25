@@ -27,24 +27,49 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build all apps
+      - name: Build all frontend apps
         run: pnpm build
 
-      - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1
+      - name: Setup SSH agent with deploy key
+        uses: webfactory/ssh-agent@v0.9.0
         with:
-          host: ${{ secrets.HOSTINGER_HOST }}
-          username: ${{ secrets.HOSTINGER_USER }}
-          key: ${{ secrets.HOSTINGER_SSH_KEY }}
-          script: |
-            set -e
-            cd ~/prooq && git pull
-            # Portal en la raiz; --delete-excluded NO se usa aqui para preservar
-            # /pty, /usa, /esp, /ven y /api que rsync no debe tocar.
-            rsync -av --delete --exclude pty --exclude usa --exclude esp --exclude ven --exclude api \
-                apps/portal/dist/ ~/public_html/
-            rsync -av --delete apps/pty/dist/ ~/public_html/pty/
-            rsync -av --delete apps/usa/dist/ ~/public_html/usa/
-            rsync -av --delete apps/esp/dist/ ~/public_html/esp/
-            rsync -av --delete apps/ven/dist/ ~/public_html/ven/
-            cd ~/domains/api.prooq.com && composer install --no-dev --optimize-autoloader
+          ssh-private-key: ${{ secrets.HOSTINGER_SSH_KEY }}
+
+      - name: Trust Hostinger host
+        env:
+          SSH_HOST: ${{ secrets.HOSTINGER_HOST }}
+          SSH_PORT: ${{ secrets.HOSTINGER_PORT }}
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -p "${SSH_PORT:-65002}" -H "$SSH_HOST" >> ~/.ssh/known_hosts
+
+      - name: Deploy frontend via rsync
+        env:
+          SSH_USER: ${{ secrets.HOSTINGER_USER }}
+          SSH_HOST: ${{ secrets.HOSTINGER_HOST }}
+          SSH_PORT: ${{ secrets.HOSTINGER_PORT }}
+        run: |
+          set -euo pipefail
+          PORT="${SSH_PORT:-65002}"
+          SSH_CMD="ssh -p $PORT"
+          TARGET="$SSH_USER@$SSH_HOST"
+          ROOT="~/domains/prooq.com/public_html"
+
+          # Portal en raiz del dominio. NO --delete para preservar /api (subdir
+          # del subdominio api.prooq.com) + cualquier archivo gestionado por
+          # Hostinger (.ssl.txt, .htaccess auto-generado, etc).
+          rsync -av -e "$SSH_CMD" \
+            --exclude pty --exclude usa --exclude esp --exclude ven --exclude api \
+            apps/portal/dist/ "$TARGET:$ROOT/"
+
+          # 4 sucursales en subcarpetas dedicadas (--delete OK)
+          for country in pty usa esp ven; do
+            rsync -av --delete -e "$SSH_CMD" \
+              "apps/$country/dist/" "$TARGET:$ROOT/$country/"
+          done
+
+      # TODO: deploy del backend API requiere ajustar el document root del
+      # subdominio api.prooq.com en hPanel (debe apuntar a public_html/api/public
+      # en vez de public_html/api/) para mantener la estructura natural de Slim
+      # con src/ y vendor/ fuera del directorio web-accessible.
+      # Cuando se haga: descomentar pasos de "Deploy API" + "Composer install".
