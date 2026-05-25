@@ -4,10 +4,13 @@ export interface Download {
   id: number;
   title: string;
   description: string | null;
-  filename: string;
+  filename: string | null;
   fileSizeBytes: number | null;
   mimeType: string | null;
+  externalUrl: string | null;
+  iconUrl: string | null;
   country: CountryIso2 | null;
+  slug: string | null;
   downloadCount: number;
   isPublic: boolean;
 }
@@ -23,6 +26,6 @@ export async function getDownloads(opts: { country?: CountryIso2 } = {}): Promis
   return (await res.json()) as Download[];
 }
 
-export function getDownloadUrl(id: number): string {
-  return new URL(`/api/downloads/${id}/file`, apiBase()).toString();
+export function getDownloadFileUrl(idOrSlug: number | string): string {
+  return new URL(`/api/downloads/${idOrSlug}/file`, apiBase()).toString();
 }
