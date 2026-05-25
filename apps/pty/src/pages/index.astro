@@ -1,4 +1,5 @@
 ---
+import { HeroParallax } from '@prooq/ui';
 import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 
@@ -6,9 +7,17 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   title="PROOQ Panamá"
   description="PROOQ Panamá — Servicios tecnológicos, e-BOP, HubCore y chat IA en Ciudad de Panamá."
 >
-  <h1>PROOQ Panamá</h1>
-  <p>
-    TODO Fase 4: portar prooq/panama/index.php — hero parallax, servicios, chat N8N,
-    formulario e-BOP, clientes (desde MySQL), descargas, HubCore.
-  </p>
+  <HeroParallax
+    title="PROOQ"
+    subtitle="Soluciones tecnológicas integrales para empresas"
+    description="Especialistas en cableado estructurado, seguridad electrónica y automatización empresarial en Panamá"
+    cta={{ label: 'Conoce nuestros servicios', href: '#gallery' }}
+  />
+
+  <section id="gallery">
+    <p>
+      TODO Fase 4: portar prooq/panama/index.php — servicios, chat N8N,
+      formulario e-BOP, clientes (desde MySQL), descargas, HubCore.
+    </p>
+  </section>
 </BaseLayout>
