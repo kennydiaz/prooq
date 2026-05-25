@@ -1,6 +1,7 @@
 import { defineConfig } from 'astro/config';
 
 export default defineConfig({
-  site: 'https://usa.prooq.com',
+  site: 'https://prooq.com',
+  base: '/usa',
   output: 'static',
 });

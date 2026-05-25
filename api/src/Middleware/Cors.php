@@ -11,12 +11,11 @@ use Psr\Http\Server\RequestHandlerInterface;
 
 final class Cors implements MiddlewareInterface
 {
+    // Las 4 sucursales viven en paths bajo prooq.com (/pty, /usa, /esp, /ven),
+    // por eso un solo origin de produccion. localhost para dev de cada app.
     private const ALLOWED_ORIGINS = [
         'https://prooq.com',
-        'https://pty.prooq.com',
-        'https://usa.prooq.com',
-        'https://esp.prooq.com',
-        'https://ven.prooq.com',
+        'https://www.prooq.com',
         'http://localhost:4321',
         'http://localhost:4322',
         'http://localhost:4323',

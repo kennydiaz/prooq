@@ -39,9 +39,12 @@ jobs:
           script: |
             set -e
             cd ~/prooq-v2 && git pull
-            rsync -av --delete apps/portal/dist/ ~/public_html/
-            rsync -av --delete apps/pty/dist/    ~/domains/pty.prooq.com/public_html/
-            rsync -av --delete apps/usa/dist/    ~/domains/usa.prooq.com/public_html/
-            rsync -av --delete apps/esp/dist/    ~/domains/esp.prooq.com/public_html/
-            rsync -av --delete apps/ven/dist/    ~/domains/ven.prooq.com/public_html/
+            # Portal en la raiz; --delete-excluded NO se usa aqui para preservar
+            # /pty, /usa, /esp, /ven y /api que rsync no debe tocar.
+            rsync -av --delete --exclude pty --exclude usa --exclude esp --exclude ven --exclude api \
+                apps/portal/dist/ ~/public_html/
+            rsync -av --delete apps/pty/dist/ ~/public_html/pty/
+            rsync -av --delete apps/usa/dist/ ~/public_html/usa/
+            rsync -av --delete apps/esp/dist/ ~/public_html/esp/
+            rsync -av --delete apps/ven/dist/ ~/public_html/ven/
             cd ~/domains/api.prooq.com && composer install --no-dev --optimize-autoloader

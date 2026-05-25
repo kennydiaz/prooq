@@ -73,10 +73,10 @@
 prooq-v2/
 ├── apps/
 │   ├── portal/                 # Portal raíz (prooq.com) — Astro
-│   ├── pty/                    # pty.prooq.com — Astro + APIs PHP (Panamá)
-│   ├── usa/                    # usa.prooq.com — Astro (Estados Unidos)
-│   ├── esp/                    # esp.prooq.com — Astro (España)
-│   └── ven/                    # ven.prooq.com — Astro (Venezuela)
+│   ├── pty/                    # prooq.com/pty — Astro + APIs PHP (Panamá)
+│   ├── usa/                    # prooq.com/usa — Astro (Estados Unidos)
+│   ├── esp/                    # prooq.com/esp — Astro (España)
+│   └── ven/                    # prooq.com/ven — Astro (Venezuela)
 │
 ├── packages/
 │   ├── ui/                     # Componentes Astro compartidos
@@ -151,8 +151,9 @@ prooq-v2/
 
 | Capa | Identificador | Valor por sucursal |
 |------|--------------|---------------------|
-| Carpeta en `apps/` | prefijo de 3 letras = subdominio | `pty`, `usa`, `esp`, `ven` |
-| Subdominio público | igual al folder | `pty.prooq.com`, `usa.prooq.com`, `esp.prooq.com`, `ven.prooq.com` |
+| Carpeta en `apps/` | prefijo de 3 letras = path | `pty`, `usa`, `esp`, `ven` |
+| URL pública | path bajo prooq.com | `prooq.com/pty/`, `prooq.com/usa/`, `prooq.com/esp/`, `prooq.com/ven/` |
+| Astro `base` config | igual al path | `/pty`, `/usa`, `/esp`, `/ven` |
 | DB (`country` column) | ISO‑3166 alpha‑2 | `PA`, `US`, `ES`, `VE` |
 
 El alcance funcional es idéntico entre las 4 sucursales — solo cambian datos puntuales (equipo, dirección, formularios locales). Las carpetas no representan diferencias de producto, solo de despliegue y contenido.
@@ -178,13 +179,13 @@ El alcance funcional es idéntico entre las 4 sucursales — solo cambian datos 
 **Es la más simple — solo `index.html` estático.** Sirve para validar el flujo end‑to‑end.
 - [ ] Recrear `apps/esp/` en Astro consumiendo `@prooq/ui`.
 - [ ] Migrar imágenes a `apps/esp/public/`.
-- [ ] Build local + deploy a `esp-v2.prooq.com` (subdominio temporal).
+- [ ] Build local + deploy a `v2.prooq.com/esp/` (path temporal en subdominio de staging).
 - [ ] Validación manual + Lighthouse.
 
 ### Fase 3 — EE. UU. y Venezuela (Semana 5-6) 🇺🇸 🇻🇪
 - [ ] Estructura espejo (ambas son casi idénticas).
 - [ ] Migrar `servicios.php`, `gallery.php`, `downloads.php` → páginas Astro que llaman a `api.prooq.com`.
-- [ ] Deploy a `usa-v2.prooq.com` y `ven-v2.prooq.com`.
+- [ ] Deploy a `v2.prooq.com/usa/` y `v2.prooq.com/ven/`.
 
 ### Fase 4 — Panamá (Semana 7-9) 🇵🇦 *la más compleja*
 - [ ] Páginas básicas (index, servicios, gallery) como las otras.
@@ -192,7 +193,7 @@ El alcance funcional es idéntico entre las 4 sucursales — solo cambian datos 
 - [ ] **Clientes** → endpoint PHP `/api/clients` (lee de MySQL).
 - [ ] **Descargas** → endpoint PHP `/api/downloads` + `dl.php` para servir archivos.
 - [ ] **HubCore** → evaluar si se mantiene como SPA aparte o se integra.
-- [ ] Deploy a `pty-v2.prooq.com`.
+- [ ] Deploy a `v2.prooq.com/pty/`.
 
 ### Fase 5 — Migración de datos (paralela a Fase 4)
 - [ ] Crear schema en MySQL (ejecutar `db/migrations/*.sql`).
@@ -205,8 +206,8 @@ El alcance funcional es idéntico entre las 4 sucursales — solo cambian datos 
 
 ### Fase 6 — Portal raíz + DNS cutover (Semana 10)
 - [ ] Recrear `apps/portal/` (el `index.html` raíz con el video).
-- [ ] Deploy a `v2.prooq.com`.
-- [ ] **Pruebas de regresión completas** en todos los subdominios `*-v2`.
+- [ ] Deploy a `v2.prooq.com/` (portal raíz en staging).
+- [ ] **Pruebas de regresión completas** en todas las rutas `v2.prooq.com/{pty,usa,esp,ven}/`.
 - [ ] **Cutover DNS** en Cloudflare:
   1. Bajar TTL a 60s 24h antes.
   2. Cambiar registros A/CNAME GoDaddy → Hostinger.
@@ -236,25 +237,22 @@ El alcance funcional es idéntico entre las 4 sucursales — solo cambian datos 
 
 ### Setup inicial en hPanel
 1. **Crear cuenta de hosting** y asignar dominio principal `prooq.com`.
-2. **Subdominios** (uno por sucursal):
-   - `pty.prooq.com`
-   - `usa.prooq.com`
-   - `esp.prooq.com`
-   - `ven.prooq.com`
-   - `api.prooq.com` (backend PHP unificado)
+2. **Subdominios** (solo los necesarios — sucursales viven en paths bajo prooq.com):
+   - `api.prooq.com` — backend PHP unificado
+   - `v2.prooq.com` — staging temporal durante la migración (se apaga post-cutover)
 3. **MySQL**: crear base `u123_prooq_v2` + usuario con privilegios.
 4. **Git deployment**: conectar repo GitHub, configurar webhook a rama `main`.
-5. **SSL**: activar Let's Encrypt para todos los subdominios.
+5. **SSL**: activar Let's Encrypt para `prooq.com`, `www.prooq.com`, `api.prooq.com` y `v2.prooq.com`.
 6. **Cron**: agendar backups MySQL diarios a las 03:00.
 
 ### Estructura en el servidor
 ```
 public_html/                    # → prooq.com (apps/portal/dist/)
-pty.prooq.com/                  # → apps/pty/dist/
-usa.prooq.com/                  # → apps/usa/dist/
-esp.prooq.com/                  # → apps/esp/dist/
-ven.prooq.com/                  # → apps/ven/dist/
-api.prooq.com/                  # → api/public/ (PHP)
+public_html/pty/                # → apps/pty/dist/   (sirve prooq.com/pty/)
+public_html/usa/                # → apps/usa/dist/   (sirve prooq.com/usa/)
+public_html/esp/                # → apps/esp/dist/   (sirve prooq.com/esp/)
+public_html/ven/                # → apps/ven/dist/   (sirve prooq.com/ven/)
+~/domains/api.prooq.com/        # → api/public/ (PHP, subdominio separado)
 ```
 
 ---
@@ -332,7 +330,7 @@ CREATE TABLE chat_logs (
 ## 7. Estrategia DNS (dos opciones)
 
 ### Opción A — `v2.prooq.com` en paralelo (cero riesgo)
-1. Hostinger sirve `v2.prooq.com` y subdominios `*-v2.prooq.com`.
+1. Hostinger sirve todo bajo `v2.prooq.com` (raíz = portal, paths `/pty`, `/usa`, `/esp`, `/ven`).
 2. GoDaddy sigue sirviendo `prooq.com` real durante toda la migración.
 3. Cuando V2 esté 100% validado, en Cloudflare se cambia el registro A de `prooq.com` a Hostinger.
 4. Rollback: revertir el A record (segundos).
@@ -374,12 +372,13 @@ jobs:
           key: ${{ secrets.HOSTINGER_SSH_KEY }}
           script: |
             cd ~/prooq-v2 && git pull
-            rsync -av apps/portal/dist/ ~/public_html/
-            rsync -av apps/pty/dist/    ~/domains/pty.prooq.com/public_html/
-            rsync -av apps/usa/dist/    ~/domains/usa.prooq.com/public_html/
-            rsync -av apps/esp/dist/    ~/domains/esp.prooq.com/public_html/
-            rsync -av apps/ven/dist/    ~/domains/ven.prooq.com/public_html/
-            cd ~/domains/api.prooq.com/public_html && composer install --no-dev
+            rsync -av --delete --exclude pty --exclude usa --exclude esp --exclude ven --exclude api \
+                apps/portal/dist/ ~/public_html/
+            rsync -av --delete apps/pty/dist/ ~/public_html/pty/
+            rsync -av --delete apps/usa/dist/ ~/public_html/usa/
+            rsync -av --delete apps/esp/dist/ ~/public_html/esp/
+            rsync -av --delete apps/ven/dist/ ~/public_html/ven/
+            cd ~/domains/api.prooq.com && composer install --no-dev
 ```
 
 ---
@@ -547,7 +546,7 @@ export const SOCIAL_LINKS = [
 ## 14. Decisiones pendientes
 
 - [ ] Plan exacto de Hostinger (Business vs Cloud Startup).
-- [ ] ¿`api.prooq.com` separado o `prooq.com/api`? (recomendado: separado para cache rules).
+- [x] **API queda en `api.prooq.com` separado** (decidido 2026-05-25 cuando se migró de subdominios a paths para sucursales — separar API en subdominio facilita rules de cache/WAF distintas en Cloudflare).
 - [ ] ¿Migrar HubCore en V2 o V3?
 - [ ] ¿Mover `info_agent_prompt.txt` a la base de datos para edición sin deploy?
 - [ ] Estrategia de imágenes: ¿optimización en build con `astro:assets` o CDN externo?

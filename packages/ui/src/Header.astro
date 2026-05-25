@@ -13,32 +13,36 @@ export interface Props {
   navItems?: readonly NavItem[];
 }
 
+// La doc dice que BASE_URL termina en '/', pero en Astro 5 con base="/esp" devuelve "/esp" sin slash.
+// Normalizamos siempre con trailing slash para que `${BASE}gallery` → `/esp/gallery`.
+const BASE = import.meta.env.BASE_URL.replace(/\/?$/, '/');
+
 const DEFAULT_NAV_BY_COUNTRY: Record<Country, readonly NavItem[]> = {
   pty: [
-    { label: 'Inicio', href: '/' },
-    { label: 'Galería', href: '/gallery' },
-    { label: 'Descargas', href: '/downloads' },
-    { label: 'Servicios Digitales', href: '/servicios' },
-    { label: 'Clientes', href: '/clientes' },
-    { label: 'Contacto', href: '/#contact' },
+    { label: 'Inicio', href: BASE },
+    { label: 'Galería', href: `${BASE}gallery` },
+    { label: 'Descargas', href: `${BASE}downloads` },
+    { label: 'Servicios Digitales', href: `${BASE}servicios` },
+    { label: 'Clientes', href: `${BASE}clientes` },
+    { label: 'Contacto', href: `${BASE}#contact` },
   ],
   usa: [
-    { label: 'Home', href: '/' },
-    { label: 'Gallery', href: '/gallery' },
-    { label: 'Downloads', href: '/downloads' },
-    { label: 'Services', href: '/servicios' },
-    { label: 'Contact', href: '/#contact' },
+    { label: 'Home', href: BASE },
+    { label: 'Gallery', href: `${BASE}gallery` },
+    { label: 'Downloads', href: `${BASE}downloads` },
+    { label: 'Services', href: `${BASE}servicios` },
+    { label: 'Contact', href: `${BASE}#contact` },
   ],
   esp: [
-    { label: 'Inicio', href: '/' },
-    { label: 'Contacto', href: '/#contact' },
+    { label: 'Inicio', href: BASE },
+    { label: 'Contacto', href: `${BASE}#contact` },
   ],
   ven: [
-    { label: 'Inicio', href: '/' },
-    { label: 'Galería', href: '/gallery' },
-    { label: 'Descargas', href: '/downloads' },
-    { label: 'Servicios', href: '/servicios' },
-    { label: 'Contacto', href: '/#contact' },
+    { label: 'Inicio', href: BASE },
+    { label: 'Galería', href: `${BASE}gallery` },
+    { label: 'Descargas', href: `${BASE}downloads` },
+    { label: 'Servicios', href: `${BASE}servicios` },
+    { label: 'Contacto', href: `${BASE}#contact` },
   ],
 };
 
@@ -46,13 +50,13 @@ const {
   country,
   logoSrc,
   logoAlt = 'PROOQ',
-  navItems = country ? DEFAULT_NAV_BY_COUNTRY[country] : [{ label: 'Inicio', href: '/' }],
+  navItems = country ? DEFAULT_NAV_BY_COUNTRY[country] : [{ label: 'Inicio', href: BASE }],
 } = Astro.props;
 ---
 
 <header class="site-header" data-country={country}>
   <div class="nav-container">
-    <a href="/" class="site-logo">
+    <a href={BASE} class="site-logo">
       {logoSrc
         ? <img src={logoSrc} alt={logoAlt} />
         : <span class="site-wordmark">{logoAlt}</span>

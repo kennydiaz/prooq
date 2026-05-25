@@ -2,6 +2,8 @@
 import { HeroParallax } from '@prooq/ui';
 import BaseLayout from '../layouts/BaseLayout.astro';
 
+const BASE = import.meta.env.BASE_URL.replace(/\/?$/, '/');
+
 const services = [
   {
     icon: '💻',
@@ -51,7 +53,7 @@ const team = [
   {
     name: 'Victor Tineo',
     role: 'Lead Developer & Co-Fundador',
-    photo: '/images/victor.jpg',
+    photo: `${BASE}images/victor.jpg`,
     bio: 'Victor lidera nuestro equipo de desarrollo, especializado en crear experiencias digitales excepcionales y en la implementación de soluciones de IA conversacional.',
     skills: ['React', 'Node.js', 'Python', 'AI/ML', 'ChatGPT API'],
     expertise:
@@ -188,7 +190,7 @@ const locationDetails = [
           </div>
         </div>
         <div class="about-image fade-in">
-          <img src="/images/esp.jpg" alt="Cádiz, España" loading="lazy" />
+          <img src={`${BASE}images/esp.jpg`} alt="Cádiz, España" loading="lazy" />
         </div>
       </div>
     </div>
@@ -258,7 +260,7 @@ const locationDetails = [
           </div>
         </div>
         <div class="location-image fade-in">
-          <img src="/images/esp.jpg" alt="Cádiz, España" loading="lazy" />
+          <img src={`${BASE}images/esp.jpg`} alt="Cádiz, España" loading="lazy" />
         </div>
       </div>
     </div>

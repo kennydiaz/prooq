@@ -9,15 +9,15 @@ Monorepo de [prooq.com](https://prooq.com) — portal raíz + 4 sucursales país
 
 ## 🌎 Sucursales
 
-| País | Carpeta | Subdominio | DB (`country`) |
+| País | Carpeta | URL pública | DB (`country`) |
 |------|---------|------------|----------------|
-| 🇵🇦 Panamá | [apps/pty/](apps/pty/) | `pty.prooq.com` | `PA` |
-| 🇺🇸 Estados Unidos | [apps/usa/](apps/usa/) | `usa.prooq.com` | `US` |
-| 🇪🇸 España | [apps/esp/](apps/esp/) | `esp.prooq.com` | `ES` |
-| 🇻🇪 Venezuela | [apps/ven/](apps/ven/) | `ven.prooq.com` | `VE` |
+| 🇵🇦 Panamá | [apps/pty/](apps/pty/) | `prooq.com/pty/` | `PA` |
+| 🇺🇸 Estados Unidos | [apps/usa/](apps/usa/) | `prooq.com/usa/` | `US` |
+| 🇪🇸 España | [apps/esp/](apps/esp/) | `prooq.com/esp/` | `ES` |
+| 🇻🇪 Venezuela | [apps/ven/](apps/ven/) | `prooq.com/ven/` | `VE` |
 | 🌐 Portal raíz | [apps/portal/](apps/portal/) | `prooq.com` | — |
 
-**Convención:** nombre de carpeta == prefijo de subdominio (3 letras). DB usa ISO‑2.
+**Convención:** nombre de carpeta == path de la sucursal en producción (3 letras). DB usa ISO‑2. API queda separada en `api.prooq.com`.
 
 ---
 
@@ -27,10 +27,10 @@ Monorepo de [prooq.com](https://prooq.com) — portal raíz + 4 sucursales país
 prooqV2/
 ├── apps/                # ✅ scaffold completo (Astro 5 estático, BaseLayout + index)
 │   ├── portal/          # prooq.com — selector de sucursales con video
-│   ├── pty/             # pty.prooq.com (Panamá — la más completa)
-│   ├── usa/             # usa.prooq.com
-│   ├── esp/             # esp.prooq.com
-│   └── ven/             # ven.prooq.com
+│   ├── pty/             # prooq.com/pty (Panamá — la más completa)
+│   ├── usa/             # prooq.com/usa
+│   ├── esp/             # prooq.com/esp
+│   └── ven/             # prooq.com/ven
 │
 ├── packages/            # ✅ scaffold completo
 │   ├── config/          # tsconfig, biome, tokens TS, tipos Country, SOCIAL_LINKS
