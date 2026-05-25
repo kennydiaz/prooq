@@ -17,31 +17,32 @@ export interface Props {
 // Normalizamos siempre con trailing slash para que `${BASE}gallery` → `/esp/gallery`.
 const BASE = import.meta.env.BASE_URL.replace(/\/?$/, '/');
 
+// Solo links a paginas que EXISTEN en cada app (no rompemos con 404s).
+// Gallery descartada en V2 — sera un CMS aparte. Cuando se cree, agregarlo aqui.
+// USA/ESP/VEN solo tienen landing por ahora — nav minimo. Cuando se porten sus
+// paginas (clientes, servicios, downloads), agregar los links aqui.
 const DEFAULT_NAV_BY_COUNTRY: Record<Country, readonly NavItem[]> = {
   pty: [
     { label: 'Inicio', href: BASE },
-    { label: 'Galería', href: `${BASE}gallery` },
-    { label: 'Descargas', href: `${BASE}downloads` },
-    { label: 'Servicios Digitales', href: `${BASE}servicios` },
+    { label: 'SuiteHub', href: `${BASE}#suitehub` },
     { label: 'Clientes', href: `${BASE}clientes` },
+    { label: 'Servicios', href: `${BASE}servicios` },
+    { label: 'Descargas', href: `${BASE}downloads` },
     { label: 'Contacto', href: `${BASE}#contact` },
   ],
   usa: [
     { label: 'Home', href: BASE },
-    { label: 'Gallery', href: `${BASE}gallery` },
-    { label: 'Downloads', href: `${BASE}downloads` },
-    { label: 'Services', href: `${BASE}servicios` },
+    { label: 'SuiteHub', href: 'https://suitehub.net/en/' },
     { label: 'Contact', href: `${BASE}#contact` },
   ],
   esp: [
     { label: 'Inicio', href: BASE },
+    { label: 'SuiteHub', href: 'https://suitehub.net/' },
     { label: 'Contacto', href: `${BASE}#contact` },
   ],
   ven: [
     { label: 'Inicio', href: BASE },
-    { label: 'Galería', href: `${BASE}gallery` },
-    { label: 'Descargas', href: `${BASE}downloads` },
-    { label: 'Servicios', href: `${BASE}servicios` },
+    { label: 'SuiteHub', href: 'https://suitehub.net/' },
     { label: 'Contacto', href: `${BASE}#contact` },
   ],
 };
