@@ -1,0 +1,167 @@
+---
+import { NeonPriceSticker } from '@prooq/ui';
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+interface DigitalService {
+  icon: string;
+  title: string;
+  description: string;
+  features: readonly string[];
+  highlight?: boolean;
+}
+
+const services: readonly DigitalService[] = [
+  {
+    icon: '🌐',
+    title: 'Desarrollo Web',
+    description: 'Soluciones web profesionales para empresas y negocios.',
+    features: ['Landing pages', 'Sitios corporativos', 'E-commerce', 'Aplicaciones web'],
+  },
+  {
+    icon: '💻',
+    title: 'Instalación y Activación de Software',
+    description: 'Instalación profesional de software y paquetes empresariales.',
+    features: [
+      'Licencias originales',
+      'Suite ofimática',
+      'Software contable',
+      'Soporte post-instalación',
+    ],
+  },
+  {
+    icon: '📡',
+    title: 'Redes y Conectividad',
+    description: 'Optimización y configuración de redes empresariales y residenciales.',
+    features: [
+      'Wi-Fi empresarial',
+      'Switches y routers',
+      'Cableado estructurado',
+      'Diagnóstico de red',
+    ],
+  },
+  {
+    icon: '🖨️',
+    title: 'Impresoras y Periféricos',
+    description: 'Instalación y configuración de impresoras y periféricos de oficina.',
+    features: ['Impresoras multifunción', 'Escáneres', 'POS y lectoras', 'Mantenimiento'],
+  },
+  {
+    icon: '🔒',
+    title: 'Seguridad Digital',
+    description: 'Protección y optimización de sistemas y dispositivos.',
+    features: ['Antivirus empresariales', 'Firewalls', 'Backups automáticos', 'Auditorías'],
+  },
+  {
+    icon: '🖥️',
+    title: 'Servicios Remotos y Asistencia Técnica',
+    description: 'Soporte y soluciones rápidas sin visita presencial.',
+    features: [
+      'Acceso remoto seguro',
+      'Soporte por chat/video',
+      'Diagnóstico en línea',
+      'Reparaciones express',
+    ],
+  },
+  {
+    icon: '☁️',
+    title: 'Servicios en la Nube',
+    description: 'Configuración y gestión de servicios cloud empresariales.',
+    features: [
+      'Microsoft 365',
+      'Google Workspace',
+      'Almacenamiento en la nube',
+      'Migración a la nube',
+    ],
+  },
+  {
+    icon: '⚡',
+    title: 'Optimización y Mantenimiento Digital',
+    description: 'Mejora de rendimiento y mantenimiento profesional de sistemas.',
+    features: [
+      'Tuning de rendimiento',
+      'Limpieza de sistemas',
+      'Actualizaciones',
+      'Plan preventivo',
+    ],
+  },
+  {
+    icon: '🛠️',
+    title: 'Asesorías y Configuraciones Especiales',
+    description: 'Soluciones personalizadas y configuración de dispositivos inteligentes.',
+    features: [
+      'Setup IoT/Smart Home',
+      'Personalización avanzada',
+      'Migración de datos',
+      'Recuperación de información',
+    ],
+  },
+  {
+    icon: '🤖',
+    title: 'Agentes Inteligentes con n8n',
+    description: 'Automatización avanzada y agentes inteligentes para empresas.',
+    features: ['Workflows N8N', 'Chatbots IA', 'Integraciones API', 'Procesos automatizados'],
+    highlight: true,
+  },
+];
+---
+
+<BaseLayout
+  title="Servicios Digitales — PROOQ Venezuela"
+  description="Servicios digitales de PROOQ Venezuela: desarrollo web, redes, seguridad digital, automatización con n8n y más en Puerto La Cruz."
+>
+  <section class="section section-services servicios-page">
+    <div class="section-container">
+      <h1 class="section-title fade-in">Servicios Digitales</h1>
+      <p class="section-subtitle fade-in">
+        Soluciones técnicas integrales para empresas en Venezuela: desde redes y seguridad hasta automatización con IA.
+        Cotización personalizada por proyecto — pregúntanos sin compromiso.
+      </p>
+
+      <div class="services-grid">
+        {services.map((s) => (
+          <article class={`service-card fade-in${s.highlight ? ' service-card-featured' : ''}`}>
+            <div class="service-icon" aria-hidden="true">{s.icon}</div>
+            <h3>{s.title}</h3>
+            <p>{s.description}</p>
+            <ul>{s.features.map((f) => <li>{f}</li>)}</ul>
+            <div class="service-cta">
+              <NeonPriceSticker label="Cotización" price="Gratis" />
+            </div>
+          </article>
+        ))}
+      </div>
+
+      <aside class="services-note fade-in">
+        <h2>¿No encuentras lo que buscas?</h2>
+        <p>Hacemos proyectos a medida. Si necesitas algo fuera del catálogo, contáctanos y armamos la solución contigo.</p>
+        <a href="#contact" class="cta-secondary">Conversemos</a>
+      </aside>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .servicios-page { padding-top: 8rem; }
+  .service-card { display: flex; flex-direction: column; }
+  .service-card-featured {
+    border-color: rgb(0 255 231 / 0.3);
+    background: linear-gradient(180deg, var(--color-surface-raised) 0%, rgb(0 60 255 / 0.08) 100%);
+  }
+  .service-card-featured:hover {
+    border-color: var(--color-accent-cyan);
+    box-shadow: 0 16px 40px rgb(0 255 231 / 0.18);
+  }
+  .service-cta { margin-top: auto; padding-top: 1.25rem; display: flex; justify-content: flex-start; }
+  .services-note { margin-top: 4rem; padding: 2rem; text-align: center; background: var(--color-surface-raised); border: 1px solid rgb(255 255 255 / 0.06); border-radius: var(--radius-lg); }
+  .services-note h2 { font-family: var(--font-display); color: var(--color-text); font-size: 1.5rem; margin: 0 0 0.5rem; }
+  .services-note p { color: var(--color-text-muted); margin: 0 0 1.5rem; line-height: 1.6; }
+</style>
+
+<script>
+  const els = document.querySelectorAll('.fade-in');
+  const observer = new IntersectionObserver(
+    (entries) => { for (const e of entries) if (e.isIntersecting) { e.target.classList.add('is-visible'); observer.unobserve(e.target); } },
+    { threshold: 0.05, rootMargin: '0px 0px -50px 0px' },
+  );
+  for (const el of els) observer.observe(el);
+</script>

@@ -1,0 +1,75 @@
+---
+import { type Client, getClients } from '@prooq/data-client/clients';
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+let clients: readonly Client[] = [];
+try {
+  clients = await getClients({ country: 'VE' });
+} catch (err) {
+  console.warn('[clientes/ven] getClients failed:', err);
+}
+---
+
+<BaseLayout
+  title="Nuestros Clientes — PROOQ Venezuela"
+  description="Empresas y organizaciones que confían en PROOQ para soluciones tecnológicas en Venezuela y el Caribe."
+>
+  <section class="section section-services clients-section">
+    <div class="section-container">
+      <h1 class="section-title fade-in">Nuestros Clientes</h1>
+      <p class="section-subtitle fade-in">
+        Más de {clients.length} empresas y organizaciones del grupo PROOQ confían en nosotros para sus
+        soluciones tecnológicas. Cada logo representa un proyecto y un compromiso con la calidad técnica.
+      </p>
+
+      <div class="clients-grid">
+        {clients.map((c) => (
+          <article class="client-card fade-in">
+            <div class="client-logo-wrap">
+              <img src={c.logoUrl ?? ''} alt={c.name} loading="lazy" decoding="async" />
+            </div>
+            <p class="client-name">{c.name}</p>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .clients-section { padding-top: 8rem; }
+  .clients-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1.5rem; margin-top: 2rem; }
+  .client-card { display: flex; flex-direction: column; align-items: center; gap: 0.625rem; }
+  .client-logo-wrap {
+    background: #ffffff; border-radius: var(--radius-lg); padding: 1rem 1.5rem;
+    display: flex; align-items: center; justify-content: center;
+    height: 110px; width: 100%;
+    box-shadow: 0 4px 18px rgb(0 60 255 / 0.12);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  .client-card:hover .client-logo-wrap {
+    transform: translateY(-4px) scale(1.04);
+    box-shadow: 0 8px 32px rgb(0 60 255 / 0.25);
+  }
+  .client-logo-wrap img {
+    max-height: 70px; max-width: 100%; object-fit: contain;
+    filter: grayscale(0.2) brightness(0.98); transition: filter 0.2s ease;
+  }
+  .client-card:hover .client-logo-wrap img { filter: grayscale(0) brightness(1.1); }
+  .client-name { color: var(--color-text-muted); font-size: 0.75rem; font-weight: 600; text-align: center; line-height: 1.3; margin: 0; letter-spacing: 0.03em; }
+  @media (max-width: 700px) {
+    .clients-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 1rem; }
+    .client-logo-wrap { height: 80px; padding: 0.75rem; }
+    .client-logo-wrap img { max-height: 50px; }
+    .client-name { font-size: 0.7rem; }
+  }
+</style>
+
+<script>
+  const els = document.querySelectorAll('.fade-in');
+  const observer = new IntersectionObserver(
+    (entries) => { for (const e of entries) if (e.isIntersecting) { e.target.classList.add('is-visible'); observer.unobserve(e.target); } },
+    { threshold: 0.05, rootMargin: '0px 0px -50px 0px' },
+  );
+  for (const el of els) observer.observe(el);
+</script>

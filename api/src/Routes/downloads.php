@@ -25,8 +25,10 @@ return function (App $app): void {
                 WHERE is_public = 1';
         $bindings = [];
 
+        // Rows con country = NULL son "globales". Filter de country devuelve
+        // los del pais + los globales (NULL).
         if (is_string($country) && preg_match('/^[A-Z]{2}$/', $country) === 1) {
-            $sql .= ' AND country = ?';
+            $sql .= ' AND (country = ? OR country IS NULL)';
             $bindings[] = $country;
         }
 

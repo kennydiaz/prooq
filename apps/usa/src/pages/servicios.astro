@@ -1,0 +1,153 @@
+---
+import { NeonPriceSticker } from '@prooq/ui';
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+interface DigitalService {
+  icon: string;
+  title: string;
+  description: string;
+  features: readonly string[];
+  highlight?: boolean;
+}
+
+const services: readonly DigitalService[] = [
+  {
+    icon: '📹',
+    title: 'Electronic Security',
+    description: 'Advanced solutions to protect your home and business.',
+    features: [
+      'CCTV & video surveillance',
+      'Access control systems',
+      'Smart alarms',
+      '24/7 monitoring',
+    ],
+  },
+  {
+    icon: '🔌',
+    title: 'Wired Networks',
+    description: 'Installation and maintenance of high-quality structured cabling and networks.',
+    features: [
+      'Cat6/Cat7 cabling',
+      'Network design',
+      'Switch & router config',
+      'Maintenance plans',
+    ],
+  },
+  {
+    icon: '🧑‍💻',
+    title: 'Administrative Systems',
+    description: 'Custom software to optimize your business management.',
+    features: ['ERP integration', 'Custom dashboards', 'Workflow automation', 'Data analytics'],
+  },
+  {
+    icon: '🛠️',
+    title: 'Technical Support',
+    description: 'Specialized technical support for all our services.',
+    features: [
+      'On-site visits',
+      'Remote troubleshooting',
+      'SLA support plans',
+      'Emergency response',
+    ],
+  },
+  {
+    icon: '🤖',
+    title: 'Automation & Smart Control',
+    description: 'Solutions to automate processes, buildings, and security systems.',
+    features: ['Building automation', 'IoT integration', 'Smart sensors', 'Process control'],
+    highlight: true,
+  },
+  {
+    icon: '🔒',
+    title: 'Cybersecurity & Data Protection',
+    description:
+      'Protect your information with access control, encryption, and continuous monitoring.',
+    features: ['Threat detection', 'Encryption at rest', 'Access policies', 'Compliance audits'],
+  },
+  {
+    icon: '🌐',
+    title: 'Network & Server Infrastructure',
+    description: 'Design and management of local, remote, and cloud networks.',
+    features: [
+      'Server deployment',
+      'VPN & remote access',
+      'Cloud infrastructure',
+      'Load balancing',
+    ],
+  },
+  {
+    icon: '💡',
+    title: 'Technology Consulting',
+    description: 'We advise companies on efficient technology adoption.',
+    features: ['Digital transformation', 'Tech stack audits', 'Vendor selection', 'Roadmaps'],
+  },
+];
+---
+
+<BaseLayout
+  title="Digital Services — PROOQ LLC"
+  description="Full catalog of PROOQ USA digital services: structured cabling, electronic security, automation, cybersecurity, and more."
+>
+  <section class="section section-services servicios-page">
+    <div class="section-container">
+      <h1 class="section-title fade-in">Digital Services</h1>
+      <p class="section-subtitle fade-in">
+        Comprehensive technical solutions for businesses: from networks and security to AI-powered automation.
+        Custom quote per project — get in touch with no commitment.
+      </p>
+
+      <div class="services-grid">
+        {services.map((s) => (
+          <article class={`service-card fade-in${s.highlight ? ' service-card-featured' : ''}`}>
+            <div class="service-icon" aria-hidden="true">{s.icon}</div>
+            <h3>{s.title}</h3>
+            <p>{s.description}</p>
+            <ul>{s.features.map((f) => <li>{f}</li>)}</ul>
+            <div class="service-cta">
+              <NeonPriceSticker label="Quote" price="Free" />
+            </div>
+          </article>
+        ))}
+      </div>
+
+      <aside class="services-note fade-in">
+        <h2>Need something custom?</h2>
+        <p>We do tailor-made projects. Reach out and we'll build the right solution with you.</p>
+        <a href="#contact" class="cta-secondary">Let's talk</a>
+      </aside>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .servicios-page { padding-top: 8rem; }
+  .service-card { display: flex; flex-direction: column; }
+  .service-card-featured {
+    border-color: rgb(0 255 231 / 0.3);
+    background: linear-gradient(180deg, var(--color-surface-raised) 0%, rgb(0 60 255 / 0.08) 100%);
+  }
+  .service-card-featured:hover {
+    border-color: var(--color-accent-cyan);
+    box-shadow: 0 16px 40px rgb(0 255 231 / 0.18);
+  }
+  .service-cta { margin-top: auto; padding-top: 1.25rem; display: flex; justify-content: flex-start; }
+  .services-note {
+    margin-top: 4rem;
+    padding: 2rem;
+    text-align: center;
+    background: var(--color-surface-raised);
+    border: 1px solid rgb(255 255 255 / 0.06);
+    border-radius: var(--radius-lg);
+  }
+  .services-note h2 { font-family: var(--font-display); color: var(--color-text); font-size: 1.5rem; margin: 0 0 0.5rem; }
+  .services-note p { color: var(--color-text-muted); margin: 0 0 1.5rem; line-height: 1.6; }
+</style>
+
+<script>
+  const els = document.querySelectorAll('.fade-in');
+  const observer = new IntersectionObserver(
+    (entries) => { for (const e of entries) if (e.isIntersecting) { e.target.classList.add('is-visible'); observer.unobserve(e.target); } },
+    { threshold: 0.05, rootMargin: '0px 0px -50px 0px' },
+  );
+  for (const el of els) observer.observe(el);
+</script>

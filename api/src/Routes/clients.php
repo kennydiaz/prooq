@@ -17,8 +17,10 @@ return function (App $app): void {
                 WHERE is_active = 1';
         $bindings = [];
 
+        // Rows con country = NULL son "globales" (visibles desde todas las sucursales).
+        // Si se pasa filter de country, devuelve el match exacto + los globales.
         if (is_string($country) && preg_match('/^[A-Z]{2}$/', $country) === 1) {
-            $sql .= ' AND country = ?';
+            $sql .= ' AND (country = ? OR country IS NULL)';
             $bindings[] = $country;
         }
 
