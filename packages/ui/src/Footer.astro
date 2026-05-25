@@ -1,13 +1,208 @@
 ---
 import type { Country } from '@prooq/config/tailwind.preset';
+import SocialLinks from './SocialLinks.astro';
+
+export interface ContactInfo {
+  email?: string;
+  phone?: string;
+  whatsapp?: string;
+  address?: string;
+}
 
 export interface Props {
   country?: Country;
+  contact?: ContactInfo;
+  copyrightYear?: number;
+  copyrightName?: string;
+  socialTitle?: string;
+  socialSubtitle?: string;
 }
 
-const { country } = Astro.props;
+const DEFAULT_CONTACT_BY_COUNTRY: Record<Country, ContactInfo> = {
+  pty: {
+    email: 'info@prooq.com',
+    phone: '+507 6208-2617',
+    whatsapp: '+507 6208-2617',
+    address: 'Ciudad de Panamá, Panamá',
+  },
+  usa: {
+    email: 'info@prooq.com',
+    address: 'Chicago, IL — United States',
+  },
+  esp: {
+    email: 'info@prooq.com',
+    address: 'Cádiz, Andalucía — España',
+  },
+  ven: {
+    email: 'info@prooq.com',
+    address: 'Caracas, Venezuela',
+  },
+};
+
+const {
+  country,
+  contact = country ? DEFAULT_CONTACT_BY_COUNTRY[country] : { email: 'info@prooq.com' },
+  copyrightYear = new Date().getFullYear(),
+  copyrightName = 'PROOQ S.A.',
+  socialTitle = 'Síguenos en Nuestras Redes',
+  socialSubtitle = 'Mantente conectado y descubre las últimas novedades',
+} = Astro.props;
+
+const tel = contact.phone?.replace(/[^\d+]/g, '');
+const whats = contact.whatsapp?.replace(/[^\d]/g, '');
 ---
 
-<footer class="prooq-footer" data-country={country}>
-  <!-- TODO Fase 1: footer común — incluir <SocialLinks /> + contacto local por sucursal -->
+<footer class="prooq-footer" role="contentinfo" data-country={country}>
+  <section class="social-section">
+    <div class="social-inner">
+      <h2 class="social-title">{socialTitle}</h2>
+      {socialSubtitle && <p class="social-subtitle">{socialSubtitle}</p>}
+      <SocialLinks />
+    </div>
+  </section>
+
+  <section class="contact-section">
+    <h2 class="contact-title">Contacto</h2>
+    <ul class="contact-list">
+      {contact.email && (
+        <li>
+          <span class="contact-label">Email</span>
+          <a href={`mailto:${contact.email}`}>{contact.email}</a>
+        </li>
+      )}
+      {contact.phone && tel && (
+        <li>
+          <span class="contact-label">Teléfono</span>
+          <a href={`tel:${tel}`}>{contact.phone}</a>
+        </li>
+      )}
+      {contact.whatsapp && whats && (
+        <li>
+          <span class="contact-label">WhatsApp</span>
+          <a href={`https://wa.me/${whats}`} target="_blank" rel="noopener noreferrer">
+            {contact.whatsapp}
+          </a>
+        </li>
+      )}
+      {contact.address && (
+        <li>
+          <span class="contact-label">Dirección</span>
+          <span>{contact.address}</span>
+        </li>
+      )}
+    </ul>
+  </section>
+
+  <div class="copyright">
+    &copy; {copyrightYear} <strong>{copyrightName}</strong> — Todos los derechos reservados.
+  </div>
 </footer>
+
+<style>
+  .prooq-footer {
+    margin-top: 4rem;
+    background: var(--color-surface-raised);
+    color: var(--color-text);
+    border-top: 1px solid rgb(255 255 255 / 0.05);
+  }
+
+  .social-section,
+  .contact-section {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 2rem 1rem;
+    text-align: center;
+  }
+
+  .social-inner {
+    background: rgb(255 255 255 / 0.03);
+    border: 1px solid rgb(255 255 255 / 0.06);
+    border-radius: var(--radius-lg);
+    padding: 2rem 1rem;
+  }
+
+  .social-title {
+    font-family: var(--font-body);
+    color: var(--color-text);
+    margin: 0 0 0.5rem;
+    font-size: 1.75rem;
+  }
+
+  .social-subtitle {
+    color: var(--color-text-soft);
+    margin: 0 0 1.75rem;
+    font-size: 1rem;
+    opacity: 0.85;
+  }
+
+  .contact-title {
+    font-family: var(--font-body);
+    color: var(--color-text);
+    font-size: 1.25rem;
+    margin: 0 0 1rem;
+  }
+
+  .contact-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 0.75rem 1.5rem;
+    text-align: left;
+  }
+
+  .contact-list li {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+  }
+
+  .contact-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-muted);
+  }
+
+  .contact-list a {
+    color: var(--color-brand-light);
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+
+  .contact-list a:hover,
+  .contact-list a:focus-visible {
+    color: var(--color-accent-cyan);
+  }
+
+  .copyright {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1.25rem 2rem 1.75rem;
+    text-align: center;
+    color: var(--color-text-muted);
+    font-size: 0.85rem;
+    border-top: 1px solid rgb(255 255 255 / 0.05);
+  }
+
+  .copyright strong {
+    color: var(--color-text-soft);
+    font-weight: 600;
+  }
+
+  @media (max-width: 640px) {
+    .social-section,
+    .contact-section {
+      padding: 1.5rem 1rem 0.75rem;
+    }
+
+    .contact-list {
+      grid-template-columns: 1fr;
+    }
+
+    .social-title {
+      font-size: 1.4rem;
+    }
+  }
+</style>
