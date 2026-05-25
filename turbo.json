@@ -5,13 +5,7 @@
     "build": {
       "dependsOn": ["^build"],
       "outputs": ["dist/**", ".astro/**"],
-      "inputs": [
-        "src/**",
-        "public/**",
-        "astro.config.*",
-        "tsconfig.json",
-        "package.json"
-      ]
+      "inputs": ["src/**", "public/**", "astro.config.*", "tsconfig.json", "package.json"]
     },
     "dev": {
       "cache": false,

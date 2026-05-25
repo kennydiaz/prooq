@@ -3,9 +3,9 @@
 // Uso: pnpm tsx scripts/sqlite-export.ts
 // Pre-requisitos: `pnpm add -D tsx better-sqlite3 @types/better-sqlite3`.
 
-import Database from 'better-sqlite3';
-import { writeFile, mkdir } from 'node:fs/promises';
+import { mkdir, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
+import Database from 'better-sqlite3';
 
 const V1_DB = process.env.PROOQ_V1_DB ?? 'c:/xampp/htdocs/prooq/panama/data/prooq.db';
 const OUT_DIR = resolve('db/seeds');

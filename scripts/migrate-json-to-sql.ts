@@ -3,7 +3,7 @@
 // Uso: pnpm tsx scripts/migrate-json-to-sql.ts
 // Pre-requisitos: `pnpm add -D tsx` en el workspace root.
 
-import { readFile, writeFile, mkdir } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
 const V1_ROOT = process.env.PROOQ_V1_ROOT ?? 'c:/xampp/htdocs/prooq';
@@ -37,8 +37,7 @@ async function migrateClients(): Promise<void> {
 
   const inserts = clients.map(
     (c, i) =>
-      `INSERT INTO clients (name, logo_url, website, country, industry, display_order, is_active) VALUES (` +
-      `${esc(c.name)}, ${esc(c.logo)}, ${esc(c.website)}, 'PA', ${esc(c.industry)}, ${i}, 1);`,
+      `INSERT INTO clients (name, logo_url, website, country, industry, display_order, is_active) VALUES (${esc(c.name)}, ${esc(c.logo)}, ${esc(c.website)}, 'PA', ${esc(c.industry)}, ${i}, 1);`,
   );
 
   const out = `-- Seed: clients (migrado de ${path})\n${inserts.join('\n')}\n`;
@@ -53,8 +52,7 @@ async function migrateDownloads(): Promise<void> {
 
   const inserts = downloads.map(
     (d) =>
-      `INSERT INTO downloads (title, description, filename, file_size_bytes, mime_type, country, is_public) VALUES (` +
-      `${esc(d.title)}, ${esc(d.description)}, ${esc(d.filename)}, ${d.size ?? 'NULL'}, ${esc(d.mime)}, 'PA', 1);`,
+      `INSERT INTO downloads (title, description, filename, file_size_bytes, mime_type, country, is_public) VALUES (${esc(d.title)}, ${esc(d.description)}, ${esc(d.filename)}, ${d.size ?? 'NULL'}, ${esc(d.mime)}, 'PA', 1);`,
   );
 
   const out = `-- Seed: downloads (migrado de ${path})\n${inserts.join('\n')}\n`;
