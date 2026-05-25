@@ -1,30 +1,499 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 
-const branches = [
-  { code: 'pty', flag: '🇵🇦', name: 'Panamá', url: '/pty/' },
-  { code: 'usa', flag: '🇺🇸', name: 'Estados Unidos', url: '/usa/' },
-  { code: 'esp', flag: '🇪🇸', name: 'España', url: '/esp/' },
-  { code: 'ven', flag: '🇻🇪', name: 'Venezuela', url: '/ven/' },
-] as const;
+interface Branch {
+  code: 'pty' | 'usa' | 'esp' | 'ven';
+  name: string;
+  flag: string;
+  city: string;
+  photo: string;
+  flagImg: string;
+  url: string;
+  countryAlt: string;
+}
+
+const branches: readonly Branch[] = [
+  {
+    code: 'pty',
+    name: 'Panamá',
+    flag: '🇵🇦',
+    city: 'CIUDAD DE PANAMÁ',
+    photo: '/images/pty.jpg',
+    flagImg: '/images/ptyflag.png',
+    url: '/pty/',
+    countryAlt: 'Sucursal Panamá, Ciudad de Panamá',
+  },
+  {
+    code: 'usa',
+    name: 'EE. UU.',
+    flag: '🇺🇸',
+    city: 'CHICAGO',
+    photo: '/images/usa.jpg',
+    flagImg: '/images/usaflag.jpg',
+    url: '/usa/',
+    countryAlt: 'Sucursal Estados Unidos, Chicago',
+  },
+  {
+    code: 'esp',
+    name: 'España',
+    flag: '🇪🇸',
+    city: 'ESPAÑA',
+    photo: '/images/esp.jpg',
+    flagImg: '/images/espflag.jpg',
+    url: '/esp/',
+    countryAlt: 'Sucursal España',
+  },
+  {
+    code: 'ven',
+    name: 'Venezuela',
+    flag: '🇻🇪',
+    city: 'VENEZUELA',
+    photo: '/images/ven.jpg',
+    flagImg: '/images/venflag.jpg',
+    url: '/ven/',
+    countryAlt: 'Sucursal Venezuela',
+  },
+];
 ---
 
 <BaseLayout
   title="PROOQ — Presencia Global"
-  description="Portal corporativo de PROOQ S.A. con sucursales en Panamá, Estados Unidos, España y Venezuela."
+  description="PROOQ: Soluciones tecnológicas con presencia global en Panamá, Estados Unidos, España y Venezuela. Innovación, confianza y eficiencia para tu negocio."
 >
-  <main>
-    <!-- TODO Fase 6: portar prooq/index.html — video world.mp4 de fondo + tarjetas con foto y bandera por sucursal. -->
-    <h1>PROOQ</h1>
-    <ul>
-      {branches.map((b) => (
-        <li>
-          <a href={b.url}>
-            <span>{b.flag}</span>
-            <span>{b.name}</span>
+  <video class="video-background" autoplay muted loop playsinline aria-hidden="true">
+    <source src="/world.mp4" type="video/mp4" />
+    Tu navegador no soporta videos HTML5.
+  </video>
+
+  <div class="container">
+    <header class="logo-section">
+      <a href="/" class="logo">
+        <img
+          src="/images/logo3.png"
+          alt="Logo de PROOQ, empresa global de tecnología y soluciones empresariales"
+          class="company-logo"
+          width="220"
+          height="auto"
+        />
+      </a>
+    </header>
+
+    <main class="branches-section" aria-label="Sucursales de PROOQ">
+      <div class="branches-container">
+        {branches.map((b, i) => (
+          <a
+            href={b.url}
+            class={`branch-link branch-${b.code}`}
+            data-country={`${b.name} ${b.flag}`}
+            aria-label={b.countryAlt}
+            style={`--stagger: ${1.2 + i * 0.2}s`}
+          >
+            <div class="branch-card" tabindex="0">
+              <div class={`branch-image ${b.code}`}>
+                <img
+                  src={b.photo}
+                  alt={`Sucursal de PROOQ en ${b.name}`}
+                  class="branch-photo"
+                  width="380"
+                  height="260"
+                  loading={i === 0 ? 'eager' : 'lazy'}
+                />
+                <div class="flag-overlay">
+                  <div class="country-name">{b.name}</div>
+                  <img
+                    src={b.flagImg}
+                    alt={`Bandera de ${b.name}`}
+                    class="flag-image"
+                    width="50"
+                    height="50"
+                  />
+                </div>
+              </div>
+              <div class="tooltip">{b.city}</div>
+            </div>
           </a>
-        </li>
-      ))}
-    </ul>
-  </main>
+        ))}
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p>&copy; {new Date().getFullYear()} <strong>PROOQ S.A.</strong> — Todos los derechos reservados.</p>
+    </footer>
+  </div>
 </BaseLayout>
+
+<style>
+  body {
+    font-family: 'Poppins', system-ui, sans-serif;
+    min-height: 100vh;
+    background: #000000;
+    color: #ffffff;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: rgb(0 0 0 / 0.2);
+    z-index: -1;
+    pointer-events: none;
+  }
+
+  /* Video background — fixed, cover, behind everything */
+  .video-background {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    object-fit: cover;
+    z-index: -2;
+    opacity: 0.7;
+    will-change: opacity, transform;
+  }
+
+  .container {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    padding: 2.5rem 2rem;
+    opacity: 0;
+    animation: portal-fade-in 1.5s ease-out forwards;
+    position: relative;
+    z-index: 1;
+  }
+
+  @keyframes portal-fade-in {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Logo */
+  .logo-section {
+    margin-top: 3rem;
+    text-align: center;
+    animation: portal-slide-down 1s ease-out 0.5s both;
+  }
+
+  @keyframes portal-slide-down {
+    from { opacity: 0; transform: translateY(-30px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .logo {
+    display: inline-block;
+  }
+
+  .company-logo {
+    max-width: 280px;
+    max-height: 120px;
+    width: auto;
+    height: auto;
+    margin-bottom: 1rem;
+    filter: drop-shadow(0 0 20px rgb(100 181 246 / 0.3));
+    transition: transform 0.3s ease, filter 0.3s ease;
+  }
+
+  .company-logo:hover {
+    transform: scale(1.05);
+    filter: drop-shadow(0 0 25px rgb(100 181 246 / 0.5));
+  }
+
+  /* Branches grid */
+  .branches-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    max-width: 1000px;
+    padding: 1rem 0 2rem;
+  }
+
+  .branches-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem 3.5rem;
+    justify-items: center;
+    align-items: center;
+    width: 100%;
+    max-width: 1000px;
+    margin-top: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  /* Layout: pty top-full, usa+esp middle, ven bottom-full (centered) */
+  .branch-pty { grid-column: 1 / -1; grid-row: 1; }
+  .branch-usa { grid-column: 1;       grid-row: 2; }
+  .branch-esp { grid-column: 2;       grid-row: 2; }
+  .branch-ven { grid-column: 1 / -1;  grid-row: 3; justify-self: center; }
+
+  .branch-link {
+    text-decoration: none;
+    position: relative;
+    opacity: 0;
+    animation: portal-scale-in 0.8s ease-out var(--stagger, 1.2s) both;
+  }
+
+  @keyframes portal-scale-in {
+    from { opacity: 0; transform: scale(0.5); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+
+  .branch-card {
+    position: relative;
+    cursor: pointer;
+    margin-bottom: 1.5rem;
+  }
+
+  .branch-image {
+    width: 380px;
+    height: 260px;
+    max-width: 90vw;
+    max-height: 60vw;
+    background: linear-gradient(135deg, #424242 0%, #212121 100%);
+    border: 3px solid rgb(255 255 255 / 0.1);
+    border-radius: 20px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 8px 32px rgb(0 0 0 / 0.3);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                box-shadow 0.3s ease,
+                border-color 0.3s ease;
+    will-change: transform, box-shadow;
+  }
+
+  .branch-image::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, transparent 0%, rgb(0 0 0 / 0.1) 100%);
+    border-radius: inherit;
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  .branch-photo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 17px;
+    transition: transform 0.3s ease, filter 0.3s ease;
+    will-change: transform, filter;
+  }
+
+  /* Flag overlay top-right */
+  .flag-overlay {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 2;
+    background: linear-gradient(135deg, rgb(0 0 0 / 0.8) 0%, rgb(0 0 0 / 0.6) 100%);
+    border-radius: 25px;
+    width: 200px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 2px solid rgb(255 255 255 / 0.2);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 8px 32px rgb(0 0 0 / 0.4);
+    overflow: hidden;
+    padding: 0 1rem 0 1.25rem;
+    animation: flag-pulse 4s ease-in-out infinite;
+  }
+
+  .flag-overlay::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.2), transparent);
+    transition: left 0.6s ease;
+  }
+
+  .country-name {
+    color: #ffffff;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    text-shadow: 0 2px 4px rgb(0 0 0 / 0.5);
+    flex: 1;
+    white-space: nowrap;
+    opacity: 0.9;
+    transition: all 0.3s ease;
+    padding-right: 0.625rem;
+  }
+
+  .flag-image {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgb(0 0 0 / 0.3);
+    border: 2px solid rgb(255 255 255 / 0.3);
+    transition: all 0.4s ease;
+    flex-shrink: 0;
+  }
+
+  @keyframes flag-pulse {
+    0%, 100% {
+      transform: scale(1);
+      box-shadow: 0 8px 32px rgb(0 0 0 / 0.4);
+    }
+    50% {
+      transform: scale(1.02);
+      box-shadow: 0 12px 40px rgb(100 181 246 / 0.2);
+    }
+  }
+
+  /* Hover states */
+  .branch-link:hover .branch-image,
+  .branch-link:focus-visible .branch-image {
+    transform: scale(1.05);
+    box-shadow:
+      0 16px 48px rgb(100 181 246 / 0.2),
+      0 0 40px rgb(100 181 246 / 0.1),
+      inset 0 0 0 2px rgb(100 181 246 / 0.3);
+    border-color: rgb(100 181 246 / 0.4);
+  }
+
+  .branch-link:hover .branch-photo {
+    transform: scale(1.05);
+    filter: brightness(1.15) contrast(1.1) saturate(1.1);
+  }
+
+  .branch-link:hover .flag-overlay {
+    transform: scale(1.08);
+    background: linear-gradient(135deg, rgb(100 181 246 / 0.9) 0%, rgb(129 199 132 / 0.8) 100%);
+    border-color: rgb(255 255 255 / 0.5);
+    box-shadow: 0 15px 45px rgb(100 181 246 / 0.4);
+  }
+
+  .branch-link:hover .flag-overlay::before {
+    left: 100%;
+  }
+
+  .branch-link:hover .country-name {
+    opacity: 1;
+    text-shadow: 0 2px 8px rgb(0 0 0 / 0.7);
+    transform: translateX(-5px);
+  }
+
+  .branch-link:hover .flag-image {
+    transform: scale(1.1) rotate(2deg);
+    border-radius: 15px;
+    border-color: rgb(255 255 255 / 0.6);
+    box-shadow: 0 8px 20px rgb(0 0 0 / 0.5);
+  }
+
+  /* Tooltip below card */
+  .tooltip {
+    position: absolute;
+    bottom: -50px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgb(0 0 0 / 0.9);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgb(255 255 255 / 0.1);
+  }
+
+  .tooltip::before {
+    content: '';
+    position: absolute;
+    top: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-bottom: 6px solid rgb(0 0 0 / 0.9);
+  }
+
+  .branch-link:hover .tooltip,
+  .branch-link:focus-visible .tooltip {
+    opacity: 1;
+    transform: translateX(-50%) translateY(-10px);
+  }
+
+  /* Footer */
+  .footer {
+    margin-bottom: 1.5rem;
+    text-align: center;
+    color: #78909c;
+    font-size: 0.9rem;
+    opacity: 0;
+    animation: portal-fade-in 1s ease-out 2s both;
+  }
+
+  .footer strong {
+    color: #b0bec5;
+    font-weight: 600;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .branches-container {
+      grid-template-columns: 1fr;
+      gap: 2rem;
+    }
+
+    .branch-pty,
+    .branch-usa,
+    .branch-esp,
+    .branch-ven {
+      grid-column: 1;
+      justify-self: center;
+    }
+
+    .branch-pty { grid-row: 1; }
+    .branch-usa { grid-row: 2; }
+    .branch-esp { grid-row: 3; }
+    .branch-ven { grid-row: 4; }
+
+    .branch-image {
+      width: 90vw;
+      max-width: 380px;
+      height: auto;
+      aspect-ratio: 380 / 260;
+    }
+
+    .flag-overlay {
+      width: 160px;
+      height: 65px;
+      top: 12px;
+      right: 12px;
+    }
+
+    .country-name { font-size: 0.8rem; }
+    .flag-image { width: 38px; height: 38px; }
+    .company-logo { max-width: 200px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .video-background,
+    .container,
+    .logo-section,
+    .branch-link,
+    .footer,
+    .flag-overlay {
+      animation: none;
+    }
+  }
+</style>
