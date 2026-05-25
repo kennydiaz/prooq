@@ -25,12 +25,20 @@ const { title, description } = Astro.props;
     />
   </head>
   <body>
-    <Header country="esp">
+    <Header country="esp" logoSrc="/images/logo.png" logoAlt="PROOQ España">
       <CountriesMenu slot="countries-menu" current="esp" />
     </Header>
     <main>
       <slot />
     </main>
-    <Footer country="esp" />
+    <Footer
+      country="esp"
+      contact={{
+        email: 'info@prooq.com',
+        phone: '+34 742 067178',
+        whatsapp: '+34 742 067178',
+        address: 'Cádiz, Andalucía — España',
+      }}
+    />
   </body>
 </html>
