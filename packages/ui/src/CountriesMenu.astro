@@ -3,12 +3,173 @@ import type { Country } from '@prooq/config/tailwind.preset';
 
 export interface Props {
   current?: Country;
+  label?: string;
 }
 
-const { current } = Astro.props;
+interface CountryEntry {
+  code: Country;
+  flag: string;
+  name: string;
+  url: string;
+}
+
+const COUNTRIES: readonly CountryEntry[] = [
+  { code: 'pty', flag: '🇵🇦', name: 'Panamá', url: 'https://pty.prooq.com' },
+  { code: 'usa', flag: '🇺🇸', name: 'Estados Unidos', url: 'https://usa.prooq.com' },
+  { code: 'esp', flag: '🇪🇸', name: 'España', url: 'https://esp.prooq.com' },
+  { code: 'ven', flag: '🇻🇪', name: 'Venezuela', url: 'https://ven.prooq.com' },
+];
+
+const { current, label = '🌐 Países' } = Astro.props;
 ---
 
-<nav class="prooq-countries-menu" data-current={current}>
-  <!-- TODO Fase 1: portear prooq/{sucursal}/js/components/countries-menu.js.
-       Selector con banderas (ptyflag.png, usaflag.jpg, espflag.jpg, venflag.jpg). -->
-</nav>
+<div class="countries-menu" data-open="false" data-current={current}>
+  <button
+    class="countries-toggle"
+    type="button"
+    aria-label="Seleccionar país"
+    aria-expanded="false"
+    aria-haspopup="menu"
+  >
+    {label}
+  </button>
+
+  <div class="countries-dropdown" role="menu">
+    {COUNTRIES.map((c) => (
+      <a
+        href={c.url}
+        class={`country-link${c.code === current ? ' is-active' : ''}`}
+        role="menuitem"
+        aria-current={c.code === current ? 'page' : undefined}
+      >
+        <span class="flag" aria-hidden="true">{c.flag}</span>
+        <span>{c.name}</span>
+      </a>
+    ))}
+  </div>
+</div>
+
+<style>
+  .countries-menu {
+    position: relative;
+    display: inline-block;
+  }
+
+  .countries-toggle {
+    background: transparent;
+    border: 1px solid rgb(255 255 255 / 0.25);
+    color: var(--color-text);
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    transition: background 0.3s ease, border-color 0.3s ease;
+  }
+
+  .countries-toggle:hover {
+    background: rgb(255 255 255 / 0.1);
+    border-color: rgb(255 255 255 / 0.4);
+  }
+
+  .countries-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.5rem;
+    background: rgb(0 0 0 / 0.95);
+    border: 1px solid rgb(255 255 255 / 0.15);
+    border-radius: var(--radius-md);
+    min-width: 160px;
+    box-shadow: var(--shadow-card);
+    z-index: 1000;
+    opacity: 0;
+    transform: translateY(-10px);
+    visibility: hidden;
+    transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
+    padding: 0.25rem;
+  }
+
+  .countries-menu[data-open="true"] .countries-dropdown {
+    opacity: 1;
+    transform: translateY(0);
+    visibility: visible;
+  }
+
+  .country-link {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 0.75rem;
+    color: var(--color-text);
+    text-decoration: none;
+    font-size: 0.875rem;
+    border-radius: var(--radius-sm);
+    transition: background 0.2s ease, color 0.2s ease;
+  }
+
+  .country-link:hover {
+    background: rgb(255 255 255 / 0.1);
+    color: var(--color-brand-light);
+  }
+
+  .country-link.is-active {
+    background: rgb(0 60 255 / 0.15);
+    color: var(--color-brand-light);
+  }
+
+  .country-link .flag {
+    font-size: 1rem;
+    width: 1.25rem;
+    text-align: center;
+  }
+
+  @media (max-width: 768px) {
+    .countries-dropdown {
+      right: auto;
+      left: 0;
+      width: 100%;
+    }
+  }
+</style>
+
+<script>
+  // Soporta multiples instancias (Header + Footer) en la misma pagina.
+  const menus = document.querySelectorAll<HTMLDivElement>('.countries-menu');
+
+  const closeAll = () => {
+    for (const menu of menus) {
+      menu.dataset.open = 'false';
+      menu.querySelector('.countries-toggle')?.setAttribute('aria-expanded', 'false');
+    }
+  };
+
+  for (const menu of menus) {
+    const toggle = menu.querySelector<HTMLButtonElement>('.countries-toggle');
+    if (!toggle) continue;
+
+    toggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const wasOpen = menu.dataset.open === 'true';
+      closeAll();
+      if (!wasOpen) {
+        menu.dataset.open = 'true';
+        toggle.setAttribute('aria-expanded', 'true');
+      }
+    });
+  }
+
+  document.addEventListener('click', (e) => {
+    const target = e.target as Node | null;
+    if (!target) return;
+    const inside = Array.from(menus).some((m) => m.contains(target));
+    if (!inside) closeAll();
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeAll();
+  });
+</script>

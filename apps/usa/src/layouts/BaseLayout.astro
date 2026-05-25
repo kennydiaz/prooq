@@ -1,6 +1,6 @@
 ---
 import '@prooq/styles/globals.css';
-import { Footer, Header } from '@prooq/ui';
+import { CountriesMenu, Footer, Header } from '@prooq/ui';
 
 export interface Props {
   title: string;
@@ -19,7 +19,9 @@ const { title, description } = Astro.props;
     <title>{title}</title>
   </head>
   <body>
-    <Header country="usa" />
+    <Header country="usa">
+      <CountriesMenu slot="countries-menu" current="usa" label="🌐 Countries" />
+    </Header>
     <main>
       <slot />
     </main>
