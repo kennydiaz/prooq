@@ -86,9 +86,11 @@ jobs:
           rsync -av --delete -e "$SSH_CMD" \
             api/src/ "$API_ROOT/src/"
 
-          # 3) composer files (sin vendor — composer install corre en remote)
+          # 3) composer.json (composer.lock se genera en remote con composer install).
+          # No incluimos composer.lock porque no se genera localmente — el proyecto
+          # no se instala con composer en dev (no hay PHP 8.3 local).
           rsync -av -e "$SSH_CMD" \
-            api/composer.json api/composer.lock "$API_ROOT/"
+            api/composer.json "$API_ROOT/"
 
       - name: Install PHP deps on remote
         uses: appleboy/ssh-action@v1
