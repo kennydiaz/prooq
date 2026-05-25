@@ -1,16 +1,33 @@
 ---
-import clientsData from '../data/clients.json';
+import { type Client, getClients } from '@prooq/data-client/clients';
+import clientsFallback from '../data/clients.json';
 import BaseLayout from '../layouts/BaseLayout.astro';
 
-interface ClientLogo {
-  name: string;
-  img: string;
+// Fetch en build time desde /api/clients?country=PA. Si la API esta caida o
+// devuelve menos de 10 (DB sin seed), fallback al JSON estatico para que la
+// pagina nunca quede vacia.
+let clients: readonly Client[] = [];
+try {
+  clients = await getClients({ country: 'PA' });
+} catch (err) {
+  console.warn('[clientes] getClients failed, using static fallback:', err);
 }
 
-const BASE = import.meta.env.BASE_URL.replace(/\/?$/, '/');
-// TODO Fase 5: cuando /api/clients este corriendo + MySQL poblada,
-// reemplazar este import por sendChatMessage/getClients del data-client.
-const clients = clientsData as readonly ClientLogo[];
+if (clients.length < 10) {
+  console.warn(
+    `[clientes] API returned ${clients.length} clients, using static fallback (${clientsFallback.length})`,
+  );
+  clients = (clientsFallback as Array<{ name: string; img: string }>).map((c, i) => ({
+    id: i + 1,
+    name: c.name,
+    logoUrl: `/pty/images/clientes/${c.img}`,
+    website: null,
+    country: 'PA',
+    industry: null,
+    displayOrder: i,
+    isActive: true,
+  }));
+}
 ---
 
 <BaseLayout
@@ -31,7 +48,7 @@ const clients = clientsData as readonly ClientLogo[];
           <article class="client-card fade-in">
             <div class="client-logo-wrap">
               <img
-                src={`${BASE}images/clientes/${c.img}`}
+                src={c.logoUrl ?? ''}
                 alt={c.name}
                 loading="lazy"
                 decoding="async"
