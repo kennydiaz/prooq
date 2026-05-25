@@ -36,13 +36,18 @@ return function (App $app): void {
             $res->getBody()->write(json_encode(['error' => 'curl_init_failed']) ?: '{}');
             return $res->withHeader('Content-Type', 'application/json')->withStatus(500);
         }
+        // N8N workflow espera el shape del V1: chatInput, conversationId,
+        // timestamp ISO8601, source. Si cambias el workflow para aceptar otros
+        // campos, actualiza este payload.
         curl_setopt_array($ch, [
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_POST           => true,
             CURLOPT_HTTPHEADER     => ['Content-Type: application/json'],
             CURLOPT_POSTFIELDS     => json_encode([
-                'message'        => $message,
+                'chatInput'      => $message,
                 'conversationId' => $conversationId,
+                'timestamp'      => gmdate('Y-m-d\TH:i:s\Z'),
+                'source'         => 'website-chat',
                 'sourceSite'     => $sourceSite,
             ]),
             CURLOPT_TIMEOUT        => 30,
@@ -56,10 +61,22 @@ return function (App $app): void {
             return $res->withHeader('Content-Type', 'application/json')->withStatus(502);
         }
 
+        // N8N puede devolver reply, response, message u output segun el nodo
+        // final del workflow. Aceptamos cualquiera (compatible con V1).
         $parsed = json_decode($n8nResponse, true);
-        $reply = (is_array($parsed) && isset($parsed['reply']) && is_string($parsed['reply']))
-            ? $parsed['reply']
-            : '';
+        $reply = '';
+        if (is_array($parsed)) {
+            foreach (['reply', 'response', 'message', 'output'] as $key) {
+                if (isset($parsed[$key]) && is_string($parsed[$key])) {
+                    $reply = $parsed[$key];
+                    break;
+                }
+            }
+        }
+        if ($reply === '') {
+            // El workflow devolvio 200 pero sin campo conocido — log raw para debug.
+            error_log('chat: N8N 200 sin reply conocido. Body: ' . substr((string) $n8nResponse, 0, 500));
+        }
 
         $logStmt->execute([$conversationId, 'assistant', $reply, $sourceSite]);
 
