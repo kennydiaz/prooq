@@ -6,24 +6,6 @@ const BASE = import.meta.env.BASE_URL.replace(/\/?$/, '/');
 
 const services = [
   {
-    icon: '🏗️',
-    title: 'E-BOP — Gestión de Obra en Tiempo Real',
-    description:
-      'Control total de personal, materiales, cronograma y reportes desde cualquier lugar.',
-    features: [
-      'Gestión de personal',
-      'Inventario de materiales',
-      'Cronogramas dinámicos',
-      'Reportes desde móvil',
-    ],
-  },
-  {
-    icon: '👥',
-    title: 'Traffic by PROOQ',
-    description: 'Monitoreo y gestión de personas en espacios para mayor seguridad y eficiencia.',
-    features: ['Conteo de afluencia', 'Heatmaps', 'Alertas en tiempo real', 'Dashboards web'],
-  },
-  {
     icon: '🤖',
     title: 'Agentes Inteligentes con n8n',
     description: 'Automatización avanzada y agentes inteligentes para empresas.',
@@ -186,13 +168,13 @@ const locationDetails = [
 
 <BaseLayout
   title="PROOQ S.A. — Soluciones Tecnológicas en Panamá"
-  description="PROOQ Panamá: e-BOP, Traffic, seguridad electrónica, redes, automatización y chat IA. Ciudad de Panamá."
+  description="PROOQ Panamá: SuiteHub, seguridad electrónica, redes, automatización con IA y chat. Sede principal en Ciudad de Panamá."
 >
   <HeroParallax
     title="PROOQ"
     subtitle="Soluciones tecnológicas integrales para empresas"
     description="Especialistas en cableado estructurado, seguridad electrónica y automatización empresarial en Panamá"
-    cta={{ label: 'Conoce nuestros servicios', href: '#servicios' }}
+    cta={{ label: 'Conoce SuiteHub', href: '#suitehub' }}
   >
     <div class="hero-extras">
       <a href="#contacto" class="cta-secondary">Contáctanos</a>
@@ -200,11 +182,54 @@ const locationDetails = [
     </div>
   </HeroParallax>
 
+  <section id="suitehub" class="section section-services suitehub-feature">
+    <div class="section-container">
+      <div class="suitehub-grid">
+        <div class="suitehub-content fade-in">
+          <div class="suitehub-eyebrow">⚡ Producto propio · PA · US · VE · ES</div>
+          <h2 class="section-title">
+            <span class="brand-name">SuiteHub</span><br />
+            <span>Suite empresarial que sí escala</span>
+          </h2>
+          <p class="suitehub-lead">
+            Plataforma de gestión para PYMEs con facturación electrónica multi-jurisdicción,
+            multi-sucursal, automatizaciones y API REST. 4 ediciones desde <strong>$19/mes</strong>.
+          </p>
+          <ul class="suitehub-features">
+            <li>✓ Facturación electrónica DGI Panamá (en vivo)</li>
+            <li>✓ 12 verticales especializadas (HUB Taller, Restaurant, POS, Pet, Beauty, Clinic, Gym, Hotel, +5)</li>
+            <li>✓ WhatsApp Business + automatizaciones</li>
+            <li>✓ Disponible en español e inglés</li>
+          </ul>
+          <div class="suitehub-actions">
+            <a href="https://suitehub.net/" target="_blank" rel="noopener" class="suitehub-cta-primary">
+              Conocer SuiteHub →
+            </a>
+            <a
+              href="https://wa.me/50762082617?text=Hola%2C%20quiero%20info%20de%20SuiteHub"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="suitehub-cta-secondary"
+            >
+              💬 Hablar con ventas
+            </a>
+          </div>
+        </div>
+        <div class="suitehub-stats fade-in">
+          <div class="suitehub-stat"><span class="stat-num">$19</span><span class="stat-lbl">desde / mes</span></div>
+          <div class="suitehub-stat"><span class="stat-num">4</span><span class="stat-lbl">países objetivo</span></div>
+          <div class="suitehub-stat"><span class="stat-num">12</span><span class="stat-lbl">verticales HUB</span></div>
+          <div class="suitehub-stat"><span class="stat-num">+30</span><span class="stat-lbl">PYMEs en producción</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <section id="servicios" class="section section-services">
     <div class="section-container">
-      <h2 class="section-title fade-in">Nuestros Servicios</h2>
+      <h2 class="section-title fade-in">Servicios técnicos complementarios</h2>
       <p class="section-subtitle fade-in">
-        Productos propios (E-BOP, Traffic, Agentes IA) y servicios técnicos integrales para empresas en Panamá.
+        Además de SuiteHub ofrecemos servicios de infraestructura, seguridad, automatización y consultoría para empresas en Panamá.
       </p>
       <div class="services-grid">
         {services.map((s) => (
@@ -228,9 +253,8 @@ const locationDetails = [
           <h2 class="section-title">Sobre PROOQ S.A.</h2>
           <p>
             PROOQ S.A. es la sede principal del grupo, con base en Ciudad de Panamá. Desde aquí
-            coordinamos las operaciones regionales y desarrollamos nuestros productos propios:
-            E-BOP (gestión de obra), Traffic by PROOQ (control de afluencia) y agentes
-            inteligentes con n8n.
+            coordinamos las operaciones regionales y desarrollamos <strong>SuiteHub</strong>,
+            nuestra plataforma SaaS multi-jurisdicción para PYMEs en Panamá, USA, Venezuela y España.
           </p>
           <p>
             Combinamos infraestructura técnica (cableado estructurado, seguridad electrónica,
@@ -314,6 +338,170 @@ const locationDetails = [
 
   <ChatFab country="pty" />
 </BaseLayout>
+
+<style>
+  /* SuiteHub feature section — destacada, mas grande que las demás */
+  .suitehub-feature {
+    background: radial-gradient(
+      ellipse at center top,
+      rgb(0 60 255 / 0.15) 0%,
+      var(--color-surface) 60%
+    );
+    padding-top: 6rem;
+    padding-bottom: 5rem;
+  }
+
+  .suitehub-grid {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 3rem;
+    align-items: center;
+  }
+
+  .suitehub-eyebrow {
+    display: inline-block;
+    padding: 0.4rem 1rem;
+    background: rgb(0 198 231 / 0.1);
+    border: 1px solid rgb(0 198 231 / 0.3);
+    color: var(--color-accent-cyan);
+    border-radius: var(--radius-pill);
+    font-size: 0.85rem;
+    font-weight: 500;
+    margin-bottom: 1.25rem;
+  }
+
+  .brand-name {
+    font-size: 3rem;
+    line-height: 1;
+    background: linear-gradient(45deg, var(--color-brand-light), var(--color-accent-cyan));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    display: inline-block;
+  }
+
+  .suitehub-content .section-title {
+    margin-bottom: 1rem;
+  }
+
+  .suitehub-lead {
+    color: var(--color-text-soft);
+    font-size: 1.1rem;
+    line-height: 1.65;
+    margin: 0 0 1.5rem;
+  }
+
+  .suitehub-lead strong {
+    color: var(--color-accent-cyan);
+  }
+
+  .suitehub-features {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .suitehub-features li {
+    color: var(--color-text-soft);
+    line-height: 1.55;
+    font-size: 0.95rem;
+  }
+
+  .suitehub-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .suitehub-cta-primary,
+  .suitehub-cta-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.875rem 1.75rem;
+    border-radius: var(--radius-pill);
+    font-weight: 600;
+    font-size: 1rem;
+    text-decoration: none;
+    transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+  }
+
+  .suitehub-cta-primary {
+    background: linear-gradient(45deg, var(--color-brand), var(--color-brand-light));
+    color: var(--color-text);
+    box-shadow: var(--shadow-cta);
+  }
+
+  .suitehub-cta-primary:hover,
+  .suitehub-cta-primary:focus-visible {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-cta-hover);
+  }
+
+  .suitehub-cta-secondary {
+    background: transparent;
+    color: var(--color-text);
+    border: 2px solid rgb(255 255 255 / 0.2);
+  }
+
+  .suitehub-cta-secondary:hover,
+  .suitehub-cta-secondary:focus-visible {
+    border-color: var(--color-brand-light);
+    color: var(--color-brand-light);
+  }
+
+  .suitehub-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  .suitehub-stat {
+    background: var(--color-surface-raised);
+    border: 1px solid rgb(0 198 231 / 0.15);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem 1rem;
+    text-align: center;
+    transition: border-color 0.3s ease, transform 0.3s ease;
+  }
+
+  .suitehub-stat:hover {
+    border-color: rgb(0 198 231 / 0.4);
+    transform: translateY(-2px);
+  }
+
+  .stat-num {
+    display: block;
+    font-family: var(--font-display);
+    font-size: 2rem;
+    font-weight: 700;
+    background: linear-gradient(45deg, #ffffff, var(--color-brand-light));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    margin-bottom: 0.125rem;
+  }
+
+  .stat-lbl {
+    color: var(--color-text-muted);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  @media (max-width: 900px) {
+    .suitehub-grid {
+      grid-template-columns: 1fr;
+      gap: 2rem;
+    }
+    .brand-name { font-size: 2.4rem; }
+  }
+</style>
 
 <script>
   // Fade-in al scroll — IntersectionObserver replicado del V1.

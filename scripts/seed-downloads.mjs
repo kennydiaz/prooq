@@ -3,10 +3,10 @@
 //
 // Uso: node scripts/seed-downloads.mjs > /tmp/downloads-seed.sql
 
-const escape = (s) =>
+const sqlEscape = (s) =>
   s === null || s === undefined
     ? 'NULL'
-    : "'" + String(s).replace(/\\/g, '\\\\').replace(/'/g, "''") + "'";
+    : `'${String(s).replace(/\\/g, '\\\\').replace(/'/g, "''")}'`;
 const num = (n) => (n === null || n === undefined ? 'NULL' : String(n));
 
 const ICON_BASE = '/pty/images/downloads/';
@@ -130,13 +130,13 @@ const rows = [
 const values = rows
   .map((r) => {
     const isExternal = !!r.external_url;
-    return `(${escape(r.title)}, ${escape(r.description)}, ${isExternal ? 'NULL' : escape(r.filename)}, ${isExternal ? 'NULL' : num(r.file_size_bytes)}, ${isExternal ? 'NULL' : "'application/octet-stream'"}, ${escape(r.external_url)}, ${escape(ICON_BASE + r.icon)}, 'PA', ${escape(r.slug)}, 1)`;
+    return `(${sqlEscape(r.title)}, ${sqlEscape(r.description)}, ${isExternal ? 'NULL' : sqlEscape(r.filename)}, ${isExternal ? 'NULL' : num(r.file_size_bytes)}, ${isExternal ? 'NULL' : "'application/octet-stream'"}, ${sqlEscape(r.external_url)}, ${sqlEscape(ICON_BASE + r.icon)}, 'PA', ${sqlEscape(r.slug)}, 1)`;
   })
   .join(',\n');
 
 process.stdout.write(
-  '-- 14 entries: 10 file downloads + 4 portals externos\n' +
-    'INSERT INTO downloads (title, description, filename, file_size_bytes, mime_type, external_url, icon_url, country, slug, is_public) VALUES\n' +
-    values +
-    ';\n',
+  `-- 14 entries: 10 file downloads + 4 portals externos
+INSERT INTO downloads (title, description, filename, file_size_bytes, mime_type, external_url, icon_url, country, slug, is_public) VALUES
+${values};
+`,
 );

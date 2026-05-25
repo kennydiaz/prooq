@@ -5,10 +5,10 @@
 
 import data from '../apps/pty/src/data/clients.json' with { type: 'json' };
 
-const escape = (s) => "'" + String(s).replace(/\\/g, '\\\\').replace(/'/g, "''") + "'";
+const sqlEscape = (s) => `'${String(s).replace(/\\/g, '\\\\').replace(/'/g, "''")}'`;
 
 const rows = data.map(
-  (c, i) => `(${escape(c.name)}, ${escape(`/pty/images/clientes/${c.img}`)}, 'PA', ${i}, 1)`,
+  (c, i) => `(${sqlEscape(c.name)}, ${sqlEscape(`/pty/images/clientes/${c.img}`)}, 'PA', ${i}, 1)`,
 );
 
 process.stdout.write(
