@@ -63,8 +63,41 @@ jobs:
               "apps/$country/dist/" "$TARGET:$ROOT/$country/"
           done
 
-      # TODO: deploy del backend API requiere ajustar el document root del
-      # subdominio api.prooq.com en hPanel (debe apuntar a public_html/api/public
-      # en vez de public_html/api/) para mantener la estructura natural de Slim
-      # con src/ y vendor/ fuera del directorio web-accessible.
-      # Cuando se haga: descomentar pasos de "Deploy API" + "Composer install".
+      - name: Deploy API via rsync
+        env:
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+        run: |
+          set -euo pipefail
+          PORT="${SSH_PORT:-65002}"
+          SSH_CMD="ssh -p $PORT -o StrictHostKeyChecking=accept-new"
+          # api.prooq.com tiene su document root en public_html/api/public,
+          # entonces el resto del Slim (src/, vendor/, composer.json) vive a
+          # nivel api/ (un dir arriba), fuera del directorio web-accessible.
+          API_ROOT="$SSH_USER@$SSH_HOST:~/domains/prooq.com/public_html/api"
+
+          # 1) api/public/ → ~/.../api/public/ (web-accessible)
+          # NO usar --delete porque .env vive ahi y no esta en el repo.
+          rsync -av --exclude '.env' -e "$SSH_CMD" \
+            api/public/ "$API_ROOT/public/"
+
+          # 2) api/src/ → ~/.../api/src/ (no expuesto, fuera del docroot)
+          rsync -av --delete -e "$SSH_CMD" \
+            api/src/ "$API_ROOT/src/"
+
+          # 3) composer files (sin vendor — composer install corre en remote)
+          rsync -av -e "$SSH_CMD" \
+            api/composer.json api/composer.lock "$API_ROOT/"
+
+      - name: Install PHP deps on remote
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          port: ${{ secrets.SSH_PORT }}
+          key: ${{ secrets.HOSTINGER_SSH_KEY }}
+          script: |
+            set -e
+            cd ~/domains/prooq.com/public_html/api
+            composer install --no-dev --optimize-autoloader --no-interaction
