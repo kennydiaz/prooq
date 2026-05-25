@@ -2,20 +2,432 @@
 import type { Country } from '@prooq/config/tailwind.preset';
 
 export interface Props {
-  webhookUrl: string;
   country?: Country;
-  greeting?: string;
+  welcomeMessage?: string;
+  placeholderText?: string;
+  assistantName?: string;
+  buttonText?: string;
+  fallbackEmail?: string;
+  fallbackPhone?: string;
 }
 
-const { webhookUrl, country, greeting } = Astro.props;
+const {
+  country,
+  welcomeMessage = '¡Hola! ¿En qué puedo ayudarte?',
+  placeholderText = 'Escribe tu mensaje...',
+  assistantName = 'Asistente Virtual',
+  buttonText = '💬 Chatea con nosotros 24/7',
+  fallbackEmail = 'info@prooq.com',
+  fallbackPhone = '+507 6208-2617',
+} = Astro.props;
 ---
 
-<div
-  class="prooq-chat-fab"
-  data-webhook={webhookUrl}
-  data-country={country}
-  data-greeting={greeting}
+<button
+  id="cf-fab"
+  class="cf-fab"
+  type="button"
+  aria-label="Abrir chat"
+  aria-controls="cf-modal"
+  aria-expanded="false"
 >
-  <!-- TODO Fase 1: portear prooq/{sucursal}/js/chat-fab.js + chat-widget-standalone.html.
-       Integración N8N via webhookUrl. country se envía como source_site en chat_logs. -->
+  {buttonText}
+</button>
+
+<div id="cf-backdrop" class="cf-backdrop" aria-hidden="true"></div>
+
+<div
+  id="cf-modal"
+  class="cf-modal"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="cf-modal-title"
+  aria-hidden="true"
+  data-country={country}
+  data-welcome={welcomeMessage}
+  data-fallback-email={fallbackEmail}
+  data-fallback-phone={fallbackPhone}
+>
+  <header class="cf-header">
+    <div class="cf-id">
+      <div class="cf-avatar" aria-hidden="true">🤖</div>
+      <div>
+        <h3 id="cf-modal-title" class="cf-title">{assistantName}</h3>
+        <span class="cf-status">
+          <span class="cf-status-dot" aria-hidden="true"></span>
+          En línea
+        </span>
+      </div>
+    </div>
+    <button type="button" class="cf-close" aria-label="Cerrar chat">×</button>
+  </header>
+
+  <ul id="cf-messages" class="cf-messages" aria-live="polite" aria-label="Mensajes del chat"></ul>
+
+  <form id="cf-form" class="cf-input-row" autocomplete="off">
+    <input
+      id="cf-input"
+      type="text"
+      placeholder={placeholderText}
+      aria-label="Mensaje"
+      maxlength="500"
+      required
+    />
+    <button type="submit" class="cf-send" aria-label="Enviar mensaje">➤</button>
+  </form>
 </div>
+
+<style>
+  .cf-fab {
+    position: fixed;
+    bottom: 1.25rem;
+    right: 1.25rem;
+    min-width: 200px;
+    height: 60px;
+    padding: 0 1.25rem;
+    border: none;
+    border-radius: 30px;
+    background: linear-gradient(135deg, var(--color-surface-deep), var(--color-brand));
+    color: var(--color-text);
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    z-index: 9999;
+    box-shadow: 0 6px 25px rgb(0 60 255 / 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+  }
+
+  .cf-fab:hover,
+  .cf-fab:focus-visible {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 8px 30px rgb(0 60 255 / 0.6);
+    background: linear-gradient(135deg, var(--color-brand-deep), var(--color-brand-darker));
+  }
+
+  .cf-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgb(0 0 0 / 0.5);
+    z-index: 9998;
+    display: none;
+  }
+
+  .cf-backdrop[data-open="true"] {
+    display: block;
+  }
+
+  .cf-modal {
+    position: fixed;
+    bottom: 1.25rem;
+    right: 1.25rem;
+    width: 400px;
+    height: 600px;
+    max-width: calc(100vw - 2.5rem);
+    max-height: calc(100vh - 2.5rem);
+    background: var(--color-surface-raised);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 10px 40px rgb(0 0 0 / 0.4);
+    z-index: 9999;
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .cf-modal[data-open="true"] {
+    display: flex;
+  }
+
+  .cf-header {
+    background: linear-gradient(135deg, var(--color-brand), var(--color-brand-light));
+    color: var(--color-text);
+    padding: 1.25rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .cf-id {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .cf-avatar {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    background: rgb(255 255 255 / 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+  }
+
+  .cf-title {
+    margin: 0;
+    font-size: 1rem;
+    font-family: var(--font-body);
+  }
+
+  .cf-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.75rem;
+    opacity: 0.9;
+  }
+
+  .cf-status-dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: var(--color-accent-neon-green);
+    box-shadow: 0 0 6px var(--color-accent-neon-green);
+  }
+
+  .cf-close {
+    background: none;
+    border: none;
+    color: var(--color-text);
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s ease;
+  }
+
+  .cf-close:hover,
+  .cf-close:focus-visible {
+    background: rgb(255 255 255 / 0.15);
+  }
+
+  .cf-messages {
+    list-style: none;
+    margin: 0;
+    padding: 1.25rem;
+    flex: 1;
+    overflow-y: auto;
+    background: var(--color-surface-raised);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .cf-msg {
+    display: flex;
+    gap: 0.625rem;
+    align-items: flex-start;
+  }
+
+  .cf-msg-user {
+    flex-direction: row-reverse;
+  }
+
+  .cf-msg-avatar {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    background: linear-gradient(135deg, var(--color-brand), var(--color-brand-light));
+  }
+
+  .cf-msg-user .cf-msg-avatar {
+    background: linear-gradient(135deg, #4caf50, #45a049);
+  }
+
+  .cf-msg-bubble {
+    max-width: 70%;
+    padding: 0.75rem 1rem;
+    border-radius: 18px;
+    font-size: 0.875rem;
+    line-height: 1.4;
+    background: rgb(0 60 255 / 0.1);
+    color: var(--color-text-soft);
+    word-wrap: break-word;
+  }
+
+  .cf-msg-user .cf-msg-bubble {
+    background: linear-gradient(135deg, #4caf50, #45a049);
+    color: var(--color-text);
+  }
+
+  .cf-msg-error .cf-msg-bubble {
+    background: rgb(255 99 71 / 0.15);
+    color: #ffb3b3;
+  }
+
+  .cf-input-row {
+    padding: 1.25rem;
+    background: var(--color-surface-deep);
+    display: flex;
+    gap: 0.625rem;
+  }
+
+  #cf-input {
+    flex: 1;
+    background: var(--color-surface);
+    border: 1px solid rgb(255 255 255 / 0.1);
+    border-radius: 20px;
+    color: var(--color-text);
+    font-size: 0.875rem;
+    padding: 0.75rem 1rem;
+    font-family: inherit;
+  }
+
+  #cf-input:focus-visible {
+    outline: 2px solid var(--color-accent-cyan);
+    outline-offset: 1px;
+  }
+
+  .cf-send {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    border: none;
+    background: linear-gradient(135deg, var(--color-brand), var(--color-brand-light));
+    color: var(--color-text);
+    cursor: pointer;
+    font-size: 1rem;
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+  }
+
+  .cf-send:hover:not(:disabled),
+  .cf-send:focus-visible:not(:disabled) {
+    transform: scale(1.08);
+  }
+
+  .cf-send:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  @media (max-width: 768px) {
+    .cf-fab {
+      min-width: 180px;
+      font-size: 0.8125rem;
+      bottom: 0.9375rem;
+      right: 0.9375rem;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .cf-fab {
+      min-width: 160px;
+      font-size: 0.75rem;
+    }
+  }
+</style>
+
+<script>
+  import { COUNTRY_TO_ISO2, type Country } from '@prooq/config/tailwind.preset';
+  import { sendChatMessage } from '@prooq/data-client/chat';
+
+  const fab = document.getElementById('cf-fab');
+  const modal = document.getElementById('cf-modal');
+  const backdrop = document.getElementById('cf-backdrop');
+  const messages = document.getElementById('cf-messages') as HTMLUListElement | null;
+  const form = document.getElementById('cf-form') as HTMLFormElement | null;
+  const input = document.getElementById('cf-input') as HTMLInputElement | null;
+  const closeBtn = modal?.querySelector<HTMLButtonElement>('.cf-close');
+  const sendBtn = form?.querySelector<HTMLButtonElement>('.cf-send');
+
+  if (fab && modal && backdrop && messages && form && input) {
+    const country = (modal.dataset.country as Country | undefined) ?? undefined;
+    const sourceSite = country ? COUNTRY_TO_ISO2[country] : undefined;
+    const welcome = modal.dataset.welcome ?? '';
+    const fallbackEmail = modal.dataset.fallbackEmail ?? 'info@prooq.com';
+    const fallbackPhone = modal.dataset.fallbackPhone ?? '';
+
+    const conversationKey = 'prooq.chat.conversationId';
+    let conversationId =
+      sessionStorage.getItem(conversationKey) ??
+      `chat_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    sessionStorage.setItem(conversationKey, conversationId);
+
+    let hasGreeted = false;
+
+    const setOpen = (open: boolean) => {
+      modal.dataset.open = String(open);
+      backdrop.dataset.open = String(open);
+      modal.setAttribute('aria-hidden', String(!open));
+      backdrop.setAttribute('aria-hidden', String(!open));
+      fab.setAttribute('aria-expanded', String(open));
+      if (open) {
+        if (!hasGreeted) {
+          appendMessage(welcome, 'bot');
+          hasGreeted = true;
+        }
+        input.focus();
+      }
+    };
+
+    const appendMessage = (text: string, role: 'user' | 'bot' | 'error') => {
+      const li = document.createElement('li');
+      li.className = `cf-msg ${role === 'user' ? 'cf-msg-user' : role === 'error' ? 'cf-msg-error' : 'cf-msg-bot'}`;
+
+      const avatar = document.createElement('div');
+      avatar.className = 'cf-msg-avatar';
+      avatar.setAttribute('aria-hidden', 'true');
+      avatar.textContent = role === 'user' ? '👤' : '🤖';
+
+      const bubble = document.createElement('div');
+      bubble.className = 'cf-msg-bubble';
+      bubble.textContent = text;
+
+      li.appendChild(avatar);
+      li.appendChild(bubble);
+      messages.appendChild(li);
+      messages.scrollTop = messages.scrollHeight;
+    };
+
+    fab.addEventListener('click', () => setOpen(modal.dataset.open !== 'true'));
+    closeBtn?.addEventListener('click', () => setOpen(false));
+    backdrop.addEventListener('click', () => setOpen(false));
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && modal.dataset.open === 'true') setOpen(false);
+    });
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const text = input.value.trim();
+      if (!text) return;
+
+      appendMessage(text, 'user');
+      input.value = '';
+      if (sendBtn) sendBtn.disabled = true;
+
+      try {
+        const res = await sendChatMessage({ message: text, conversationId, sourceSite });
+        appendMessage(res.reply || 'Respuesta recibida.', 'bot');
+        if (res.conversationId) {
+          conversationId = res.conversationId;
+          sessionStorage.setItem(conversationKey, conversationId);
+        }
+      } catch (err) {
+        console.error('[ChatFab] sendChatMessage failed:', err);
+        appendMessage(
+          `Error de conexión. Contacto: ${fallbackEmail}${fallbackPhone ? ` o ${fallbackPhone}` : ''}`,
+          'error',
+        );
+      } finally {
+        if (sendBtn) sendBtn.disabled = false;
+        input.focus();
+      }
+    });
+  }
+</script>

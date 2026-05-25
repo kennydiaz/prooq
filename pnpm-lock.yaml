@@ -166,6 +166,9 @@ importers:
       '@prooq/config':
         specifier: workspace:*
         version: link:../config
+      '@prooq/data-client':
+        specifier: workspace:*
+        version: link:../data-client
       '@prooq/styles':
         specifier: workspace:*
         version: link:../styles

@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@prooq/config": "workspace:*",
+    "@prooq/data-client": "workspace:*",
     "@prooq/styles": "workspace:*"
   },
   "peerDependencies": {
