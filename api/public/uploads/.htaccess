@@ -1,0 +1,15 @@
+# Hardening del directorio uploads/. Solo servimos archivos estáticos —
+# nunca debe ejecutarse PHP ni listar directorio.
+
+# Sin listado de directorio
+Options -Indexes
+
+# Bloquea PHP por si alguien sube un .php disfrazado
+<FilesMatch "\.(php|phtml|php3|php4|php5|php7|phar|inc)$">
+    Require all denied
+</FilesMatch>
+
+# Solo permite extensiones de imagen conocidas en respuesta
+<FilesMatch "\.(jpe?g|png|webp|gif|svg)$">
+    Require all granted
+</FilesMatch>

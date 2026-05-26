@@ -18,15 +18,15 @@ export interface Props {
 const BASE = import.meta.env.BASE_URL.replace(/\/?$/, '/');
 
 // Solo links a paginas que EXISTEN en cada app (no rompemos con 404s).
-// Gallery descartada en V2 — sera un CMS aparte. Cuando se cree, agregarlo aqui.
-// USA/ESP/VEN solo tienen landing por ahora — nav minimo. Cuando se porten sus
-// paginas (clientes, servicios, downloads), agregar los links aqui.
+// Galería ahora es gestionada por el CMS — un único panel admin, contenido
+// filtrado por country en la página pública.
 const DEFAULT_NAV_BY_COUNTRY: Record<Country, readonly NavItem[]> = {
   pty: [
     { label: 'Inicio', href: BASE },
     { label: 'SuiteHub', href: `${BASE}#suitehub` },
     { label: 'Clientes', href: `${BASE}clientes` },
     { label: 'Servicios', href: `${BASE}servicios` },
+    { label: 'Galería', href: `${BASE}gallery` },
     { label: 'Descargas', href: `${BASE}downloads` },
     { label: 'Contacto', href: `${BASE}#contact` },
   ],
@@ -35,6 +35,7 @@ const DEFAULT_NAV_BY_COUNTRY: Record<Country, readonly NavItem[]> = {
     { label: 'SuiteHub', href: 'https://suitehub.net/en/' },
     { label: 'Clients', href: `${BASE}clientes` },
     { label: 'Services', href: `${BASE}servicios` },
+    { label: 'Gallery', href: `${BASE}gallery` },
     { label: 'Downloads', href: `${BASE}downloads` },
     { label: 'Contact', href: `${BASE}#contact` },
   ],
@@ -43,6 +44,7 @@ const DEFAULT_NAV_BY_COUNTRY: Record<Country, readonly NavItem[]> = {
     { label: 'SuiteHub', href: 'https://suitehub.net/' },
     { label: 'Clientes', href: `${BASE}clientes` },
     { label: 'Servicios', href: `${BASE}servicios` },
+    { label: 'Galería', href: `${BASE}gallery` },
     { label: 'Descargas', href: `${BASE}downloads` },
     { label: 'Contacto', href: `${BASE}#contact` },
   ],
@@ -51,6 +53,7 @@ const DEFAULT_NAV_BY_COUNTRY: Record<Country, readonly NavItem[]> = {
     { label: 'SuiteHub', href: 'https://suitehub.net/' },
     { label: 'Clientes', href: `${BASE}clientes` },
     { label: 'Servicios', href: `${BASE}servicios` },
+    { label: 'Galería', href: `${BASE}gallery` },
     { label: 'Descargas', href: `${BASE}downloads` },
     { label: 'Contacto', href: `${BASE}#contact` },
   ],

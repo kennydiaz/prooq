@@ -18,6 +18,14 @@ db/*.sqlite
 db/*.db
 *.local
 
+# Uploaded files (runtime content, no tracker en git).
+# Mantenemos los .htaccess y .gitkeep para preservar la estructura.
+api/public/uploads/**/*
+!api/public/uploads/
+!api/public/uploads/**/
+!api/public/uploads/**/.htaccess
+!api/public/uploads/**/.gitkeep
+
 # Logs
 *.log
 npm-debug.log*
