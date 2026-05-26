@@ -44,18 +44,22 @@ const BASE = import.meta.env.BASE_URL.replace(/\/?$/, '/');
       <slot />
     </main>
 
-    <script is:inline define:vars={{ BASE }}>
-      // Expone BASE al codigo cliente sin hardcodearlo. AdminLayout siempre
-      // monta esto antes que cualquier <script type=module> bundleado por Astro.
+    <script is:inline define:vars={{ BASE, requireAuth }}>
+      // Inline script: corre sincrono ANTES de los <script type=module> bundlados
+      // por Astro. Setea el BASE y, opcionalmente, una bandera para saltarse el
+      // auth check (necesaria en la pagina /login para evitar redirect loop).
+      // El condicional de Astro `{requireAuth && <script>}` NO impide que Astro
+      // bundee el script — por eso la bandera runtime es la unica forma robusta.
       window.__ADMIN_BASE__ = BASE;
+      window.__SKIP_AUTH_CHECK__ = !requireAuth;
     </script>
 
-    {requireAuth && (
-      <script>
-        import { getMe } from '@prooq/data-client/gallery';
+    <script>
+      import { getMe } from '@prooq/data-client/gallery';
 
-        // Gate de autenticacion en el cliente. Las paginas del admin son HTML
-        // estatico — la sesion vive en cookie httponly. Si no hay sesion, redirige.
+      // Gate de auth en cliente. Las paginas del admin son HTML estatico — la
+      // sesion vive en cookie httponly. Si no hay sesion, redirige a login.
+      if (!window.__SKIP_AUTH_CHECK__) {
         const BASE = window.__ADMIN_BASE__ ?? '/admin/';
         try {
           const me = await getMe();
@@ -63,8 +67,8 @@ const BASE = import.meta.env.BASE_URL.replace(/\/?$/, '/');
         } catch {
           window.location.href = BASE + 'login';
         }
-      </script>
-    )}
+      }
+    </script>
 
     <script>
       import { adminLogout } from '@prooq/data-client/gallery';
@@ -162,12 +166,16 @@ const BASE = import.meta.env.BASE_URL.replace(/\/?$/, '/');
         padding: 2rem 1.5rem;
       }
 
+      /* Modo centrado (login). Sobrescribe max-width + padding del .admin-main
+         para que el card quede realmente centrado en viewport, no en una caja
+         de 1200px con padding asimetrico. */
       .admin-main.center {
+        max-width: none;
         display: flex;
         align-items: center;
         justify-content: center;
-        min-height: calc(100vh - 0px);
-        padding-top: 0;
+        min-height: 100vh;
+        padding: 1.5rem;
       }
     </style>
   </body>
