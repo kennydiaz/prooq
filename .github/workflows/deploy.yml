@@ -54,7 +54,7 @@ jobs:
           # del subdominio api.prooq.com) + cualquier archivo gestionado por
           # Hostinger (.ssl.txt, .htaccess auto-generado, etc).
           rsync -av -e "$SSH_CMD" \
-            --exclude pty --exclude usa --exclude esp --exclude ven --exclude api \
+            --exclude pty --exclude usa --exclude esp --exclude ven --exclude api --exclude admin \
             apps/portal/dist/ "$TARGET:$ROOT/"
 
           # 4 sucursales en subcarpetas dedicadas (--delete OK)
@@ -62,6 +62,10 @@ jobs:
             rsync -av --delete -e "$SSH_CMD" \
               "apps/$country/dist/" "$TARGET:$ROOT/$country/"
           done
+
+          # Admin CMS — panel de gestion en prooq.com/admin/ (--delete OK)
+          rsync -av --delete -e "$SSH_CMD" \
+            apps/admin/dist/ "$TARGET:$ROOT/admin/"
 
       - name: Deploy API via rsync
         env:

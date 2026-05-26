@@ -50,6 +50,38 @@ return function (App $app): void {
         return $res->withHeader('Content-Type', 'application/json');
     });
 
+    // GET /api/admin/gallery — listado completo para el panel admin (incluye
+    // items no publicos y todos los paises). El listado publico (/api/gallery)
+    // filtra is_public y country; esta no filtra nada.
+    $app->get('/api/admin/gallery', function (ServerRequestInterface $req, ResponseInterface $res) {
+        // $req unused — listado no acepta filtros, el admin ve todo.
+        $stmt = Connection::get()->query(
+            'SELECT id, title, alt, caption, filename, mime_type,
+                    file_size_bytes AS fileSizeBytes,
+                    width_px        AS widthPx,
+                    height_px       AS heightPx,
+                    country,
+                    display_order   AS displayOrder,
+                    is_public       AS isPublic,
+                    created_at      AS createdAt
+             FROM gallery_items
+             ORDER BY display_order ASC, created_at DESC'
+        );
+        $rows = $stmt->fetchAll();
+
+        foreach ($rows as &$row) {
+            $row['isPublic'] = (bool) $row['isPublic'];
+            $row['displayOrder'] = (int) $row['displayOrder'];
+            $row['fileSizeBytes'] = $row['fileSizeBytes'] !== null ? (int) $row['fileSizeBytes'] : null;
+            $row['widthPx'] = $row['widthPx'] !== null ? (int) $row['widthPx'] : null;
+            $row['heightPx'] = $row['heightPx'] !== null ? (int) $row['heightPx'] : null;
+            $row['url'] = '/uploads/gallery/' . $row['filename'];
+        }
+
+        $res->getBody()->write(json_encode($rows) ?: '[]');
+        return $res->withHeader('Content-Type', 'application/json');
+    })->add(new AdminAuth());
+
     // POST /api/admin/gallery/upload — multipart con campo 'image' + opcional title/alt/country
     $app->post('/api/admin/gallery/upload', function (ServerRequestInterface $req, ResponseInterface $res) {
         $files = $req->getUploadedFiles();

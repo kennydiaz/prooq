@@ -1,0 +1,145 @@
+---
+import AdminLayout from '../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="Login" hideNav requireAuth={false}>
+  <div class="login-card">
+    <h1>Panel Admin</h1>
+    <p class="login-hint">Sesión requerida para gestionar contenido de prooq.com</p>
+
+    <form id="login-form" autocomplete="off">
+      <label>
+        <span>Usuario</span>
+        <input type="text" name="username" required autofocus />
+      </label>
+      <label>
+        <span>Contraseña</span>
+        <input type="password" name="password" required />
+      </label>
+      <button type="submit" id="submit-btn">Entrar</button>
+      <p class="login-error" id="login-error" aria-live="polite"></p>
+    </form>
+  </div>
+</AdminLayout>
+
+<script>
+  import { adminLogin } from '@prooq/data-client/gallery';
+
+  const form = document.getElementById('login-form') as HTMLFormElement | null;
+  const errEl = document.getElementById('login-error');
+  const btn = document.getElementById('submit-btn') as HTMLButtonElement | null;
+  const BASE = window.__ADMIN_BASE__ ?? '/admin/';
+
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!form || !errEl || !btn) return;
+    errEl.textContent = '';
+    btn.disabled = true;
+    btn.textContent = 'Entrando…';
+
+    const fd = new FormData(form);
+    const username = String(fd.get('username') ?? '');
+    const password = String(fd.get('password') ?? '');
+
+    try {
+      await adminLogin(username, password);
+      window.location.href = BASE;
+    } catch (err) {
+      errEl.textContent = err instanceof Error && err.message.includes('invalid_credentials')
+        ? 'Usuario o contraseña incorrectos'
+        : 'No se pudo iniciar sesión';
+      btn.disabled = false;
+      btn.textContent = 'Entrar';
+    }
+  });
+</script>
+
+<style>
+  .login-card {
+    width: min(420px, 100%);
+    background: var(--color-surface-raised);
+    border: 1px solid rgb(255 255 255 / 0.08);
+    border-radius: var(--radius-lg);
+    padding: 2.25rem 2rem;
+    box-shadow: var(--shadow-card);
+  }
+
+  .login-card h1 {
+    margin: 0 0 0.5rem;
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    color: var(--color-text);
+  }
+
+  .login-hint {
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+    margin: 0 0 1.5rem;
+  }
+
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  label span {
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  input {
+    background: var(--color-surface);
+    border: 1px solid rgb(255 255 255 / 0.12);
+    border-radius: var(--radius-md);
+    padding: 0.65rem 0.85rem;
+    color: var(--color-text);
+    font: inherit;
+    transition: border-color 0.2s;
+  }
+
+  input:focus {
+    outline: none;
+    border-color: var(--color-accent-cyan);
+  }
+
+  button[type="submit"] {
+    background: var(--color-brand);
+    color: var(--color-text);
+    border: none;
+    padding: 0.7rem;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    margin-top: 0.5rem;
+    transition: background 0.2s, transform 0.1s;
+  }
+
+  button[type="submit"]:hover:not(:disabled) {
+    background: var(--color-brand-darker);
+  }
+
+  button[type="submit"]:active:not(:disabled) {
+    transform: translateY(1px);
+  }
+
+  button[type="submit"]:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .login-error {
+    color: #ff6b6b;
+    font-size: 0.85rem;
+    margin: 0;
+    min-height: 1.2em;
+    text-align: center;
+  }
+</style>
