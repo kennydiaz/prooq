@@ -8,7 +8,9 @@
     "./clients": "./src/clients.ts",
     "./downloads": "./src/downloads.ts",
     "./chat": "./src/chat.ts",
-    "./gallery": "./src/gallery.ts"
+    "./gallery": "./src/gallery.ts",
+    "./stats": "./src/stats.ts",
+    "./track": "./src/track.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit"

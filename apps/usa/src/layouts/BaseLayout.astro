@@ -1,7 +1,7 @@
 ---
 import '@prooq/styles/globals.css';
 import '@prooq/styles/sections.css';
-import { CountriesMenu, Footer, Header } from '@prooq/ui';
+import { CountriesMenu, Footer, Header, VisitTracker } from '@prooq/ui';
 
 export interface Props {
   title: string;
@@ -45,5 +45,6 @@ const BASE = import.meta.env.BASE_URL.replace(/\/?$/, '/');
       socialTitle="Follow Us on Social Media"
       socialSubtitle="Stay connected and discover the latest updates"
     />
+    <VisitTracker site="usa" />
   </body>
 </html>

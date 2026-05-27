@@ -2,205 +2,183 @@
 import AdminLayout from '../layouts/AdminLayout.astro';
 ---
 
-<AdminLayout title="Galería">
+<AdminLayout title="Dashboard">
   <div class="page-head">
-    <h1>Galería</h1>
-    <p class="page-sub">Subí, organizá y publicá las imágenes que aparecen en las páginas <code>/gallery</code> de cada sucursal.</p>
+    <div>
+      <h1>Dashboard</h1>
+      <p class="page-sub">Visitas registradas en las páginas públicas — IPs y país de origen. Más métricas se irán sumando por módulos.</p>
+    </div>
+    <button type="button" id="refresh-btn" class="ghost-btn">↻ Actualizar</button>
   </div>
 
-  <section class="card upload-card">
-    <h2>Subir imagen</h2>
-    <form id="upload-form" autocomplete="off">
-      <div class="grid-2">
-        <label class="full">
-          <span>Archivo (JPG/PNG/WEBP/GIF, máx 10MB)</span>
-          <input type="file" name="image" accept="image/jpeg,image/png,image/webp,image/gif" required />
-        </label>
-
-        <label>
-          <span>País (vacío = global, visible en las 4 sucursales)</span>
-          <select name="country">
-            <option value="">— Global —</option>
-            <option value="PA">Panamá (PA)</option>
-            <option value="US">USA (US)</option>
-            <option value="ES">España (ES)</option>
-            <option value="VE">Venezuela (VE)</option>
-          </select>
-        </label>
-
-        <label>
-          <span>Orden (0 = primero)</span>
-          <input type="number" name="display_order" value="0" min="0" />
-        </label>
-
-        <label class="full">
-          <span>Título (opcional)</span>
-          <input type="text" name="title" />
-        </label>
-
-        <label class="full">
-          <span>Texto alternativo (alt) — recomendado para accesibilidad</span>
-          <input type="text" name="alt" />
-        </label>
-
-        <label class="full">
-          <span>Caption (opcional)</span>
-          <input type="text" name="caption" />
-        </label>
-      </div>
-
-      <button type="submit" id="upload-btn">Subir</button>
-      <p class="upload-status" id="upload-status" aria-live="polite"></p>
-    </form>
+  <!-- KPIs -->
+  <section class="kpis" aria-label="Indicadores principales">
+    <article class="kpi"><span class="kpi-label">Visitas totales</span><strong class="kpi-value" id="kpi-total">—</strong></article>
+    <article class="kpi"><span class="kpi-label">Hoy</span><strong class="kpi-value" id="kpi-today">—</strong></article>
+    <article class="kpi"><span class="kpi-label">Últimos 7 días</span><strong class="kpi-value" id="kpi-last7">—</strong></article>
+    <article class="kpi"><span class="kpi-label">IPs únicas</span><strong class="kpi-value" id="kpi-ips">—</strong></article>
+    <article class="kpi"><span class="kpi-label">Países</span><strong class="kpi-value" id="kpi-countries">—</strong></article>
+    <article class="kpi"><span class="kpi-label">País top</span><strong class="kpi-value" id="kpi-top">—</strong></article>
   </section>
 
-  <section class="card">
-    <div class="list-head">
-      <h2>Imágenes publicadas</h2>
-      <button type="button" id="refresh-btn" class="ghost-btn">Refrescar</button>
+  <!-- Gráficas -->
+  <section class="charts">
+    <div class="card chart-card">
+      <h2>Visitas por día <span class="muted-inline">(últimos 14 días)</span></h2>
+      <div class="chart-wrap"><canvas id="chart-timeseries"></canvas></div>
     </div>
-    <div id="items-grid" class="items-grid">
-      <p class="muted">Cargando…</p>
+    <div class="card chart-card">
+      <h2>Visitas por país</h2>
+      <div class="chart-wrap"><canvas id="chart-country"></canvas></div>
+    </div>
+  </section>
+
+  <!-- Visitas recientes -->
+  <section class="card">
+    <h2>Visitas recientes</h2>
+    <div class="table-wrap">
+      <table class="visits-table">
+        <thead>
+          <tr><th>País</th><th>IP</th><th>Ruta</th><th>Sitio</th><th>Fecha</th></tr>
+        </thead>
+        <tbody id="visits-body">
+          <tr><td colspan="5" class="muted">Cargando…</td></tr>
+        </tbody>
+      </table>
     </div>
   </section>
 </AdminLayout>
 
 <script>
+  import { Chart } from 'chart.js/auto';
   import {
-    deleteGalleryItem,
-    getAdminGallery,
-    uploadGalleryImage,
-    type GalleryItem,
-  } from '@prooq/data-client/gallery';
+    getRecentVisits,
+    getVisitsByCountry,
+    getVisitsSummary,
+    getVisitsTimeseries,
+  } from '@prooq/data-client/stats';
 
-  const grid = document.getElementById('items-grid');
-  const refreshBtn = document.getElementById('refresh-btn');
-  const form = document.getElementById('upload-form') as HTMLFormElement | null;
-  const status = document.getElementById('upload-status');
-  const uploadBtn = document.getElementById('upload-btn') as HTMLButtonElement | null;
+  const BRAND = '#00c6e7';
+  const PALETTE = ['#00c6e7', '#3b82f6', '#8b5cf6', '#ec4899', '#22c55e', '#f59e0b', '#ef4444', '#14b8a6'];
+
+  // ISO-2 -> emoji bandera (🌐 si desconocido).
+  function flag(cc: string | null): string {
+    if (!cc || cc.length !== 2 || cc === '??') return '🌐';
+    const base = 0x1f1e6;
+    return String.fromCodePoint(base + cc.charCodeAt(0) - 65, base + cc.charCodeAt(1) - 65);
+  }
 
   function escapeHtml(s: string): string {
-    return s.replace(/[&<>"']/g, (c) => ({
-      '&': '&amp;',
-      '<': '&lt;',
-      '>': '&gt;',
-      '"': '&quot;',
-      "'": '&#39;',
-    })[c] ?? c);
+    return s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c] ?? c);
   }
 
-  function fmtSize(bytes: number | null): string {
-    if (bytes === null) return '';
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  function fmtDate(iso: string): string {
+    const d = new Date(iso.replace(' ', 'T'));
+    return Number.isNaN(d.getTime()) ? iso : d.toLocaleString('es', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
   }
 
-  function renderItem(it: GalleryItem): string {
-    const country = it.country ?? 'Global';
-    const dims = it.widthPx && it.heightPx ? `${it.widthPx}×${it.heightPx}` : '';
-    const title = it.title ?? '(sin título)';
-    return `
-      <article class="item" data-id="${it.id}">
-        <div class="item-thumb">
-          <img src="${escapeHtml(it.url)}" alt="${escapeHtml(it.alt ?? title)}" loading="lazy" />
-        </div>
-        <div class="item-body">
-          <strong>${escapeHtml(title)}</strong>
-          <div class="item-meta">
-            <span class="badge">${escapeHtml(country)}</span>
-            <span>${dims}</span>
-            <span>${fmtSize(it.fileSizeBytes)}</span>
-            <span>Orden ${it.displayOrder}</span>
-            ${it.isPublic ? '' : '<span class="badge warn">No público</span>'}
-          </div>
-        </div>
-        <button type="button" class="del-btn" data-id="${it.id}">Borrar</button>
-      </article>
-    `;
-  }
+  const setText = (id: string, v: string | number) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = String(v);
+  };
 
-  async function loadGrid(): Promise<void> {
-    if (!grid) return;
-    grid.innerHTML = '<p class="muted">Cargando…</p>';
-    try {
-      const items = await getAdminGallery();
-      if (items.length === 0) {
-        grid.innerHTML = '<p class="muted">No hay imágenes todavía. Subí la primera arriba.</p>';
-        return;
-      }
-      grid.innerHTML = items.map(renderItem).join('');
+  let tsChart: Chart | null = null;
+  let ccChart: Chart | null = null;
 
-      grid.querySelectorAll<HTMLButtonElement>('.del-btn').forEach((btn) => {
-        btn.addEventListener('click', async () => {
-          const id = Number(btn.dataset.id);
-          if (!Number.isFinite(id)) return;
-          if (!confirm('¿Borrar esta imagen? Esta acción es irreversible.')) return;
-          btn.disabled = true;
-          btn.textContent = 'Borrando…';
-          try {
-            await deleteGalleryItem(id);
-            await loadGrid();
-          } catch (err) {
-            console.error(err);
-            alert('No se pudo borrar.');
-            btn.disabled = false;
-            btn.textContent = 'Borrar';
-          }
-        });
+  async function load(): Promise<void> {
+    const [summary, series, byCountry, recent] = await Promise.all([
+      getVisitsSummary(),
+      getVisitsTimeseries(14),
+      getVisitsByCountry(8),
+      getRecentVisits(50),
+    ]);
+
+    // KPIs
+    setText('kpi-total', summary.total.toLocaleString('es'));
+    setText('kpi-today', summary.today.toLocaleString('es'));
+    setText('kpi-last7', summary.last7.toLocaleString('es'));
+    setText('kpi-ips', summary.uniqueIps.toLocaleString('es'));
+    setText('kpi-countries', summary.countries);
+    setText('kpi-top', summary.topCountry ? `${flag(summary.topCountry.country)} ${summary.topCountry.country}` : '—');
+
+    // Línea: visitas por día
+    const tsEl = document.getElementById('chart-timeseries') as HTMLCanvasElement | null;
+    if (tsEl) {
+      tsChart?.destroy();
+      tsChart = new Chart(tsEl, {
+        type: 'line',
+        data: {
+          labels: series.map((p) => p.date.slice(5)),
+          datasets: [{
+            label: 'Visitas',
+            data: series.map((p) => p.count),
+            borderColor: BRAND,
+            backgroundColor: 'rgba(0, 198, 231, 0.15)',
+            fill: true,
+            tension: 0.35,
+            pointRadius: 2,
+          }],
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#9aa7b8' } },
+            y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#9aa7b8', precision: 0 } },
+          },
+        },
       });
-    } catch (err) {
-      console.error(err);
-      grid.innerHTML = '<p class="muted error">Error cargando galería.</p>';
+    }
+
+    // Doughnut: por país
+    const ccEl = document.getElementById('chart-country') as HTMLCanvasElement | null;
+    if (ccEl) {
+      ccChart?.destroy();
+      ccChart = new Chart(ccEl, {
+        type: 'doughnut',
+        data: {
+          labels: byCountry.map((c) => `${flag(c.country)} ${c.country}`),
+          datasets: [{ data: byCountry.map((c) => c.count), backgroundColor: PALETTE, borderWidth: 0 }],
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { position: 'right', labels: { color: '#cfd8e3', boxWidth: 12 } } },
+        },
+      });
+    }
+
+    // Tabla recientes
+    const body = document.getElementById('visits-body');
+    if (body) {
+      body.innerHTML = recent.length === 0
+        ? '<tr><td colspan="5" class="muted">Sin visitas registradas todavía.</td></tr>'
+        : recent.map((v) => `
+            <tr>
+              <td>${flag(v.country)} ${v.country ?? '—'}</td>
+              <td class="mono">${escapeHtml(v.ip ?? '—')}</td>
+              <td class="mono">${escapeHtml(v.path)}</td>
+              <td>${escapeHtml(v.site ?? '—')}</td>
+              <td>${fmtDate(v.createdAt)}</td>
+            </tr>`).join('');
     }
   }
 
-  refreshBtn?.addEventListener('click', loadGrid);
+  const refreshBtn = document.getElementById('refresh-btn');
+  refreshBtn?.addEventListener('click', () => { void load(); });
 
-  form?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    if (!form || !status || !uploadBtn) return;
-
-    const fd = new FormData(form);
-    const file = fd.get('image');
-    if (!(file instanceof File) || file.size === 0) {
-      status.textContent = 'Seleccioná un archivo.';
-      return;
-    }
-
-    const countryRaw = String(fd.get('country') ?? '');
-    const country =
-      countryRaw === 'PA' || countryRaw === 'US' || countryRaw === 'ES' || countryRaw === 'VE'
-        ? countryRaw
-        : undefined;
-
-    status.textContent = 'Subiendo…';
-    uploadBtn.disabled = true;
-
-    try {
-      await uploadGalleryImage(file, {
-        title: String(fd.get('title') ?? '').trim() || undefined,
-        alt: String(fd.get('alt') ?? '').trim() || undefined,
-        caption: String(fd.get('caption') ?? '').trim() || undefined,
-        country,
-        displayOrder: Number(fd.get('display_order') ?? 0),
-      });
-      form.reset();
-      status.textContent = '✔ Subida exitosa';
-      await loadGrid();
-    } catch (err) {
-      console.error(err);
-      status.textContent = '✗ Error: ' + (err instanceof Error ? err.message : 'desconocido');
-    } finally {
-      uploadBtn.disabled = false;
-    }
+  load().catch((err) => {
+    console.error(err);
+    const body = document.getElementById('visits-body');
+    if (body) body.innerHTML = '<tr><td colspan="5" class="muted error">Error cargando estadísticas.</td></tr>';
   });
-
-  loadGrid();
 </script>
 
 <style>
   .page-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
     margin-bottom: 2rem;
   }
 
@@ -214,14 +192,48 @@ import AdminLayout from '../layouts/AdminLayout.astro';
     color: var(--color-text-muted);
     margin: 0;
     font-size: 0.95rem;
+    max-width: 640px;
   }
 
-  .page-sub code {
-    background: rgb(0 198 231 / 0.1);
-    color: var(--color-accent-cyan);
-    padding: 0.1rem 0.4rem;
-    border-radius: var(--radius-sm);
-    font-size: 0.85em;
+  /* KPIs */
+  .kpis {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .kpi {
+    background: var(--color-surface-raised);
+    border: 1px solid rgb(255 255 255 / 0.06);
+    border-left: 3px solid var(--color-accent-cyan);
+    border-radius: var(--radius-lg);
+    padding: 1.1rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .kpi-label {
+    font-size: 0.72rem;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .kpi-value {
+    font-family: var(--font-display);
+    font-size: 1.9rem;
+    line-height: 1;
+    color: var(--color-text);
+  }
+
+  /* Charts */
+  .charts {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
   }
 
   .card {
@@ -234,188 +246,74 @@ import AdminLayout from '../layouts/AdminLayout.astro';
 
   .card h2 {
     margin: 0 0 1rem;
-    font-size: 1.1rem;
+    font-size: 1.05rem;
     font-weight: 600;
   }
 
-  .upload-card .grid-2 {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-    margin-bottom: 1.25rem;
-  }
-
-  .upload-card .grid-2 .full {
-    grid-column: 1 / -1;
-  }
-
-  label {
-    display: flex;
-    flex-direction: column;
-    gap: 0.4rem;
-  }
-
-  label span {
-    font-size: 0.78rem;
+  .muted-inline {
     color: var(--color-text-muted);
+    font-weight: 400;
+    font-size: 0.85rem;
+  }
+
+  .chart-card { margin-bottom: 0; }
+
+  .chart-wrap {
+    position: relative;
+    height: 280px;
+  }
+
+  /* Tabla */
+  .table-wrap { overflow-x: auto; }
+
+  .visits-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+  }
+
+  .visits-table th {
+    text-align: left;
+    color: var(--color-text-muted);
+    font-size: 0.72rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid rgb(255 255 255 / 0.08);
   }
 
-  input, select {
-    background: var(--color-surface);
-    border: 1px solid rgb(255 255 255 / 0.12);
-    border-radius: var(--radius-md);
+  .visits-table td {
     padding: 0.55rem 0.75rem;
-    color: var(--color-text);
-    font: inherit;
+    border-bottom: 1px solid rgb(255 255 255 / 0.04);
+    color: var(--color-text-soft);
   }
 
-  input:focus, select:focus {
-    outline: none;
-    border-color: var(--color-accent-cyan);
+  .visits-table tbody tr:hover {
+    background: rgb(255 255 255 / 0.03);
   }
 
-  button[type="submit"] {
-    background: var(--color-brand);
-    color: var(--color-text);
-    border: none;
-    padding: 0.7rem 1.5rem;
-    border-radius: var(--radius-md);
-    font-weight: 600;
-  }
-
-  button[type="submit"]:hover:not(:disabled) {
-    background: var(--color-brand-darker);
-  }
-
-  button[type="submit"]:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
+  .mono {
+    font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+    font-size: 0.82rem;
   }
 
   .ghost-btn {
     background: transparent;
     border: 1px solid rgb(255 255 255 / 0.2);
     color: var(--color-text-soft);
-    padding: 0.4rem 0.9rem;
+    padding: 0.45rem 0.95rem;
     border-radius: var(--radius-md);
     font-size: 0.85rem;
+    white-space: nowrap;
+    flex-shrink: 0;
   }
 
-  .ghost-btn:hover {
-    background: rgb(255 255 255 / 0.06);
-  }
+  .ghost-btn:hover { background: rgb(255 255 255 / 0.06); }
 
-  .upload-status {
-    margin: 0.75rem 0 0;
-    font-size: 0.9rem;
-    color: var(--color-text-muted);
-  }
+  .muted { color: var(--color-text-muted); text-align: center; padding: 1.5rem; }
+  .muted.error { color: #ff8080; }
 
-  .list-head {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1rem;
-  }
-
-  .list-head h2 {
-    margin: 0;
-  }
-
-  .items-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 1rem;
-  }
-
-  .item {
-    background: var(--color-surface);
-    border: 1px solid rgb(255 255 255 / 0.06);
-    border-radius: var(--radius-md);
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .item-thumb {
-    aspect-ratio: 16 / 10;
-    background: #000;
-    overflow: hidden;
-  }
-
-  .item-thumb img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-
-  .item-body {
-    padding: 0.75rem 0.9rem;
-    flex: 1;
-  }
-
-  .item-body strong {
-    display: block;
-    font-size: 0.9rem;
-    margin-bottom: 0.4rem;
-  }
-
-  .item-meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.4rem;
-    font-size: 0.75rem;
-    color: var(--color-text-muted);
-  }
-
-  .badge {
-    background: rgb(0 60 255 / 0.2);
-    color: var(--color-brand-light);
-    padding: 0.1rem 0.5rem;
-    border-radius: var(--radius-pill);
-    font-weight: 600;
-    letter-spacing: 0.05em;
-  }
-
-  .badge.warn {
-    background: rgb(255 179 0 / 0.2);
-    color: var(--color-accent-amber);
-  }
-
-  .del-btn {
-    background: transparent;
-    border: none;
-    border-top: 1px solid rgb(255 255 255 / 0.06);
-    color: #ff9090;
-    padding: 0.6rem;
-    font-size: 0.85rem;
-    font-weight: 500;
-  }
-
-  .del-btn:hover:not(:disabled) {
-    background: rgb(255 100 100 / 0.08);
-  }
-
-  .del-btn:disabled {
-    opacity: 0.5;
-  }
-
-  .muted {
-    color: var(--color-text-muted);
-    text-align: center;
-    padding: 1.5rem;
-    margin: 0;
-  }
-
-  .muted.error {
-    color: #ff8080;
-  }
-
-  @media (max-width: 600px) {
-    .upload-card .grid-2 {
-      grid-template-columns: 1fr;
-    }
+  @media (max-width: 860px) {
+    .charts { grid-template-columns: 1fr; }
   }
 </style>

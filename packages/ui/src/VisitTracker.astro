@@ -1,0 +1,30 @@
+---
+/**
+ * VisitTracker — registra la visita actual (analytics) llamando a la API.
+ * Incluir una vez por página en el BaseLayout de cada sucursal.
+ * Fire-and-forget: nunca bloquea ni rompe el render. En dev local no envía a
+ * la API de producción (ver trackVisit en @prooq/data-client/track).
+ *
+ * Props:
+ *   site — código de sucursal: pty | usa | esp | ven | portal.
+ */
+export interface Props {
+  site: string;
+}
+
+const { site } = Astro.props;
+---
+
+<div id="prooq-visit-tracker" data-site={site} hidden aria-hidden="true"></div>
+
+<script>
+  import { trackVisit } from '@prooq/data-client/track';
+
+  const el = document.getElementById('prooq-visit-tracker');
+  const site = el?.dataset.site ?? '';
+  trackVisit({
+    path: location.pathname,
+    site,
+    referrer: document.referrer || undefined,
+  });
+</script>

@@ -8,5 +8,6 @@ export { default as MeteorShower } from './MeteorShower.astro';
 export { default as Nebula } from './Nebula.astro';
 export { default as NeonPriceSticker } from './NeonPriceSticker.astro';
 export { default as SocialLinks } from './SocialLinks.astro';
+export { default as VisitTracker } from './VisitTracker.astro';
 export { default as Starfield } from './Starfield.astro';
 export { default as Warp } from './Warp.astro';

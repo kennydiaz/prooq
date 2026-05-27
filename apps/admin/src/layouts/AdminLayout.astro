@@ -9,6 +9,15 @@ export interface Props {
 
 const { title, hideNav = false, requireAuth = true } = Astro.props;
 const BASE = import.meta.env.BASE_URL.replace(/\/?$/, '/');
+
+// Modulos del panel. Para agregar uno nuevo, basta sumarlo aqui y crear su
+// pagina en src/pages/. El estado activo se calcula contra la URL actual.
+const base = BASE.replace(/\/$/, ''); // "/admin"
+const path = Astro.url.pathname.replace(/\/$/, '') || base;
+const modules = [
+  { href: BASE, label: 'Dashboard', icon: '📊', active: path === base },
+  { href: `${base}/gallery`, label: 'Galería', icon: '🖼️', active: path === `${base}/gallery` },
+];
 ---
 
 <!doctype html>
@@ -26,23 +35,38 @@ const BASE = import.meta.env.BASE_URL.replace(/\/?$/, '/');
     />
   </head>
   <body>
-    {!hideNav && (
-      <header class="admin-header">
-        <div class="admin-header-inner">
-          <a href={BASE} class="admin-brand">
-            <span class="admin-brand-mark">PROOQ</span>
-            <span class="admin-brand-tag">admin</span>
-          </a>
-          <nav class="admin-nav">
-            <a href={BASE}>Galería</a>
-            <button type="button" id="logout-btn" class="logout-btn">Salir</button>
-          </nav>
+    {
+      hideNav ? (
+        <main class="admin-main center">
+          <slot />
+        </main>
+      ) : (
+        <div class="admin-layout">
+          <aside class="admin-sidebar">
+            <a href={BASE} class="admin-brand">
+              <span class="admin-brand-mark">PROOQ</span>
+              <span class="admin-brand-tag">admin</span>
+            </a>
+            <nav class="admin-nav">
+              {modules.map((m) => (
+                <a href={m.href} class={m.active ? 'nav-link active' : 'nav-link'}>
+                  <span class="nav-icon" aria-hidden="true">
+                    {m.icon}
+                  </span>
+                  <span>{m.label}</span>
+                </a>
+              ))}
+            </nav>
+            <button type="button" id="logout-btn" class="logout-btn">
+              Salir
+            </button>
+          </aside>
+          <main class="admin-main">
+            <slot />
+          </main>
         </div>
-      </header>
-    )}
-    <main class={hideNav ? 'admin-main center' : 'admin-main'}>
-      <slot />
-    </main>
+      )
+    }
 
     <script is:inline define:vars={{ BASE, requireAuth }}>
       // Inline script: corre sincrono ANTES de los <script type=module> bundlados
@@ -87,23 +111,24 @@ const BASE = import.meta.env.BASE_URL.replace(/\/?$/, '/');
         min-height: 100vh;
       }
 
-      .admin-header {
-        position: sticky;
-        top: 0;
-        z-index: 50;
-        background: rgb(5 13 31 / 0.9);
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        border-bottom: 1px solid rgb(255 255 255 / 0.06);
+      .admin-layout {
+        display: flex;
+        min-height: 100vh;
       }
 
-      .admin-header-inner {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 0.75rem 1.5rem;
+      /* Sidebar izquierdo */
+      .admin-sidebar {
+        width: 240px;
+        flex-shrink: 0;
+        position: sticky;
+        top: 0;
+        height: 100vh;
+        background: rgb(5 13 31 / 0.95);
+        border-right: 1px solid rgb(255 255 255 / 0.06);
         display: flex;
-        align-items: center;
-        justify-content: space-between;
+        flex-direction: column;
+        gap: 0.25rem;
+        padding: 1.25rem 1rem;
       }
 
       .admin-brand {
@@ -111,6 +136,7 @@ const BASE = import.meta.env.BASE_URL.replace(/\/?$/, '/');
         align-items: baseline;
         gap: 0.5rem;
         text-decoration: none;
+        padding: 0.5rem 0.75rem 1.25rem;
       }
 
       .admin-brand-mark {
@@ -122,7 +148,7 @@ const BASE = import.meta.env.BASE_URL.replace(/\/?$/, '/');
       }
 
       .admin-brand-tag {
-        font-size: 0.75rem;
+        font-size: 0.7rem;
         color: var(--color-accent-cyan);
         text-transform: uppercase;
         letter-spacing: 0.15em;
@@ -130,29 +156,48 @@ const BASE = import.meta.env.BASE_URL.replace(/\/?$/, '/');
 
       .admin-nav {
         display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+      }
+
+      .nav-link {
+        display: flex;
         align-items: center;
-        gap: 1rem;
-      }
-
-      .admin-nav a {
+        gap: 0.7rem;
         color: var(--color-text-soft);
-        font-size: 0.9rem;
-        padding: 0.4rem 0.8rem;
+        font-size: 0.92rem;
+        padding: 0.6rem 0.8rem;
         border-radius: var(--radius-md);
+        transition: background 0.2s, color 0.2s;
       }
 
-      .admin-nav a:hover {
+      .nav-link:hover {
         background: rgb(255 255 255 / 0.06);
       }
 
+      .nav-link.active {
+        background: rgb(0 198 231 / 0.12);
+        color: var(--color-accent-cyan);
+        font-weight: 600;
+      }
+
+      .nav-icon {
+        font-size: 1.05rem;
+        width: 1.4rem;
+        text-align: center;
+      }
+
       .logout-btn {
+        margin-top: auto;
         background: transparent;
         border: 1px solid rgb(255 255 255 / 0.2);
         color: var(--color-text-soft);
-        padding: 0.4rem 0.9rem;
+        padding: 0.55rem 0.9rem;
         border-radius: var(--radius-md);
         font-size: 0.85rem;
         font-weight: 500;
+        text-align: left;
+        cursor: pointer;
       }
 
       .logout-btn:hover {
@@ -161,14 +206,12 @@ const BASE = import.meta.env.BASE_URL.replace(/\/?$/, '/');
       }
 
       .admin-main {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 2rem 1.5rem;
+        flex: 1;
+        min-width: 0;
+        padding: 2rem 2.5rem;
       }
 
-      /* Modo centrado (login). Sobrescribe max-width + padding del .admin-main
-         para que el card quede realmente centrado en viewport, no en una caja
-         de 1200px con padding asimetrico. */
+      /* Login: sin sidebar, card centrado a pantalla completa */
       .admin-main.center {
         max-width: none;
         display: flex;
@@ -176,6 +219,42 @@ const BASE = import.meta.env.BASE_URL.replace(/\/?$/, '/');
         justify-content: center;
         min-height: 100vh;
         padding: 1.5rem;
+      }
+
+      /* Responsive: el sidebar pasa a barra superior */
+      @media (max-width: 768px) {
+        .admin-layout {
+          flex-direction: column;
+        }
+
+        .admin-sidebar {
+          width: auto;
+          height: auto;
+          position: static;
+          flex-direction: row;
+          align-items: center;
+          flex-wrap: wrap;
+          gap: 0.5rem;
+          padding: 0.75rem 1rem;
+        }
+
+        .admin-brand {
+          padding: 0 0.75rem 0 0.25rem;
+        }
+
+        .admin-nav {
+          flex-direction: row;
+          flex-wrap: wrap;
+        }
+
+        .logout-btn {
+          margin-top: 0;
+          margin-left: auto;
+        }
+
+        .admin-main {
+          padding: 1.5rem 1.25rem;
+        }
       }
     </style>
   </body>
