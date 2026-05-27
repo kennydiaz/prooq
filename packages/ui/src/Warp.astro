@@ -1,0 +1,180 @@
+---
+/**
+ * Warp — fondo de "hiperespacio": estrellas que salen disparadas radialmente
+ * desde el centro dejando estelas, simulando viaje a velocidad warp.
+ * Canvas puro (sin video), tinte azul de marca, fallback para reduced-motion
+ * y pausa al ocultar la pestaña. Capa fija a viewport (z-index -1).
+ * Singleton: usar una sola vez por página.
+ *
+ * Props:
+ *   speed — multiplicador de velocidad del warp (1 = por defecto).
+ */
+export interface Props {
+  speed?: number;
+}
+
+const { speed = 1 } = Astro.props;
+---
+
+<div class="warp-bg" aria-hidden="true" data-speed={speed}>
+  <canvas id="warp-canvas"></canvas>
+</div>
+
+<style>
+  .warp-bg {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      radial-gradient(ellipse 70% 55% at 50% 50%, rgb(77 159 255 / 0.1), transparent 60%),
+      radial-gradient(ellipse 90% 70% at 18% 12%, rgb(0 60 255 / 0.12), transparent 62%),
+      radial-gradient(ellipse 80% 60% at 85% 82%, rgb(0 198 231 / 0.08), transparent 58%),
+      #000000;
+  }
+
+  #warp-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+</style>
+
+<script>
+  (() => {
+    const root = document.querySelector('.warp-bg') as HTMLElement | null;
+    const canvas = document.getElementById('warp-canvas') as HTMLCanvasElement | null;
+    const ctx = canvas?.getContext('2d');
+    if (!root || !canvas || !ctx) return;
+
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const speedMult = Number(root.dataset.speed) || 1;
+
+    // Velocidad del warp en "unidades de profundidad" por frame (z va de 1=lejos a 0=cerca).
+    const BASE_SPEED = 0.0055 * speedMult;
+    const STAR_COLORS = ['#ffffff', '#cfe9ff', '#bcdcff', '#a9c7ff', '#fff4e0'];
+
+    interface Star {
+      x: number; // [-1, 1] posición horizontal normalizada
+      y: number; // [-1, 1] posición vertical normalizada
+      z: number; // (0, 1] profundidad: 1 = lejano, →0 = pasa junto al espectador
+      color: string;
+    }
+
+    let W = 0, H = 0, cx = 0, cy = 0;
+    let stars: Star[] = [];
+    let running = true;
+    // Punto de fuga con leve parallax hacia el cursor.
+    let vpX = 0, vpY = 0, tgtX = 0, tgtY = 0;
+
+    const rand = (a: number, b: number) => Math.random() * (b - a) + a;
+
+    function makeStar(seedZ: boolean): Star {
+      return {
+        x: rand(-1, 1),
+        y: rand(-1, 1),
+        z: seedZ ? rand(0.05, 1) : 1,
+        color: STAR_COLORS[(Math.random() * STAR_COLORS.length) | 0],
+      };
+    }
+
+    function buildStars() {
+      const count = Math.min(Math.max(Math.round((W * H) / 4200), 160), 600);
+      stars = [];
+      for (let i = 0; i < count; i++) stars.push(makeStar(true));
+    }
+
+    function resize() {
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      W = window.innerWidth;
+      H = window.innerHeight;
+      cx = W / 2;
+      cy = H / 2;
+      canvas!.width = W * dpr;
+      canvas!.height = H * dpr;
+      ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
+      buildStars();
+    }
+
+    // Proyecta un (x,y) normalizado a píxeles de pantalla según la profundidad z.
+    function projX(x: number, z: number) {
+      return cx + vpX + (x / z) * cx;
+    }
+    function projY(y: number, z: number) {
+      return cy + vpY + (y / z) * cy;
+    }
+
+    function draw() {
+      ctx!.clearRect(0, 0, W, H);
+      ctx!.lineCap = 'round';
+      for (const s of stars) {
+        const sx = projX(s.x, s.z);
+        const sy = projY(s.y, s.z);
+        const closeness = 1 - s.z; // 0 lejos → 1 cerca
+        const r = closeness * 2.4 + 0.35;
+        const a = Math.min(1, closeness * 1.25 + 0.12);
+
+        if (reduceMotion) {
+          ctx!.globalAlpha = a;
+          ctx!.fillStyle = s.color;
+          ctx!.beginPath();
+          ctx!.arc(sx, sy, r, 0, Math.PI * 2);
+          ctx!.fill();
+          continue;
+        }
+
+        // Estela: desde la posición del frame anterior (z mayor) hasta la actual.
+        const pz = Math.min(1, s.z + BASE_SPEED);
+        const px = projX(s.x, pz);
+        const py = projY(s.y, pz);
+        ctx!.globalAlpha = a;
+        ctx!.strokeStyle = s.color;
+        ctx!.lineWidth = r;
+        ctx!.beginPath();
+        ctx!.moveTo(px, py);
+        ctx!.lineTo(sx, sy);
+        ctx!.stroke();
+      }
+      ctx!.globalAlpha = 1;
+    }
+
+    function update() {
+      vpX += (tgtX - vpX) * 0.04;
+      vpY += (tgtY - vpY) * 0.04;
+      for (let i = 0; i < stars.length; i++) {
+        const s = stars[i];
+        s.z -= BASE_SPEED;
+        // Reaparece cuando pasa junto al espectador o se sale de pantalla.
+        if (s.z <= 0.02) {
+          stars[i] = makeStar(false);
+        }
+      }
+    }
+
+    function frame() {
+      if (!running) return;
+      update();
+      draw();
+      requestAnimationFrame(frame);
+    }
+
+    window.addEventListener('resize', resize);
+    window.addEventListener('mousemove', (e) => {
+      tgtX = (e.clientX / W - 0.5) * -W * 0.05; // parallax suave del punto de fuga
+      tgtY = (e.clientY / H - 0.5) * -H * 0.05;
+    });
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        running = false;
+      } else if (!reduceMotion) {
+        running = true;
+        requestAnimationFrame(frame);
+      }
+    });
+
+    resize();
+    if (reduceMotion) draw();
+    else requestAnimationFrame(frame);
+  })();
+</script>

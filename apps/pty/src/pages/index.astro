@@ -1,5 +1,5 @@
 ---
-import { ChatFab, HeroParallax } from '@prooq/ui';
+import { ChatFab, HeroParallax, Starfield } from '@prooq/ui';
 import BaseLayout from '../layouts/BaseLayout.astro';
 
 const BASE = import.meta.env.BASE_URL.replace(/\/?$/, '/');
@@ -170,6 +170,8 @@ const locationDetails = [
   title="PROOQ S.A. — Soluciones Tecnológicas en Panamá"
   description="PROOQ Panamá: SuiteHub, seguridad electrónica, redes, automatización con IA y chat. Sede principal en Ciudad de Panamá."
 >
+  <Starfield />
+
   <HeroParallax
     title="PROOQ"
     subtitle="Soluciones tecnológicas integrales para empresas"
@@ -344,9 +346,11 @@ const locationDetails = [
   .suitehub-feature {
     background: radial-gradient(
       ellipse at center top,
-      rgb(0 60 255 / 0.15) 0%,
-      var(--color-surface) 60%
+      rgb(0 60 255 / 0.22) 0%,
+      rgb(5 13 31 / 0.55) 60%
     );
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
     padding-top: 6rem;
     padding-bottom: 5rem;
   }
@@ -500,6 +504,28 @@ const locationDetails = [
       gap: 2rem;
     }
     .brand-name { font-size: 2.4rem; }
+  }
+</style>
+
+<!-- Secciones semi-transparentes para que el cielo estelar (Starfield) se vea detrás.
+     Scoped solo a esta página vía is:global; las tarjetas internas siguen opacas. -->
+<style is:global>
+  main .section-services,
+  main .section-team {
+    background: rgb(5 13 31 / 0.62);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+  }
+  main .section-about,
+  main .section-portfolio {
+    background: rgb(10 24 51 / 0.55);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+  }
+  main .section-location {
+    background: rgb(5 13 31 / 0.62);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
   }
 </style>
 

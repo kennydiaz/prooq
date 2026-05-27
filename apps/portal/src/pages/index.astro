@@ -1,4 +1,5 @@
 ---
+import { Warp } from '@prooq/ui';
 import BaseLayout from '../layouts/BaseLayout.astro';
 
 interface Branch {
@@ -60,10 +61,7 @@ const branches: readonly Branch[] = [
   title="PROOQ — Presencia Global"
   description="PROOQ: Soluciones tecnológicas con presencia global en Panamá, Estados Unidos, España y Venezuela. Innovación, confianza y eficiencia para tu negocio."
 >
-  <video class="video-background" autoplay muted loop playsinline aria-hidden="true">
-    <source src="/world.mp4" type="video/mp4" />
-    Tu navegador no soporta videos HTML5.
-  </video>
+  <Warp />
 
   <div class="container">
     <header class="logo-section">
@@ -129,27 +127,6 @@ const branches: readonly Branch[] = [
     background: #000000;
     color: #ffffff;
     overflow-x: hidden;
-  }
-
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background: rgb(0 0 0 / 0.2);
-    z-index: -1;
-    pointer-events: none;
-  }
-
-  /* Video background — fixed, cover, behind everything */
-  .video-background {
-    position: fixed;
-    inset: 0;
-    width: 100vw;
-    height: 100vh;
-    object-fit: cover;
-    z-index: -2;
-    opacity: 0.7;
-    will-change: opacity, transform;
   }
 
   .container {
@@ -487,7 +464,6 @@ const branches: readonly Branch[] = [
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .video-background,
     .container,
     .logo-section,
     .branch-link,

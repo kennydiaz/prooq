@@ -1,0 +1,185 @@
+---
+/**
+ * Starfield — fondo de cielo estelar dinámico ("vista al universo").
+ * Capa fija a viewport (z-index -1) con nebulosa (CSS) + estrellas (canvas):
+ * profundidad por parallax, parpadeo, deriva lenta y estrellas fugaces.
+ * Portado del V1 (prooq/panama/index.php). Singleton: usar una sola vez por página.
+ */
+---
+
+<div class="starfield-bg" aria-hidden="true">
+  <canvas id="starfield-canvas"></canvas>
+</div>
+
+<style>
+  .starfield-bg {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    /* Nebulosa: gradientes radiales suaves sobre la superficie base (--color-surface) */
+    background:
+      radial-gradient(ellipse 80% 60% at 18% 12%, rgb(77 159 255 / 0.14), transparent 60%),
+      radial-gradient(ellipse 70% 55% at 85% 78%, rgb(0 60 255 / 0.16), transparent 58%),
+      radial-gradient(ellipse 65% 50% at 60% 45%, rgb(0 198 231 / 0.07), transparent 55%);
+  }
+
+  #starfield-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+</style>
+
+<script>
+  (() => {
+    const canvas = document.getElementById('starfield-canvas') as HTMLCanvasElement | null;
+    const ctx = canvas?.getContext('2d');
+    if (!canvas || !ctx) return;
+
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // Capas de profundidad: lejanas (lentas/tenues) → cercanas (grandes/brillantes)
+    const LAYERS = [
+      { depth: 0.15, rMin: 0.4, rMax: 0.9, drift: 0.015, aMin: 0.2, aMax: 0.5 },
+      { depth: 0.45, rMin: 0.7, rMax: 1.5, drift: 0.04, aMin: 0.4, aMax: 0.8 },
+      { depth: 1.0, rMin: 1.1, rMax: 2.6, drift: 0.08, aMin: 0.6, aMax: 1.0 },
+    ];
+    const STAR_COLORS = ['#ffffff', '#cfe9ff', '#bcdcff', '#fff4e0', '#a9c7ff'];
+
+    interface Star {
+      x: number; y: number; r: number; baseA: number;
+      phase: number; twSpeed: number; depth: number; drift: number; color: string;
+    }
+    interface Shoot {
+      x: number; y: number; nx: number; ny: number; speed: number; len: number;
+    }
+
+    let W = 0, H = 0;
+    let stars: Star[] = [];
+    let shooting: Shoot[] = [];
+    let running = true;
+    let parX = 0, parY = 0, tgtX = 0, tgtY = 0, nextShoot = 2500;
+
+    const rand = (a: number, b: number) => Math.random() * (b - a) + a;
+
+    function buildStars() {
+      const count = Math.min(Math.max(Math.round((W * H) / 6500), 90), 300);
+      stars = [];
+      for (let i = 0; i < count; i++) {
+        const L = LAYERS[i % LAYERS.length];
+        stars.push({
+          x: rand(0, W),
+          y: rand(0, H),
+          r: rand(L.rMin, L.rMax),
+          baseA: rand(L.aMin, L.aMax),
+          phase: rand(0, Math.PI * 2),
+          twSpeed: rand(0.5, 2.0),
+          depth: L.depth,
+          drift: L.drift,
+          color: STAR_COLORS[(Math.random() * STAR_COLORS.length) | 0],
+        });
+      }
+      shooting = [];
+    }
+
+    function resize() {
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      W = window.innerWidth;
+      H = window.innerHeight;
+      canvas!.width = W * dpr;
+      canvas!.height = H * dpr;
+      ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
+      buildStars();
+    }
+
+    function spawnShooting() {
+      const angle = rand(Math.PI * 0.12, Math.PI * 0.38); // diagonal hacia abajo-derecha
+      shooting.push({
+        x: rand(0, W * 0.7),
+        y: rand(-30, H * 0.35),
+        nx: Math.cos(angle),
+        ny: Math.sin(angle),
+        speed: rand(7, 12),
+        len: rand(90, 180),
+      });
+    }
+
+    function draw(t: number) {
+      ctx!.clearRect(0, 0, W, H);
+      for (const s of stars) {
+        const tw = reduceMotion ? 1 : 0.6 + 0.4 * Math.sin(t * 0.001 * s.twSpeed + s.phase);
+        ctx!.globalAlpha = s.baseA * tw;
+        ctx!.fillStyle = s.color;
+        ctx!.beginPath();
+        ctx!.arc(s.x + parX * s.depth, s.y + parY * s.depth, s.r, 0, Math.PI * 2);
+        ctx!.fill();
+      }
+      ctx!.globalAlpha = 1;
+      for (const sh of shooting) {
+        const tx = sh.x - sh.nx * sh.len;
+        const ty = sh.y - sh.ny * sh.len;
+        const g = ctx!.createLinearGradient(sh.x, sh.y, tx, ty);
+        g.addColorStop(0, 'rgba(255,255,255,0.9)');
+        g.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx!.strokeStyle = g;
+        ctx!.lineWidth = 2;
+        ctx!.lineCap = 'round';
+        ctx!.beginPath();
+        ctx!.moveTo(sh.x, sh.y);
+        ctx!.lineTo(tx, ty);
+        ctx!.stroke();
+      }
+    }
+
+    function update(t: number) {
+      parX += (tgtX - parX) * 0.04;
+      parY += (tgtY - parY) * 0.04;
+      for (const s of stars) {
+        s.y += s.drift;
+        if (s.y - s.r > H) {
+          s.y = -s.r;
+          s.x = rand(0, W);
+        }
+      }
+      if (t > nextShoot) {
+        if (Math.random() < 0.75) spawnShooting();
+        nextShoot = t + rand(4500, 11000);
+      }
+      for (let i = shooting.length - 1; i >= 0; i--) {
+        const sh = shooting[i];
+        sh.x += sh.nx * sh.speed;
+        sh.y += sh.ny * sh.speed;
+        if (sh.x - sh.nx * sh.len > W + 60 || sh.y - sh.ny * sh.len > H + 60) {
+          shooting.splice(i, 1);
+        }
+      }
+    }
+
+    function frame(t: number) {
+      if (!running) return;
+      update(t);
+      draw(t);
+      requestAnimationFrame(frame);
+    }
+
+    window.addEventListener('resize', resize);
+    window.addEventListener('mousemove', (e) => {
+      tgtX = (e.clientX / W - 0.5) * 36; // parallax máx ±18px
+      tgtY = (e.clientY / H - 0.5) * 36;
+    });
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        running = false;
+      } else if (!reduceMotion) {
+        running = true;
+        requestAnimationFrame(frame);
+      }
+    });
+
+    resize();
+    if (reduceMotion) draw(0);
+    else requestAnimationFrame(frame);
+  })();
+</script>
