@@ -64,7 +64,10 @@ export interface UploadResult {
   height_px: number | null;
 }
 
-export async function uploadGalleryImage(file: File, fields: UploadFields = {}): Promise<UploadResult> {
+export async function uploadGalleryImage(
+  file: File,
+  fields: UploadFields = {},
+): Promise<UploadResult> {
   const fd = new FormData();
   fd.append('image', file);
   if (fields.title) fd.append('title', fields.title);
