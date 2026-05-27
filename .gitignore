@@ -6,6 +6,8 @@ api/vendor/
 dist/
 .astro/
 .turbo/
+*.tsbuildinfo
+node_modules/.vite/
 
 # Env
 .env
@@ -34,6 +36,11 @@ pnpm-debug.log*
 # OS / editor
 .DS_Store
 Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.swp
+*~
 .vscode/*
 !.vscode/extensions.json
 !.vscode/settings.json
