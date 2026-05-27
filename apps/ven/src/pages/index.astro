@@ -1,4 +1,5 @@
 ---
+import { getTeam } from '@prooq/data-client/team';
 import { HeroParallax, MeteorShower } from '@prooq/ui';
 import BaseLayout from '../layouts/BaseLayout.astro';
 
@@ -103,7 +104,8 @@ const stats = [
   { value: '1999', label: 'Fundada en Venezuela' },
 ];
 
-const team = [
+// Equipo desde el CMS (build-time) con fallback hardcodeado si la API falla.
+const fallbackTeam = [
   { name: 'Kenny', role: 'Especialista en Redes', photo: `${BASE}images/team/kenny.jpg` },
   { name: 'Angelo', role: 'Desarrollador', photo: `${BASE}images/team/angelo.jpg` },
   { name: 'Daniel', role: 'Soporte Técnico', photo: `${BASE}images/team/daniel.jpg` },
@@ -112,6 +114,22 @@ const team = [
   { name: 'Dahian', role: 'Asistencia Remota', photo: `${BASE}images/team/dahian.jpg` },
   { name: 'Lázaro', role: 'Instalaciones', photo: `${BASE}images/team/lazaro.jpg` },
 ];
+const initials = (name: string): string =>
+  name
+    .split(/\s+/)
+    .map((p) => p[0] ?? '')
+    .slice(0, 2)
+    .join('')
+    .toUpperCase();
+let team: { name: string; role: string; photo: string }[] = fallbackTeam;
+try {
+  const fetched = await getTeam('VE');
+  if (fetched.length > 0) {
+    team = fetched.map((m) => ({ name: m.name, role: m.role ?? '', photo: m.photoUrl ?? '' }));
+  }
+} catch (err) {
+  console.warn('[team] getTeam failed, usando fallback:', err);
+}
 
 const portfolio = [
   {
@@ -256,7 +274,11 @@ const locationDetails = [
       <div class="team-grid">
         {team.map((m) => (
           <article class="team-member fade-in">
-            <img src={m.photo} alt={m.name} loading="lazy" />
+            {m.photo ? (
+              <img src={m.photo} alt={m.name} loading="lazy" />
+            ) : (
+              <span class="team-avatar-fallback" aria-hidden="true">{initials(m.name)}</span>
+            )}
             <h3>{m.name}</h3>
             <p>{m.role}</p>
           </article>

@@ -10,6 +10,7 @@
     "./chat": "./src/chat.ts",
     "./gallery": "./src/gallery.ts",
     "./stats": "./src/stats.ts",
+    "./team": "./src/team.ts",
     "./track": "./src/track.ts"
   },
   "scripts": {

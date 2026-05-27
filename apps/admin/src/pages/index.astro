@@ -26,10 +26,12 @@ import AdminLayout from '../layouts/AdminLayout.astro';
     <div class="card chart-card">
       <h2>Visitas por día <span class="muted-inline">(últimos 14 días)</span></h2>
       <div class="chart-wrap"><canvas id="chart-timeseries"></canvas></div>
+      <p class="section-msg" id="msg-timeseries"></p>
     </div>
     <div class="card chart-card">
       <h2>Visitas por país</h2>
       <div class="chart-wrap"><canvas id="chart-country"></canvas></div>
+      <p class="section-msg" id="msg-country"></p>
     </div>
   </section>
 
@@ -56,16 +58,21 @@ import AdminLayout from '../layouts/AdminLayout.astro';
     getVisitsByCountry,
     getVisitsSummary,
     getVisitsTimeseries,
+    type CountryCount,
+    type RecentVisit,
+    type TimeseriesPoint,
+    type VisitsSummary,
   } from '@prooq/data-client/stats';
 
+  const BASE = window.__ADMIN_BASE__ ?? '/admin/';
   const BRAND = '#00c6e7';
   const PALETTE = ['#00c6e7', '#3b82f6', '#8b5cf6', '#ec4899', '#22c55e', '#f59e0b', '#ef4444', '#14b8a6'];
 
   // ISO-2 -> emoji bandera (🌐 si desconocido).
   function flag(cc: string | null): string {
     if (!cc || cc.length !== 2 || cc === '??') return '🌐';
-    const base = 0x1f1e6;
-    return String.fromCodePoint(base + cc.charCodeAt(0) - 65, base + cc.charCodeAt(1) - 65);
+    const b = 0x1f1e6;
+    return String.fromCodePoint(b + cc.charCodeAt(0) - 65, b + cc.charCodeAt(1) - 65);
   }
 
   function escapeHtml(s: string): string {
@@ -74,7 +81,9 @@ import AdminLayout from '../layouts/AdminLayout.astro';
 
   function fmtDate(iso: string): string {
     const d = new Date(iso.replace(' ', 'T'));
-    return Number.isNaN(d.getTime()) ? iso : d.toLocaleString('es', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+    return Number.isNaN(d.getTime())
+      ? iso
+      : d.toLocaleString('es', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
   }
 
   const setText = (id: string, v: string | number) => {
@@ -82,95 +91,133 @@ import AdminLayout from '../layouts/AdminLayout.astro';
     if (el) el.textContent = String(v);
   };
 
+  const setMsg = (id: string, msg: string) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = msg;
+  };
+
   let tsChart: Chart | null = null;
   let ccChart: Chart | null = null;
 
+  function renderKpis(s: VisitsSummary): void {
+    setText('kpi-total', s.total.toLocaleString('es'));
+    setText('kpi-today', s.today.toLocaleString('es'));
+    setText('kpi-last7', s.last7.toLocaleString('es'));
+    setText('kpi-ips', s.uniqueIps.toLocaleString('es'));
+    setText('kpi-countries', s.countries);
+    setText('kpi-top', s.topCountry ? `${flag(s.topCountry.country)} ${s.topCountry.country}` : '—');
+  }
+
+  function renderTimeseries(series: TimeseriesPoint[]): void {
+    const el = document.getElementById('chart-timeseries') as HTMLCanvasElement | null;
+    if (!el) return;
+    tsChart?.destroy();
+    tsChart = new Chart(el, {
+      type: 'line',
+      data: {
+        labels: series.map((p) => p.date.slice(5)),
+        datasets: [{
+          label: 'Visitas',
+          data: series.map((p) => p.count),
+          borderColor: BRAND,
+          backgroundColor: 'rgba(0, 198, 231, 0.15)',
+          fill: true,
+          tension: 0.35,
+          pointRadius: 2,
+        }],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#9aa7b8' } },
+          y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#9aa7b8', precision: 0 } },
+        },
+      },
+    });
+  }
+
+  function renderCountry(byCountry: CountryCount[]): void {
+    const el = document.getElementById('chart-country') as HTMLCanvasElement | null;
+    if (!el) return;
+    ccChart?.destroy();
+    ccChart = new Chart(el, {
+      type: 'doughnut',
+      data: {
+        labels: byCountry.map((c) => `${flag(c.country)} ${c.country}`),
+        datasets: [{ data: byCountry.map((c) => c.count), backgroundColor: PALETTE, borderWidth: 0 }],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { position: 'right', labels: { color: '#cfd8e3', boxWidth: 12 } } },
+      },
+    });
+  }
+
+  function renderRecent(recent: RecentVisit[]): void {
+    const body = document.getElementById('visits-body');
+    if (!body) return;
+    body.innerHTML =
+      recent.length === 0
+        ? '<tr><td colspan="5" class="muted">Sin visitas registradas todavía.</td></tr>'
+        : recent
+            .map((v) => `
+              <tr>
+                <td>${flag(v.country)} ${v.country ?? '—'}</td>
+                <td class="mono">${escapeHtml(v.ip ?? '—')}</td>
+                <td class="mono">${escapeHtml(v.path)}</td>
+                <td>${escapeHtml(v.site ?? '—')}</td>
+                <td>${fmtDate(v.createdAt)}</td>
+              </tr>`)
+            .join('');
+  }
+
+  const isAuthError = (reason: unknown): boolean =>
+    reason instanceof Error && /\b401\b/.test(reason.message);
+
+  const errMsg = (reason: unknown): string =>
+    reason instanceof Error ? reason.message : String(reason);
+
   async function load(): Promise<void> {
-    const [summary, series, byCountry, recent] = await Promise.all([
+    const [s, ts, cc, rc] = await Promise.allSettled([
       getVisitsSummary(),
       getVisitsTimeseries(14),
       getVisitsByCountry(8),
       getRecentVisits(50),
     ]);
 
-    // KPIs
-    setText('kpi-total', summary.total.toLocaleString('es'));
-    setText('kpi-today', summary.today.toLocaleString('es'));
-    setText('kpi-last7', summary.last7.toLocaleString('es'));
-    setText('kpi-ips', summary.uniqueIps.toLocaleString('es'));
-    setText('kpi-countries', summary.countries);
-    setText('kpi-top', summary.topCountry ? `${flag(summary.topCountry.country)} ${summary.topCountry.country}` : '—');
-
-    // Línea: visitas por día
-    const tsEl = document.getElementById('chart-timeseries') as HTMLCanvasElement | null;
-    if (tsEl) {
-      tsChart?.destroy();
-      tsChart = new Chart(tsEl, {
-        type: 'line',
-        data: {
-          labels: series.map((p) => p.date.slice(5)),
-          datasets: [{
-            label: 'Visitas',
-            data: series.map((p) => p.count),
-            borderColor: BRAND,
-            backgroundColor: 'rgba(0, 198, 231, 0.15)',
-            fill: true,
-            tension: 0.35,
-            pointRadius: 2,
-          }],
-        },
-        options: {
-          responsive: true, maintainAspectRatio: false,
-          plugins: { legend: { display: false } },
-          scales: {
-            x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#9aa7b8' } },
-            y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#9aa7b8', precision: 0 } },
-          },
-        },
-      });
+    // Sesión expirada (401 en cualquiera) -> a login, igual que el gate.
+    if ([s, ts, cc, rc].some((r) => r.status === 'rejected' && isAuthError(r.reason))) {
+      window.location.href = `${BASE}login`;
+      return;
     }
 
-    // Doughnut: por país
-    const ccEl = document.getElementById('chart-country') as HTMLCanvasElement | null;
-    if (ccEl) {
-      ccChart?.destroy();
-      ccChart = new Chart(ccEl, {
-        type: 'doughnut',
-        data: {
-          labels: byCountry.map((c) => `${flag(c.country)} ${c.country}`),
-          datasets: [{ data: byCountry.map((c) => c.count), backgroundColor: PALETTE, borderWidth: 0 }],
-        },
-        options: {
-          responsive: true, maintainAspectRatio: false,
-          plugins: { legend: { position: 'right', labels: { color: '#cfd8e3', boxWidth: 12 } } },
-        },
-      });
-    }
+    if (s.status === 'fulfilled') renderKpis(s.value);
 
-    // Tabla recientes
+    if (ts.status === 'fulfilled') renderTimeseries(ts.value);
+    else setMsg('msg-timeseries', `Error: ${errMsg(ts.reason)}`);
+
+    if (cc.status === 'fulfilled') renderCountry(cc.value);
+    else setMsg('msg-country', `Error: ${errMsg(cc.reason)}`);
+
     const body = document.getElementById('visits-body');
-    if (body) {
-      body.innerHTML = recent.length === 0
-        ? '<tr><td colspan="5" class="muted">Sin visitas registradas todavía.</td></tr>'
-        : recent.map((v) => `
-            <tr>
-              <td>${flag(v.country)} ${v.country ?? '—'}</td>
-              <td class="mono">${escapeHtml(v.ip ?? '—')}</td>
-              <td class="mono">${escapeHtml(v.path)}</td>
-              <td>${escapeHtml(v.site ?? '—')}</td>
-              <td>${fmtDate(v.createdAt)}</td>
-            </tr>`).join('');
+    if (rc.status === 'fulfilled') renderRecent(rc.value);
+    else if (body)
+      body.innerHTML = `<tr><td colspan="5" class="muted error">Error: ${escapeHtml(errMsg(rc.reason))}</td></tr>`;
+
+    // Log de cualquier rechazo para depurar en consola.
+    for (const r of [s, ts, cc, rc]) {
+      if (r.status === 'rejected') console.error('[dashboard]', r.reason);
     }
   }
 
-  const refreshBtn = document.getElementById('refresh-btn');
-  refreshBtn?.addEventListener('click', () => { void load(); });
-
-  load().catch((err) => {
-    console.error(err);
-    const body = document.getElementById('visits-body');
-    if (body) body.innerHTML = '<tr><td colspan="5" class="muted error">Error cargando estadísticas.</td></tr>';
+  document.getElementById('refresh-btn')?.addEventListener('click', () => {
+    void load();
   });
+
+  void load();
 </script>
 
 <style>
@@ -256,15 +303,26 @@ import AdminLayout from '../layouts/AdminLayout.astro';
     font-size: 0.85rem;
   }
 
-  .chart-card { margin-bottom: 0; }
+  .chart-card {
+    margin-bottom: 0;
+  }
 
   .chart-wrap {
     position: relative;
     height: 280px;
   }
 
+  .section-msg {
+    margin: 0.75rem 0 0;
+    font-size: 0.85rem;
+    color: #ff8080;
+    min-height: 0;
+  }
+
   /* Tabla */
-  .table-wrap { overflow-x: auto; }
+  .table-wrap {
+    overflow-x: auto;
+  }
 
   .visits-table {
     width: 100%;
@@ -306,14 +364,26 @@ import AdminLayout from '../layouts/AdminLayout.astro';
     font-size: 0.85rem;
     white-space: nowrap;
     flex-shrink: 0;
+    cursor: pointer;
   }
 
-  .ghost-btn:hover { background: rgb(255 255 255 / 0.06); }
+  .ghost-btn:hover {
+    background: rgb(255 255 255 / 0.06);
+  }
 
-  .muted { color: var(--color-text-muted); text-align: center; padding: 1.5rem; }
-  .muted.error { color: #ff8080; }
+  .muted {
+    color: var(--color-text-muted);
+    text-align: center;
+    padding: 1.5rem;
+  }
+
+  .muted.error {
+    color: #ff8080;
+  }
 
   @media (max-width: 860px) {
-    .charts { grid-template-columns: 1fr; }
+    .charts {
+      grid-template-columns: 1fr;
+    }
   }
 </style>

@@ -1,4 +1,5 @@
 ---
+import { getTeam } from '@prooq/data-client/team';
 import { HeroParallax, Nebula } from '@prooq/ui';
 import BaseLayout from '../layouts/BaseLayout.astro';
 
@@ -49,7 +50,17 @@ const stats = [
   { value: '15+', label: 'Soporte Técnico' },
 ];
 
-const team = [
+// Equipo desde el CMS (build-time) con fallback hardcodeado si la API falla.
+// skills/expertise no existen en el CMS: solo se muestran en el fallback.
+interface EspMember {
+  name: string;
+  role: string;
+  photo: string;
+  bio: string;
+  skills: string[];
+  expertise: string;
+}
+const fallbackTeam: EspMember[] = [
   {
     name: 'Victor Tineo',
     role: 'Lead Developer & Co-Fundador',
@@ -60,6 +71,29 @@ const team = [
       'Su experiencia en tecnologías modernas y su enfoque en la innovación garantizan que cada proyecto incorpore las mejores prácticas del desarrollo web actual.',
   },
 ];
+const initials = (name: string): string =>
+  name
+    .split(/\s+/)
+    .map((p) => p[0] ?? '')
+    .slice(0, 2)
+    .join('')
+    .toUpperCase();
+let team: EspMember[] = fallbackTeam;
+try {
+  const fetched = await getTeam('ES');
+  if (fetched.length > 0) {
+    team = fetched.map((m) => ({
+      name: m.name,
+      role: m.role ?? '',
+      photo: m.photoUrl ?? '',
+      bio: m.bio ?? '',
+      skills: [],
+      expertise: '',
+    }));
+  }
+} catch (err) {
+  console.warn('[team] getTeam failed, usando fallback:', err);
+}
 
 const portfolio = [
   {
@@ -204,15 +238,21 @@ const locationDetails = [
       <p class="section-subtitle fade-in">Profesionales apasionados por la tecnología</p>
       {team.map((m) => (
         <article class="team-card fade-in">
-          <img src={m.photo} alt={m.name} class="team-photo" loading="lazy" />
+          {m.photo ? (
+            <img src={m.photo} alt={m.name} class="team-photo" loading="lazy" />
+          ) : (
+            <span class="team-photo team-avatar-fallback" aria-hidden="true">{initials(m.name)}</span>
+          )}
           <div class="team-info">
             <h3>{m.name}</h3>
             <h4>{m.role}</h4>
-            <p>{m.bio}</p>
-            <ul class="skills">
-              {m.skills.map((skill) => <li>{skill}</li>)}
-            </ul>
-            <p class="expertise">{m.expertise}</p>
+            {m.bio && <p>{m.bio}</p>}
+            {m.skills.length > 0 && (
+              <ul class="skills">
+                {m.skills.map((skill) => <li>{skill}</li>)}
+              </ul>
+            )}
+            {m.expertise && <p class="expertise">{m.expertise}</p>}
           </div>
         </article>
       ))}

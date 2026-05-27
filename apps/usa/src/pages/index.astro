@@ -1,4 +1,5 @@
 ---
+import { getTeam } from '@prooq/data-client/team';
 import { ConstellationNetwork, HeroParallax } from '@prooq/ui';
 import BaseLayout from '../layouts/BaseLayout.astro';
 
@@ -93,7 +94,9 @@ const stats = [
   { value: '24/7', label: 'Support availability' },
 ];
 
-const team = [
+// Equipo desde el CMS (build-time). Si la API falla o no hay miembros, usa el
+// fallback hardcodeado para que el sitio nunca se quede sin equipo.
+const fallbackTeam = [
   { name: 'Kenny', role: 'Network Specialist', photo: `${BASE}images/team/kenny.jpg` },
   { name: 'Kenny Jr.', role: 'Junior Technician', photo: `${BASE}images/team/kennyjr.jpg` },
   { name: 'Angelo', role: 'Systems Developer', photo: `${BASE}images/team/angelo.jpg` },
@@ -101,6 +104,22 @@ const team = [
   { name: 'Gregorio', role: 'IT Consultant', photo: `${BASE}images/team/meza.png` },
   { name: 'Daniel', role: 'Technical Support', photo: `${BASE}images/team/daniel.jpg` },
 ];
+const initials = (name: string): string =>
+  name
+    .split(/\s+/)
+    .map((p) => p[0] ?? '')
+    .slice(0, 2)
+    .join('')
+    .toUpperCase();
+let team: { name: string; role: string; photo: string }[] = fallbackTeam;
+try {
+  const fetched = await getTeam('US');
+  if (fetched.length > 0) {
+    team = fetched.map((m) => ({ name: m.name, role: m.role ?? '', photo: m.photoUrl ?? '' }));
+  }
+} catch (err) {
+  console.warn('[team] getTeam failed, usando fallback:', err);
+}
 
 const portfolio = [
   {
@@ -239,7 +258,11 @@ const locationDetails = [
       <div class="team-grid">
         {team.map((m) => (
           <article class="team-member fade-in">
-            <img src={m.photo} alt={m.name} loading="lazy" />
+            {m.photo ? (
+              <img src={m.photo} alt={m.name} loading="lazy" />
+            ) : (
+              <span class="team-avatar-fallback" aria-hidden="true">{initials(m.name)}</span>
+            )}
             <h3>{m.name}</h3>
             <p>{m.role}</p>
           </article>

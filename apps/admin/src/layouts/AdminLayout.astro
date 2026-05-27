@@ -17,6 +17,7 @@ const path = Astro.url.pathname.replace(/\/$/, '') || base;
 const modules = [
   { href: BASE, label: 'Dashboard', icon: '📊', active: path === base },
   { href: `${base}/gallery`, label: 'Galería', icon: '🖼️', active: path === `${base}/gallery` },
+  { href: `${base}/team`, label: 'Equipo', icon: '👥', active: path === `${base}/team` },
 ];
 ---
 

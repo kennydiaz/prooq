@@ -1,0 +1,522 @@
+---
+import AdminLayout from '../layouts/AdminLayout.astro';
+
+const COUNTRIES = [
+  ['PA', 'Panamá'],
+  ['US', 'USA'],
+  ['ES', 'España'],
+  ['VE', 'Venezuela'],
+] as const;
+---
+
+<AdminLayout title="Equipo">
+  <div class="page-head">
+    <div>
+      <h1>Equipo</h1>
+      <p class="page-sub">Miembros del equipo. Cada sucursal muestra los suyos; un mismo miembro puede pertenecer a varias.</p>
+    </div>
+  </div>
+
+  <section class="card">
+    <h2 id="form-title">Nuevo miembro</h2>
+    <form id="member-form" autocomplete="off">
+      <input type="hidden" name="id" id="member-id" value="" />
+      <div class="grid-2">
+        <label>
+          <span>Nombre *</span>
+          <input type="text" name="name" required />
+        </label>
+        <label>
+          <span>Cargo / rol</span>
+          <input type="text" name="role" placeholder="Ej. Network Specialist" />
+        </label>
+        <label>
+          <span>Email (opcional)</span>
+          <input type="email" name="email" />
+        </label>
+        <label>
+          <span>Foto (JPG/PNG/WEBP, máx 5MB)</span>
+          <input type="file" name="photo" accept="image/jpeg,image/png,image/webp" />
+          <small class="hint" id="photo-hint"></small>
+        </label>
+        <label class="full">
+          <span>Bio (opcional)</span>
+          <textarea name="bio" rows="2"></textarea>
+        </label>
+      </div>
+
+      <fieldset class="countries-field">
+        <legend>Sucursales (puede estar en varias)</legend>
+        <div class="chips">
+          {COUNTRIES.map(([code, label]) => (
+            <label class="chk">
+              <input type="checkbox" name="country" value={code} /> {label} ({code})
+            </label>
+          ))}
+        </div>
+      </fieldset>
+
+      <label class="chk inline">
+        <input type="checkbox" name="active" checked /> Activo (visible en el sitio)
+      </label>
+
+      <div class="form-actions">
+        <button type="submit" id="submit-btn">Agregar miembro</button>
+        <button type="button" id="cancel-edit" class="ghost-btn" hidden>Cancelar edición</button>
+        <span class="status" id="form-status" aria-live="polite"></span>
+      </div>
+    </form>
+  </section>
+
+  <section class="card">
+    <div class="list-head">
+      <h2>Miembros</h2>
+      <button type="button" id="refresh-btn" class="ghost-btn">↻ Refrescar</button>
+    </div>
+    <div id="members-grid" class="members-grid">
+      <p class="muted">Cargando…</p>
+    </div>
+  </section>
+</AdminLayout>
+
+<script>
+  import {
+    createTeamMember,
+    deleteTeamMember,
+    getAdminTeam,
+    type TeamMemberAdmin,
+    type TeamMemberInput,
+    updateTeamMember,
+  } from '@prooq/data-client/team';
+
+  const BASE = window.__ADMIN_BASE__ ?? '/admin/';
+
+  const form = document.getElementById('member-form') as HTMLFormElement | null;
+  const grid = document.getElementById('members-grid');
+  const status = document.getElementById('form-status');
+  const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement | null;
+  const cancelBtn = document.getElementById('cancel-edit') as HTMLButtonElement | null;
+  const formTitle = document.getElementById('form-title');
+  const photoHint = document.getElementById('photo-hint');
+
+  let members: TeamMemberAdmin[] = [];
+
+  function flag(cc: string): string {
+    if (cc.length !== 2) return '🌐';
+    const b = 0x1f1e6;
+    return String.fromCodePoint(b + cc.charCodeAt(0) - 65, b + cc.charCodeAt(1) - 65);
+  }
+
+  function escapeHtml(s: string): string {
+    return s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c] ?? c);
+  }
+
+  function setStatus(msg: string, isError = false): void {
+    if (!status) return;
+    status.textContent = msg;
+    status.classList.toggle('error', isError);
+  }
+
+  function renderMember(m: TeamMemberAdmin): string {
+    const initials = m.name.split(/\s+/).map((p) => p[0] ?? '').slice(0, 2).join('').toUpperCase();
+    const photo = m.photoUrl
+      ? `<img src="${escapeHtml(m.photoUrl)}" alt="${escapeHtml(m.name)}" loading="lazy" />`
+      : `<span class="avatar-fallback">${escapeHtml(initials)}</span>`;
+    const badges = m.countries.length
+      ? m.countries.map((c) => `<span class="badge">${flag(c)} ${c}</span>`).join('')
+      : '<span class="badge warn">Sin sucursal</span>';
+    return `
+      <article class="member ${m.isActive ? '' : 'inactive'}" data-id="${m.id}">
+        <div class="member-photo">${photo}</div>
+        <div class="member-body">
+          <strong>${escapeHtml(m.name)}</strong>
+          <span class="member-role">${escapeHtml(m.role ?? '—')}</span>
+          <div class="member-badges">${badges}${m.isActive ? '' : '<span class="badge muted-badge">Inactivo</span>'}</div>
+        </div>
+        <div class="member-actions">
+          <button type="button" class="link-btn edit-btn" data-id="${m.id}">Editar</button>
+          <button type="button" class="link-btn del-btn" data-id="${m.id}">Borrar</button>
+        </div>
+      </article>`;
+  }
+
+  async function loadList(): Promise<void> {
+    if (!grid) return;
+    grid.innerHTML = '<p class="muted">Cargando…</p>';
+    try {
+      members = await getAdminTeam();
+      grid.innerHTML = members.length
+        ? members.map(renderMember).join('')
+        : '<p class="muted">No hay miembros todavía. Agregá el primero arriba.</p>';
+      bindRowActions();
+    } catch (err) {
+      if (err instanceof Error && /\b401\b/.test(err.message)) {
+        window.location.href = `${BASE}login`;
+        return;
+      }
+      console.error(err);
+      grid.innerHTML = `<p class="muted error">Error: ${escapeHtml(err instanceof Error ? err.message : String(err))}</p>`;
+    }
+  }
+
+  function resetForm(): void {
+    form?.reset();
+    const idEl = document.getElementById('member-id') as HTMLInputElement | null;
+    if (idEl) idEl.value = '';
+    if (formTitle) formTitle.textContent = 'Nuevo miembro';
+    if (submitBtn) submitBtn.textContent = 'Agregar miembro';
+    if (cancelBtn) cancelBtn.hidden = true;
+    if (photoHint) photoHint.textContent = '';
+    setStatus('');
+  }
+
+  function startEdit(id: number): void {
+    const m = members.find((x) => x.id === id);
+    if (!m || !form) return;
+    (document.getElementById('member-id') as HTMLInputElement).value = String(m.id);
+    (form.elements.namedItem('name') as HTMLInputElement).value = m.name;
+    (form.elements.namedItem('role') as HTMLInputElement).value = m.role ?? '';
+    (form.elements.namedItem('email') as HTMLInputElement).value = m.email ?? '';
+    (form.elements.namedItem('bio') as HTMLTextAreaElement).value = m.bio ?? '';
+    (form.elements.namedItem('active') as HTMLInputElement).checked = m.isActive;
+    form.querySelectorAll<HTMLInputElement>('input[name="country"]').forEach((cb) => {
+      cb.checked = m.countries.includes(cb.value);
+    });
+    if (formTitle) formTitle.textContent = `Editando: ${m.name}`;
+    if (submitBtn) submitBtn.textContent = 'Guardar cambios';
+    if (cancelBtn) cancelBtn.hidden = false;
+    if (photoHint) photoHint.textContent = m.photoUrl ? 'Dejá vacío para conservar la foto actual.' : '';
+    setStatus('');
+    form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function bindRowActions(): void {
+    grid?.querySelectorAll<HTMLButtonElement>('.edit-btn').forEach((b) =>
+      b.addEventListener('click', () => startEdit(Number(b.dataset.id))),
+    );
+    grid?.querySelectorAll<HTMLButtonElement>('.del-btn').forEach((b) =>
+      b.addEventListener('click', async () => {
+        const id = Number(b.dataset.id);
+        if (!confirm('¿Borrar este miembro? Esta acción es irreversible.')) return;
+        b.disabled = true;
+        try {
+          await deleteTeamMember(id);
+          await loadList();
+        } catch (err) {
+          alert('No se pudo borrar.');
+          console.error(err);
+          b.disabled = false;
+        }
+      }),
+    );
+  }
+
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!form || !submitBtn) return;
+
+    const fd = new FormData(form);
+    const name = String(fd.get('name') ?? '').trim();
+    if (name === '') {
+      setStatus('El nombre es obligatorio.', true);
+      return;
+    }
+    const countries = Array.from(form.querySelectorAll<HTMLInputElement>('input[name="country"]:checked')).map(
+      (cb) => cb.value,
+    );
+    if (countries.length === 0) {
+      setStatus('Seleccioná al menos una sucursal.', true);
+      return;
+    }
+    const photoFile = fd.get('photo');
+    const input: TeamMemberInput = {
+      name,
+      role: String(fd.get('role') ?? '').trim() || undefined,
+      email: String(fd.get('email') ?? '').trim() || undefined,
+      bio: String(fd.get('bio') ?? '').trim() || undefined,
+      countries,
+      active: fd.get('active') !== null,
+      photo: photoFile instanceof File && photoFile.size > 0 ? photoFile : null,
+    };
+
+    const editId = Number((document.getElementById('member-id') as HTMLInputElement).value) || 0;
+    submitBtn.disabled = true;
+    setStatus('Guardando…');
+    try {
+      if (editId > 0) await updateTeamMember(editId, input);
+      else await createTeamMember(input);
+      resetForm();
+      setStatus('✔ Guardado');
+      await loadList();
+    } catch (err) {
+      setStatus(`✗ Error: ${err instanceof Error ? err.message : 'desconocido'}`, true);
+    } finally {
+      submitBtn.disabled = false;
+    }
+  });
+
+  cancelBtn?.addEventListener('click', resetForm);
+  document.getElementById('refresh-btn')?.addEventListener('click', () => {
+    void loadList();
+  });
+
+  void loadList();
+</script>
+
+<style>
+  .page-head {
+    margin-bottom: 2rem;
+  }
+  .page-head h1 {
+    font-family: var(--font-display);
+    margin: 0 0 0.5rem;
+    font-size: 1.75rem;
+  }
+  .page-sub {
+    color: var(--color-text-muted);
+    margin: 0;
+    font-size: 0.95rem;
+    max-width: 640px;
+  }
+
+  .card {
+    background: var(--color-surface-raised);
+    border: 1px solid rgb(255 255 255 / 0.06);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+  }
+  .card h2 {
+    margin: 0 0 1rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+  }
+  .grid-2 .full {
+    grid-column: 1 / -1;
+  }
+  label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+  label > span {
+    font-size: 0.78rem;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  input,
+  textarea {
+    background: var(--color-surface);
+    border: 1px solid rgb(255 255 255 / 0.12);
+    border-radius: var(--radius-md);
+    padding: 0.55rem 0.75rem;
+    color: var(--color-text);
+    font: inherit;
+  }
+  input:focus,
+  textarea:focus {
+    outline: none;
+    border-color: var(--color-accent-cyan);
+  }
+  .hint {
+    color: var(--color-text-muted);
+    font-size: 0.75rem;
+    text-transform: none;
+    letter-spacing: 0;
+  }
+
+  .countries-field {
+    border: 1px solid rgb(255 255 255 / 0.1);
+    border-radius: var(--radius-md);
+    padding: 0.75rem 1rem 1rem;
+    margin-bottom: 1rem;
+  }
+  .countries-field legend {
+    font-size: 0.78rem;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0 0.4rem;
+  }
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem 1.25rem;
+  }
+  .chk {
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--color-text-soft);
+    cursor: pointer;
+  }
+  .chk input {
+    width: auto;
+  }
+  .chk.inline {
+    margin-bottom: 1.25rem;
+  }
+
+  .form-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  button[type='submit'] {
+    background: var(--color-brand);
+    color: var(--color-text);
+    border: none;
+    padding: 0.7rem 1.5rem;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button[type='submit']:hover:not(:disabled) {
+    background: var(--color-brand-darker);
+  }
+  button[type='submit']:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  .ghost-btn {
+    background: transparent;
+    border: 1px solid rgb(255 255 255 / 0.2);
+    color: var(--color-text-soft);
+    padding: 0.45rem 0.95rem;
+    border-radius: var(--radius-md);
+    font-size: 0.85rem;
+    cursor: pointer;
+  }
+  .ghost-btn:hover {
+    background: rgb(255 255 255 / 0.06);
+  }
+  .status {
+    font-size: 0.9rem;
+    color: var(--color-text-muted);
+  }
+  .status.error {
+    color: #ff8080;
+  }
+
+  .list-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+  .list-head h2 {
+    margin: 0;
+  }
+
+  .members-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+  }
+  .member {
+    display: grid;
+    grid-template-columns: 56px 1fr auto;
+    gap: 0.9rem;
+    align-items: center;
+    background: var(--color-surface);
+    border: 1px solid rgb(255 255 255 / 0.06);
+    border-radius: var(--radius-md);
+    padding: 0.9rem 1rem;
+  }
+  .member.inactive {
+    opacity: 0.55;
+  }
+  .member-photo img,
+  .avatar-fallback {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    object-fit: cover;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-surface-raised);
+    border: 2px solid var(--color-brand);
+    color: var(--color-brand-light);
+    font-weight: 700;
+    font-size: 1rem;
+  }
+  .member-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    min-width: 0;
+  }
+  .member-body strong {
+    font-size: 0.95rem;
+  }
+  .member-role {
+    color: var(--color-brand-light);
+    font-size: 0.82rem;
+  }
+  .member-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    margin-top: 0.2rem;
+  }
+  .badge {
+    background: rgb(0 60 255 / 0.2);
+    color: var(--color-brand-light);
+    padding: 0.1rem 0.5rem;
+    border-radius: var(--radius-pill);
+    font-size: 0.72rem;
+    font-weight: 600;
+  }
+  .badge.warn {
+    background: rgb(255 179 0 / 0.2);
+    color: var(--color-accent-amber);
+  }
+  .badge.muted-badge {
+    background: rgb(255 255 255 / 0.1);
+    color: var(--color-text-muted);
+  }
+  .member-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+  .link-btn {
+    background: transparent;
+    border: none;
+    color: var(--color-text-soft);
+    font-size: 0.82rem;
+    cursor: pointer;
+    padding: 0.2rem 0.3rem;
+  }
+  .link-btn:hover {
+    color: var(--color-text);
+  }
+  .del-btn {
+    color: #ff9090;
+  }
+
+  .muted {
+    color: var(--color-text-muted);
+    text-align: center;
+    padding: 1.5rem;
+  }
+  .muted.error {
+    color: #ff8080;
+  }
+
+  @media (max-width: 600px) {
+    .grid-2 {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

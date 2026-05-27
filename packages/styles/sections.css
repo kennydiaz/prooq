@@ -267,6 +267,32 @@
   box-shadow: var(--shadow-card);
 }
 
+/* Avatar de respaldo (iniciales) cuando un miembro no tiene foto cargada. */
+.team-avatar-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-surface-raised);
+  color: var(--color-brand-light);
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.team-member .team-avatar-fallback {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  margin: 0 auto 1rem;
+  border: 3px solid var(--color-brand);
+  box-shadow: var(--shadow-card);
+  font-size: 2rem;
+}
+
+.team-card .team-avatar-fallback {
+  font-size: 3rem;
+}
+
 .team-member h3 {
   font-family: var(--font-display);
   color: var(--color-text);
