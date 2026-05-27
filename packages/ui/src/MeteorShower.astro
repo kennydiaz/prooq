@@ -104,7 +104,7 @@ const { rate = 1 } = Astro.props;
         vy: Math.sin(angle) * speed,
         len: rand(120, 240) * (big ? 1.7 : 1),
         width: big ? rand(2.4, 3.4) : rand(0.9, 1.9),
-        color: HEAD_COLORS[(Math.random() * HEAD_COLORS.length) | 0],
+        color: HEAD_COLORS[(Math.random() * HEAD_COLORS.length) | 0]!,
       });
     }
 
@@ -152,7 +152,7 @@ const { rate = 1 } = Astro.props;
       parX += (tgtX - parX) * 0.04;
       parY += (tgtY - parY) * 0.04;
       for (let i = meteors.length - 1; i >= 0; i--) {
-        const m = meteors[i];
+        const m = meteors[i]!;
         m.x += m.vx;
         m.y += m.vy;
         if (m.x < -m.len || m.y > H + m.len) meteors.splice(i, 1);

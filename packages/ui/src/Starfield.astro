@@ -68,7 +68,7 @@
       const count = Math.min(Math.max(Math.round((W * H) / 6500), 90), 300);
       stars = [];
       for (let i = 0; i < count; i++) {
-        const L = LAYERS[i % LAYERS.length];
+        const L = LAYERS[i % LAYERS.length]!;
         stars.push({
           x: rand(0, W),
           y: rand(0, H),
@@ -78,7 +78,7 @@
           twSpeed: rand(0.5, 2.0),
           depth: L.depth,
           drift: L.drift,
-          color: STAR_COLORS[(Math.random() * STAR_COLORS.length) | 0],
+          color: STAR_COLORS[(Math.random() * STAR_COLORS.length) | 0]!,
         });
       }
       shooting = [];
@@ -148,7 +148,7 @@
         nextShoot = t + rand(4500, 11000);
       }
       for (let i = shooting.length - 1; i >= 0; i--) {
-        const sh = shooting[i];
+        const sh = shooting[i]!;
         sh.x += sh.nx * sh.speed;
         sh.y += sh.ny * sh.speed;
         if (sh.x - sh.nx * sh.len > W + 60 || sh.y - sh.ny * sh.len > H + 60) {

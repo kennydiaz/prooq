@@ -75,7 +75,7 @@ const { speed = 1 } = Astro.props;
         x: rand(-1, 1),
         y: rand(-1, 1),
         z: seedZ ? rand(0.05, 1) : 1,
-        color: STAR_COLORS[(Math.random() * STAR_COLORS.length) | 0],
+        color: STAR_COLORS[(Math.random() * STAR_COLORS.length) | 0]!,
       };
     }
 
@@ -143,7 +143,7 @@ const { speed = 1 } = Astro.props;
       vpX += (tgtX - vpX) * 0.04;
       vpY += (tgtY - vpY) * 0.04;
       for (let i = 0; i < stars.length; i++) {
-        const s = stars[i];
+        const s = stars[i]!;
         s.z -= BASE_SPEED;
         // Reaparece cuando pasa junto al espectador o se sale de pantalla.
         if (s.z <= 0.02) {

@@ -98,9 +98,9 @@ const { density = 1, linkColor = '0, 198, 231' } = Astro.props;
 
       // Enlaces entre partículas cercanas (alpha según distancia).
       for (let i = 0; i < nodes.length; i++) {
-        const a = nodes[i];
+        const a = nodes[i]!;
         for (let j = i + 1; j < nodes.length; j++) {
-          const b = nodes[j];
+          const b = nodes[j]!;
           const dx = a.x - b.x;
           const dy = a.y - b.y;
           const d = Math.hypot(dx, dy);
