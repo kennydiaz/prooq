@@ -17,11 +17,16 @@ final class Session
         if (session_status() === PHP_SESSION_ACTIVE) {
             return;
         }
+        // `secure` solo bajo HTTPS: en prod (api.prooq.com con SSL) la cookie es
+        // segura; en dev local (http://localhost) debe poder setearse igualmente.
+        $isHttps = (!empty($_SERVER['HTTPS']) && strtolower((string) $_SERVER['HTTPS']) !== 'off')
+            || (($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https')
+            || ((int) ($_SERVER['SERVER_PORT'] ?? 0) === 443);
         session_set_cookie_params([
             'lifetime' => 8 * 3600, // 8 horas
             'path'     => '/',
             'domain'   => '',
-            'secure'   => true,     // requiere HTTPS (api.prooq.com tiene SSL)
+            'secure'   => $isHttps,
             'httponly' => true,
             'samesite' => 'Lax',
         ]);
