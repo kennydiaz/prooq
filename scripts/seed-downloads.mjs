@@ -28,7 +28,7 @@ const rows = [
     description: 'App para asistencia remota.',
     filename: 'rustdesk.exe',
     file_size_bytes: 25165824,
-    icon: 'rustdesk.jpg',
+    icon: 'rustdesk.webp',
   },
   {
     slug: 'innovalite',
@@ -36,7 +36,7 @@ const rows = [
     description: 'Sistema administrativo para microempresas y PYMES.',
     filename: 'innovasoftlite.exe',
     file_size_bytes: 33554432,
-    icon: 'innovasoft-lite.png',
+    icon: 'innovasoft-lite.webp',
   },
   {
     slug: 'innovapro',
@@ -44,7 +44,7 @@ const rows = [
     description: 'Sistema administrativo multi-módulo avanzado.',
     filename: 'innovasoftpro.exe',
     file_size_bytes: 90177536,
-    icon: 'innovasoft-pro.png',
+    icon: 'innovasoft-pro.webp',
   },
   {
     slug: 'retails',
@@ -52,7 +52,7 @@ const rows = [
     description: 'Sistema de punto de venta.',
     filename: 'retailspos.exe',
     file_size_bytes: 102760448,
-    icon: 'retailspos.png',
+    icon: 'retailspos.webp',
   },
 
   // Sección 2: Portals externos (sin filename, con external_url)
@@ -61,28 +61,28 @@ const rows = [
     title: 'Portal InnovaSoft',
     description: 'Plataforma de licenciamiento.',
     external_url: 'https://plataforma.innovasoftlatam.com/',
-    icon: 'licenciamiento.png',
+    icon: 'licenciamiento.webp',
   },
   {
     slug: 'portal-digifact',
     title: 'Folios DigiFact',
     description: 'Portal de gestión de folios Digifact.',
     external_url: 'https://fepa.digifact.com.pa/',
-    icon: 'digifact.jpg',
+    icon: 'digifact.webp',
   },
   {
     slug: 'portal-thefactory',
     title: 'Folios The Factory HKA',
     description: 'Portal de gestión de folios The Factory.',
     external_url: 'https://distribuidores.thefactoryhka.com.pa/',
-    icon: 'the_factory.jpg',
+    icon: 'the_factory.webp',
   },
   {
     slug: 'portal-facturafacil',
     title: 'Factura Fácil',
     description: 'Portal de facturación electrónica.',
     external_url: 'https://panel.facturafacil.com.pa/pages/login',
-    icon: 'factura_facil.png',
+    icon: 'factura_facil.webp',
   },
   {
     slug: 'portal-efacturapty',
@@ -99,7 +99,7 @@ const rows = [
     description: 'Software de gestión de cámaras Dahua.',
     filename: 'smartpss.exe',
     file_size_bytes: 122683392,
-    icon: 'smartpss.jpg',
+    icon: 'smartpss.webp',
   },
   {
     slug: 'ivms',
@@ -107,7 +107,7 @@ const rows = [
     description: 'Software de gestión de cámaras Hikvision.',
     filename: 'ivms4200.exe',
     file_size_bytes: 348127232,
-    icon: 'ivms-4200.png',
+    icon: 'ivms-4200.webp',
   },
   {
     slug: 'sadp',
@@ -115,7 +115,7 @@ const rows = [
     description: 'Utilitario para cámaras Hikvision.',
     filename: 'sadp.exe',
     file_size_bytes: 68157440,
-    icon: 'sadp.jpg',
+    icon: 'sadp.webp',
   },
   {
     slug: 'configtool',
@@ -123,7 +123,7 @@ const rows = [
     description: 'Utilitario para cámaras Dahua.',
     filename: 'configtool.exe',
     file_size_bytes: 35651584,
-    icon: 'configtool.jpg',
+    icon: 'configtool.webp',
   },
   {
     slug: 'ipscanner',
@@ -131,7 +131,7 @@ const rows = [
     description: 'Utilitario para escaneo de redes.',
     filename: 'ipscanner.exe',
     file_size_bytes: 22020096,
-    icon: 'ipscanner.png',
+    icon: 'ipscanner.webp',
   },
 ];
 
