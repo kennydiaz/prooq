@@ -1,5 +1,6 @@
-// One-shot: genera INSERT SQL para los 14 downloads + portals del V1 panama.
-// 10 file downloads (.exe) + 4 portal links externos.
+// One-shot: genera INSERT SQL para los 15 downloads + portals del V1 panama.
+// 10 file downloads (.exe) + 5 portal links externos (incluye 4 PACs:
+// DigiFact, The Factory HKA, Factura Facil y eFacturaPTY).
 //
 // Uso: node scripts/seed-downloads.mjs > /tmp/downloads-seed.sql
 
@@ -83,6 +84,13 @@ const rows = [
     external_url: 'https://panel.facturafacil.com.pa/pages/login',
     icon: 'factura_facil.png',
   },
+  {
+    slug: 'portal-efacturapty',
+    title: 'Folios eFacturaPTY',
+    description: 'Portal de gestión de folios eFacturaPTY.',
+    external_url: 'https://www.efacturapty.com/',
+    icon: 'efacturapty.svg',
+  },
 
   // Sección 3: Utilitarios técnicos (CCTV + redes)
   {
@@ -135,7 +143,7 @@ const values = rows
   .join(',\n');
 
 process.stdout.write(
-  `-- 14 entries: 10 file downloads + 4 portals externos
+  `-- 15 entries: 10 file downloads + 5 portals externos
 INSERT INTO downloads (title, description, filename, file_size_bytes, mime_type, external_url, icon_url, country, slug, is_public) VALUES
 ${values};
 `,
