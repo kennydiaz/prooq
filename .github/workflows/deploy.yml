@@ -96,7 +96,15 @@ jobs:
           rsync -av -e "$SSH_CMD" \
             api/composer.json "$API_ROOT/"
 
-      - name: Install PHP deps on remote
+          # 4) bin/ (runner de migraciones) → ~/.../api/bin/ (fuera del docroot)
+          rsync -av --delete -e "$SSH_CMD" \
+            api/bin/ "$API_ROOT/bin/"
+
+          # 5) migraciones SQL → ~/.../api/migrations/ (las aplica bin/migrate.php)
+          rsync -av --delete -e "$SSH_CMD" \
+            db/migrations/ "$API_ROOT/migrations/"
+
+      - name: Install PHP deps and run DB migrations on remote
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -107,3 +115,5 @@ jobs:
             set -e
             cd ~/domains/prooq.com/public_html/api
             composer install --no-dev --optimize-autoloader --no-interaction
+            # Aplica las migraciones pendientes (idempotente; ignora USE/CREATE DATABASE).
+            php bin/migrate.php

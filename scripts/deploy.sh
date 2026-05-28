@@ -26,9 +26,11 @@ done
 echo "▶ Deploying API → ${SSH}:${API_REMOTE}/"
 rsync -av --delete --exclude '.env' api/public/ "${SSH}:${API_REMOTE}/public_html/"
 rsync -av --delete api/src/ "${SSH}:${API_REMOTE}/src/"
+rsync -av --delete api/bin/ "${SSH}:${API_REMOTE}/bin/"
+rsync -av --delete db/migrations/ "${SSH}:${API_REMOTE}/migrations/"
 rsync -av api/composer.json api/composer.lock "${SSH}:${API_REMOTE}/"
 
-echo "▶ Installing PHP deps on remote..."
-ssh "${SSH}" "cd ${API_REMOTE} && composer install --no-dev --optimize-autoloader"
+echo "▶ Installing PHP deps + running migrations on remote..."
+ssh "${SSH}" "cd ${API_REMOTE} && composer install --no-dev --optimize-autoloader && php bin/migrate.php"
 
 echo "✓ Done."
