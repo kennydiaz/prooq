@@ -447,8 +447,72 @@ function dl_store_image(?UploadedFileInterface $file, ?string &$err = null): ?st
     if (!is_dir($dir)) {
         mkdir($dir, 0o755, true);
     }
-    $file->moveTo($dir . '/' . $filename);
+    $dest = $dir . '/' . $filename;
+    $file->moveTo($dest);
+
+    // SVG es vectorial (ya pesa poco); el resto se reescala a un lado maximo.
+    if ($mime !== 'image/svg+xml') {
+        dl_downscale_icon($dest, $mime);
+    }
     return $filename;
+}
+
+/**
+ * Reescala un icono raster in-place a 256px en su lado mayor (si lo excede),
+ * preservando aspect ratio y transparencia. No-op si ya cabe o si GD falla
+ * (en ese caso queda el original, que ya paso el limite de 5MB).
+ */
+function dl_downscale_icon(string $path, string $mime): void
+{
+    if (!extension_loaded('gd')) {
+        return;
+    }
+    $max = 256;
+
+    $info = @getimagesize($path);
+    if ($info === false) {
+        return;
+    }
+    [$w, $h] = $info;
+    if ($w <= 0 || $h <= 0 || ($w <= $max && $h <= $max)) {
+        return; // ya cabe; no re-encode para no perder calidad
+    }
+
+    $src = match ($mime) {
+        'image/jpeg' => @imagecreatefromjpeg($path),
+        'image/png' => @imagecreatefrompng($path),
+        'image/webp' => @imagecreatefromwebp($path),
+        'image/gif' => @imagecreatefromgif($path),
+        default => false,
+    };
+    if (!$src instanceof \GdImage) {
+        return;
+    }
+
+    $scale = $max / max($w, $h);
+    $nw = max(1, (int) round($w * $scale));
+    $nh = max(1, (int) round($h * $scale));
+
+    $dst = imagecreatetruecolor($nw, $nh);
+    if ($mime !== 'image/jpeg') {
+        imagealphablending($dst, false);
+        imagesavealpha($dst, true);
+        $transparent = imagecolorallocatealpha($dst, 0, 0, 0, 127);
+        imagefilledrectangle($dst, 0, 0, $nw, $nh, $transparent);
+    }
+
+    imagecopyresampled($dst, $src, 0, 0, 0, 0, $nw, $nh, $w, $h);
+
+    match ($mime) {
+        'image/jpeg' => imagejpeg($dst, $path, 85),
+        'image/png' => imagepng($dst, $path, 6),
+        'image/webp' => imagewebp($dst, $path, 85),
+        'image/gif' => imagegif($dst, $path),
+        default => false,
+    };
+
+    imagedestroy($src);
+    imagedestroy($dst);
 }
 
 /**
