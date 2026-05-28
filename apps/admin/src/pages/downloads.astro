@@ -1,0 +1,535 @@
+---
+import AdminLayout from '../layouts/AdminLayout.astro';
+
+const COUNTRIES = [
+  ['', 'Global (todas)'],
+  ['PA', 'Panamá'],
+  ['US', 'USA'],
+  ['ES', 'España'],
+  ['VE', 'Venezuela'],
+] as const;
+---
+
+<AdminLayout title="Descargas">
+  <div class="page-head">
+    <div>
+      <h1>Descargas</h1>
+      <p class="page-sub">Software y portales del centro de descargas. Un ítem es un <strong>archivo</strong> (sube el binario) o un <strong>portal</strong> (enlace externo, ej. PACs). El país filtra en qué sucursal aparece; <em>Global</em> sale en todas.</p>
+    </div>
+  </div>
+
+  <section class="card">
+    <h2 id="form-title">Nuevo ítem</h2>
+    <form id="dl-form" autocomplete="off">
+      <input type="hidden" name="id" id="dl-id" value="" />
+      <div class="grid-2">
+        <label>
+          <span>Título *</span>
+          <input type="text" name="title" required />
+        </label>
+        <label>
+          <span>Slug (a-z, 0-9, guiones)</span>
+          <input type="text" name="slug" placeholder="ej. portal-digifact" />
+        </label>
+        <label>
+          <span>País</span>
+          <select name="country">
+            {COUNTRIES.map(([code, label]) => <option value={code}>{label}</option>)}
+          </select>
+        </label>
+        <label>
+          <span>URL externa (para portales)</span>
+          <input type="url" name="external_url" placeholder="https://..." />
+        </label>
+        <label class="full">
+          <span>Descripción</span>
+          <textarea name="description" rows="2"></textarea>
+        </label>
+        <label>
+          <span>Ícono (JPG/PNG/WEBP/GIF/SVG, máx 5MB)</span>
+          <input type="file" name="icon" accept="image/jpeg,image/png,image/webp,image/gif,image/svg+xml" />
+          <small class="hint" id="icon-hint"></small>
+        </label>
+        <label>
+          <span>Archivo (.exe, .msi, .zip… máx 700MB)</span>
+          <input type="file" name="file" accept=".exe,.msi,.zip,.rar,.7z,.dmg,.pkg,.apk,.deb,.iso" />
+          <small class="hint" id="file-hint"></small>
+        </label>
+      </div>
+
+      <label class="chk inline">
+        <input type="checkbox" name="is_public" checked /> Público (visible en el sitio)
+      </label>
+
+      <div class="form-actions">
+        <button type="submit" id="submit-btn">Agregar ítem</button>
+        <button type="button" id="cancel-edit" class="ghost-btn" hidden>Cancelar edición</button>
+        <span class="status" id="form-status" aria-live="polite"></span>
+      </div>
+    </form>
+  </section>
+
+  <section class="card">
+    <div class="list-head">
+      <h2>Ítems</h2>
+      <button type="button" id="refresh-btn" class="ghost-btn">↻ Refrescar</button>
+    </div>
+    <div id="dl-grid" class="dl-grid">
+      <p class="muted">Cargando…</p>
+    </div>
+  </section>
+</AdminLayout>
+
+<script>
+  import {
+    createDownload,
+    deleteDownload,
+    getAdminDownloads,
+    updateDownload,
+    type DownloadAdmin,
+    type DownloadInput,
+  } from '@prooq/data-client/downloads';
+
+  const BASE = window.__ADMIN_BASE__ ?? '/admin/';
+
+  const form = document.getElementById('dl-form') as HTMLFormElement | null;
+  const grid = document.getElementById('dl-grid');
+  const status = document.getElementById('form-status');
+  const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement | null;
+  const cancelBtn = document.getElementById('cancel-edit') as HTMLButtonElement | null;
+  const formTitle = document.getElementById('form-title');
+  const iconHint = document.getElementById('icon-hint');
+  const fileHint = document.getElementById('file-hint');
+
+  let items: DownloadAdmin[] = [];
+
+  function flag(cc: string | null): string {
+    if (!cc || cc.length !== 2) return '🌐';
+    const b = 0x1f1e6;
+    return String.fromCodePoint(b + cc.charCodeAt(0) - 65, b + cc.charCodeAt(1) - 65);
+  }
+
+  function escapeHtml(s: string): string {
+    return s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c] ?? c);
+  }
+
+  function fmtSize(bytes: number | null): string {
+    if (!bytes) return '';
+    const mb = bytes / (1024 * 1024);
+    return mb < 1 ? `${Math.round(bytes / 1024)} KB` : `${mb.toFixed(0)} MB`;
+  }
+
+  function setStatus(msg: string, isError = false): void {
+    if (!status) return;
+    status.textContent = msg;
+    status.classList.toggle('error', isError);
+  }
+
+  function renderItem(d: DownloadAdmin): string {
+    const isPortal = !!d.externalUrl;
+    const icon = d.iconUrl
+      ? `<img src="${escapeHtml(d.iconUrl)}" alt="${escapeHtml(d.title)}" loading="lazy" />`
+      : '<span class="icon-fallback">📦</span>';
+    const typeBadge = isPortal
+      ? '<span class="badge portal">Portal ↗</span>'
+      : d.filename
+        ? '<span class="badge file">Archivo</span>'
+        : '<span class="badge warn">Sin archivo</span>';
+    const meta = isPortal
+      ? `<span class="meta">${escapeHtml(d.externalUrl ?? '')}</span>`
+      : d.filename
+        ? `<span class="meta mono">${escapeHtml(d.filename)} · ${fmtSize(d.fileSizeBytes)} · ${d.downloadCount} descargas</span>`
+        : '';
+    return `
+      <article class="dl ${d.isPublic ? '' : 'inactive'}" data-id="${d.id}">
+        <div class="dl-thumb">${icon}</div>
+        <div class="dl-body">
+          <strong>${escapeHtml(d.title)}</strong>
+          <div class="dl-badges">
+            ${typeBadge}
+            <span class="badge country">${flag(d.country)} ${d.country ?? 'Global'}</span>
+            ${d.isPublic ? '' : '<span class="badge muted-badge">Oculto</span>'}
+          </div>
+          ${meta}
+        </div>
+        <div class="dl-actions">
+          <button type="button" class="link-btn edit-btn" data-id="${d.id}">Editar</button>
+          <button type="button" class="link-btn del-btn" data-id="${d.id}">Borrar</button>
+        </div>
+      </article>`;
+  }
+
+  async function loadList(): Promise<void> {
+    if (!grid) return;
+    grid.innerHTML = '<p class="muted">Cargando…</p>';
+    try {
+      items = await getAdminDownloads();
+      grid.innerHTML = items.length
+        ? items.map(renderItem).join('')
+        : '<p class="muted">No hay ítems todavía. Agregá el primero arriba.</p>';
+      bindRowActions();
+    } catch (err) {
+      if (err instanceof Error && /\b401\b/.test(err.message)) {
+        window.location.href = `${BASE}login`;
+        return;
+      }
+      console.error(err);
+      grid.innerHTML = `<p class="muted error">Error: ${escapeHtml(err instanceof Error ? err.message : String(err))}</p>`;
+    }
+  }
+
+  function resetForm(): void {
+    form?.reset();
+    const idEl = document.getElementById('dl-id') as HTMLInputElement | null;
+    if (idEl) idEl.value = '';
+    if (formTitle) formTitle.textContent = 'Nuevo ítem';
+    if (submitBtn) submitBtn.textContent = 'Agregar ítem';
+    if (cancelBtn) cancelBtn.hidden = true;
+    if (iconHint) iconHint.textContent = '';
+    if (fileHint) fileHint.textContent = '';
+    setStatus('');
+  }
+
+  function startEdit(id: number): void {
+    const d = items.find((x) => x.id === id);
+    if (!d || !form) return;
+    (document.getElementById('dl-id') as HTMLInputElement).value = String(d.id);
+    (form.elements.namedItem('title') as HTMLInputElement).value = d.title;
+    (form.elements.namedItem('slug') as HTMLInputElement).value = d.slug ?? '';
+    (form.elements.namedItem('country') as HTMLSelectElement).value = d.country ?? '';
+    (form.elements.namedItem('external_url') as HTMLInputElement).value = d.externalUrl ?? '';
+    (form.elements.namedItem('description') as HTMLTextAreaElement).value = d.description ?? '';
+    (form.elements.namedItem('is_public') as HTMLInputElement).checked = d.isPublic;
+    if (formTitle) formTitle.textContent = `Editando: ${d.title}`;
+    if (submitBtn) submitBtn.textContent = 'Guardar cambios';
+    if (cancelBtn) cancelBtn.hidden = false;
+    if (iconHint) iconHint.textContent = d.iconUrl ? 'Dejá vacío para conservar el ícono actual.' : '';
+    if (fileHint) fileHint.textContent = d.filename ? `Actual: ${d.filename}. Dejá vacío para conservarlo.` : '';
+    setStatus('');
+    form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function bindRowActions(): void {
+    grid?.querySelectorAll<HTMLButtonElement>('.edit-btn').forEach((b) =>
+      b.addEventListener('click', () => startEdit(Number(b.dataset.id))),
+    );
+    grid?.querySelectorAll<HTMLButtonElement>('.del-btn').forEach((b) =>
+      b.addEventListener('click', async () => {
+        const id = Number(b.dataset.id);
+        if (!confirm('¿Borrar este ítem? Esta acción es irreversible.')) return;
+        b.disabled = true;
+        try {
+          await deleteDownload(id);
+          await loadList();
+        } catch (err) {
+          alert('No se pudo borrar.');
+          console.error(err);
+          b.disabled = false;
+        }
+      }),
+    );
+  }
+
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!form || !submitBtn) return;
+
+    const fd = new FormData(form);
+    const title = String(fd.get('title') ?? '').trim();
+    if (title === '') {
+      setStatus('El título es obligatorio.', true);
+      return;
+    }
+
+    const iconFile = fd.get('icon');
+    const binFile = fd.get('file');
+    const country = String(fd.get('country') ?? '');
+    const input: DownloadInput = {
+      title,
+      description: String(fd.get('description') ?? '').trim() || undefined,
+      slug: String(fd.get('slug') ?? '').trim() || undefined,
+      externalUrl: String(fd.get('external_url') ?? '').trim() || undefined,
+      country: (country || undefined) as DownloadInput['country'],
+      isPublic: fd.get('is_public') !== null,
+      icon: iconFile instanceof File && iconFile.size > 0 ? iconFile : null,
+      file: binFile instanceof File && binFile.size > 0 ? binFile : null,
+    };
+
+    const editId = Number((document.getElementById('dl-id') as HTMLInputElement).value) || 0;
+    submitBtn.disabled = true;
+    setStatus(input.file ? 'Subiendo… (un binario grande puede tardar)' : 'Guardando…');
+    try {
+      if (editId > 0) await updateDownload(editId, input);
+      else await createDownload(input);
+      resetForm();
+      setStatus('✔ Guardado');
+      await loadList();
+    } catch (err) {
+      setStatus(`✗ Error: ${err instanceof Error ? err.message : 'desconocido'}`, true);
+    } finally {
+      submitBtn.disabled = false;
+    }
+  });
+
+  cancelBtn?.addEventListener('click', resetForm);
+  document.getElementById('refresh-btn')?.addEventListener('click', () => {
+    void loadList();
+  });
+
+  void loadList();
+</script>
+
+<style>
+  .page-head {
+    margin-bottom: 2rem;
+  }
+  .page-head h1 {
+    font-family: var(--font-display);
+    margin: 0 0 0.5rem;
+    font-size: 1.75rem;
+  }
+  .page-sub {
+    color: var(--color-text-muted);
+    margin: 0;
+    font-size: 0.95rem;
+    max-width: 680px;
+  }
+
+  .card {
+    background: var(--color-surface-raised);
+    border: 1px solid rgb(255 255 255 / 0.06);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+  }
+  .card h2 {
+    margin: 0 0 1rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+  }
+  .grid-2 .full {
+    grid-column: 1 / -1;
+  }
+  label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+  label > span {
+    font-size: 0.78rem;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  input,
+  textarea,
+  select {
+    background: var(--color-surface);
+    border: 1px solid rgb(255 255 255 / 0.12);
+    border-radius: var(--radius-md);
+    padding: 0.55rem 0.75rem;
+    color: var(--color-text);
+    font: inherit;
+  }
+  input:focus,
+  textarea:focus,
+  select:focus {
+    outline: none;
+    border-color: var(--color-accent-cyan);
+  }
+  .hint {
+    color: var(--color-text-muted);
+    font-size: 0.75rem;
+    text-transform: none;
+    letter-spacing: 0;
+  }
+
+  .chk {
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--color-text-soft);
+    cursor: pointer;
+  }
+  .chk input {
+    width: auto;
+  }
+  .chk.inline {
+    margin-bottom: 1.25rem;
+  }
+
+  .form-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  button[type='submit'] {
+    background: var(--color-brand);
+    color: var(--color-text);
+    border: none;
+    padding: 0.7rem 1.5rem;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button[type='submit']:hover:not(:disabled) {
+    background: var(--color-brand-darker);
+  }
+  button[type='submit']:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  .ghost-btn {
+    background: transparent;
+    border: 1px solid rgb(255 255 255 / 0.2);
+    color: var(--color-text-soft);
+    padding: 0.45rem 0.95rem;
+    border-radius: var(--radius-md);
+    font-size: 0.85rem;
+    cursor: pointer;
+  }
+  .ghost-btn:hover {
+    background: rgb(255 255 255 / 0.06);
+  }
+  .status {
+    font-size: 0.9rem;
+    color: var(--color-text-muted);
+  }
+  .status.error {
+    color: #ff8080;
+  }
+
+  .list-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+  .list-head h2 {
+    margin: 0;
+  }
+
+  .dl-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 1rem;
+  }
+  .dl {
+    display: grid;
+    grid-template-columns: 52px 1fr auto;
+    gap: 0.9rem;
+    align-items: center;
+    background: var(--color-surface);
+    border: 1px solid rgb(255 255 255 / 0.06);
+    border-radius: var(--radius-md);
+    padding: 0.9rem 1rem;
+  }
+  .dl.inactive {
+    opacity: 0.55;
+  }
+  .dl-thumb img,
+  .icon-fallback {
+    width: 52px;
+    height: 52px;
+    border-radius: var(--radius-md);
+    object-fit: contain;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-surface-raised);
+    border: 1px solid rgb(255 255 255 / 0.08);
+    font-size: 1.4rem;
+  }
+  .dl-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    min-width: 0;
+  }
+  .dl-body strong {
+    font-size: 0.95rem;
+  }
+  .dl-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+  }
+  .badge {
+    padding: 0.1rem 0.5rem;
+    border-radius: var(--radius-pill);
+    font-size: 0.72rem;
+    font-weight: 600;
+  }
+  .badge.portal {
+    background: rgb(0 60 255 / 0.2);
+    color: var(--color-brand-light);
+  }
+  .badge.file {
+    background: rgb(0 255 174 / 0.15);
+    color: var(--color-accent-neon);
+  }
+  .badge.country {
+    background: rgb(255 255 255 / 0.08);
+    color: var(--color-text-soft);
+  }
+  .badge.warn {
+    background: rgb(255 179 0 / 0.2);
+    color: var(--color-accent-amber);
+  }
+  .badge.muted-badge {
+    background: rgb(255 255 255 / 0.1);
+    color: var(--color-text-muted);
+  }
+  .meta {
+    font-size: 0.76rem;
+    color: var(--color-text-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .mono {
+    font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+  }
+  .dl-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+  .link-btn {
+    background: transparent;
+    border: none;
+    color: var(--color-text-soft);
+    font-size: 0.82rem;
+    cursor: pointer;
+    padding: 0.2rem 0.3rem;
+  }
+  .link-btn:hover {
+    color: var(--color-text);
+  }
+  .del-btn {
+    color: #ff9090;
+  }
+
+  .muted {
+    color: var(--color-text-muted);
+    text-align: center;
+    padding: 1.5rem;
+  }
+  .muted.error {
+    color: #ff8080;
+  }
+
+  @media (max-width: 600px) {
+    .grid-2 {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
