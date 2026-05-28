@@ -119,7 +119,7 @@ const isPortal = (d: Download): boolean => d.externalUrl !== null && d.externalU
     width: 72px;
     height: 72px;
     border-radius: var(--radius-md);
-    background: rgb(255 255 255 / 0.04);
+    background: #fff;
     overflow: hidden;
     display: flex;
     align-items: center;
@@ -132,6 +132,7 @@ const isPortal = (d: Download): boolean => d.externalUrl !== null && d.externalU
     height: 100%;
     object-fit: contain;
     padding: 0.5rem;
+    box-sizing: border-box;
   }
 
   .dl-body {
