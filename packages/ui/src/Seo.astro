@@ -1,0 +1,122 @@
+---
+import { SOCIAL_LINKS } from '@prooq/config/social';
+
+export type SeoSite = 'portal' | 'pty' | 'usa' | 'esp' | 'ven';
+
+export interface Props {
+  title: string;
+  description: string;
+  site?: SeoSite;
+  /** OG image — ruta absoluta o relativa al dominio. Por defecto la imagen del país. */
+  image?: string;
+  type?: 'website' | 'article';
+  /** ISO date (YYYY-MM-DD) — sólo para type="article". */
+  publishedDate?: string;
+}
+
+const { title, description, site = 'portal', image, type = 'website', publishedDate } = Astro.props;
+
+// Dominio canónico. Astro.site === 'https://prooq.com' en las 5 apps.
+const ORIGIN = (Astro.site ?? new URL('https://prooq.com')).origin;
+const abs = (path: string) => new URL(path, ORIGIN).href;
+
+// URL canónica de ESTA página (Astro.url.pathname ya incluye el base /pty, /usa, …).
+// Normalizamos con trailing slash para que coincida con el sitemap y los hreflang
+// (Astro sirve /pty/ pero pathname llega como /pty). Excepción: rutas con extensión de archivo.
+const path = Astro.url.pathname;
+const normalizedPath = /\.[a-z0-9]+$/i.test(path) ? path : path.replace(/\/?$/, '/');
+const canonical = abs(normalizedPath);
+
+// Idioma de la página: USA en inglés, el resto en español.
+const ogLocale = site === 'usa' ? 'en_US' : 'es_ES';
+
+// hreflang regional: cada home de país + x-default al portal.
+const ALTERNATES: { hreflang: string; path: string }[] = [
+  { hreflang: 'es-PA', path: '/pty/' },
+  { hreflang: 'en-US', path: '/usa/' },
+  { hreflang: 'es-ES', path: '/esp/' },
+  { hreflang: 'es-VE', path: '/ven/' },
+  { hreflang: 'x-default', path: '/' },
+];
+
+// OG image por defecto según el sitio (las imágenes viven en el portal).
+const DEFAULT_IMAGE: Record<SeoSite, string> = {
+  portal: '/images/pty.jpg',
+  pty: '/images/pty.jpg',
+  usa: '/images/usa.jpg',
+  esp: '/images/esp.jpg',
+  ven: '/images/ven.jpg',
+};
+const ogImage = abs(image ?? DEFAULT_IMAGE[site]);
+
+const SITE_NAME = 'PROOQ S.A.';
+const sameAs = SOCIAL_LINKS.filter((s) => s.icon !== 'whatsapp').map((s) => s.url);
+
+// JSON-LD: Organization siempre; LocalBusiness sólo en el sitio de Panamá (sede física).
+const organization = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: SITE_NAME,
+  url: ORIGIN,
+  logo: abs('/images/logoblanco.png'),
+  sameAs,
+};
+
+const localBusiness = {
+  '@context': 'https://schema.org',
+  '@type': 'LocalBusiness',
+  name: SITE_NAME,
+  url: abs('/pty/'),
+  image: abs('/images/pty.jpg'),
+  email: 'info@prooq.com',
+  telephone: '+507 6208-2617',
+  address: {
+    '@type': 'PostalAddress',
+    addressLocality: 'Ciudad de Panamá',
+    addressCountry: 'PA',
+  },
+  sameAs,
+};
+---
+
+<!-- SEO básico -->
+<title>{title}</title>
+<meta name="description" content={description} />
+<link rel="canonical" href={canonical} />
+
+<!-- Favicons (servidos desde la raíz del dominio) -->
+<link rel="icon" href="/favicons/favicon.svg" type="image/svg+xml" />
+<link rel="icon" href="/favicons/favicon-32.png" sizes="32x32" type="image/png" />
+<link rel="icon" href="/favicons/favicon-16.png" sizes="16x16" type="image/png" />
+<link rel="apple-touch-icon" href="/favicons/apple-touch-icon.png" />
+
+<!-- hreflang regional -->
+{
+  ALTERNATES.map((a) => (
+    <link rel="alternate" hreflang={a.hreflang} href={abs(a.path)} />
+  ))
+}
+
+<!-- Open Graph -->
+<meta property="og:type" content={type} />
+<meta property="og:site_name" content={SITE_NAME} />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:url" content={canonical} />
+<meta property="og:image" content={ogImage} />
+<meta property="og:locale" content={ogLocale} />
+{type === 'article' && publishedDate && (
+  <meta property="article:published_time" content={publishedDate} />
+)}
+
+<!-- Twitter -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={title} />
+<meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={ogImage} />
+
+<!-- Datos estructurados -->
+<script type="application/ld+json" set:html={JSON.stringify(organization)} is:inline />
+{site === 'pty' && (
+  <script type="application/ld+json" set:html={JSON.stringify(localBusiness)} is:inline />
+)}

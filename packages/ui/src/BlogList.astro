@@ -1,0 +1,142 @@
+---
+// Listado de blog compartido por las apps país. Recibe los posts ya cargados
+// (cada app llama a getCollection en su propia página). Base-aware y localizable.
+export interface BlogListItem {
+  slug: string;
+  title: string;
+  description: string;
+  pubDate: Date;
+  tags?: string[];
+}
+
+export interface Props {
+  posts: BlogListItem[];
+  /** Locale para fechas y textos de UI, p.ej. 'es-PA', 'es-ES', 'en-US'. */
+  locale?: string;
+}
+
+const { posts, locale = 'es-PA' } = Astro.props;
+const BASE = import.meta.env.BASE_URL.replace(/\/?$/, '/');
+
+const en = locale.startsWith('en');
+const t = {
+  heading: 'Blog',
+  subtitle: en
+    ? 'Practical technology and automation ideas to grow your business.'
+    : 'Ideas prácticas de tecnología y automatización para hacer crecer tu negocio.',
+  empty: en
+    ? 'We will publish our first articles soon.'
+    : 'Pronto publicaremos nuestros primeros artículos.',
+  more: en ? 'Read article →' : 'Leer artículo →',
+};
+
+const fmt = (d: Date) =>
+  d.toLocaleDateString(locale, { year: 'numeric', month: 'long', day: 'numeric' });
+---
+
+<section class="section">
+  <div class="section-container">
+    <h1 class="section-title">{t.heading}</h1>
+    <p class="section-subtitle">{t.subtitle}</p>
+
+    {posts.length === 0 && <p class="empty">{t.empty}</p>}
+
+    <ul class="post-list">
+      {posts.map((post) => (
+        <li class="post-card">
+          <a href={`${BASE}blog/${post.slug}`} class="post-link">
+            <time datetime={post.pubDate.toISOString()} class="post-date">
+              {fmt(post.pubDate)}
+            </time>
+            <h2 class="post-title">{post.title}</h2>
+            <p class="post-desc">{post.description}</p>
+            {post.tags && post.tags.length > 0 && (
+              <div class="post-tags">
+                {post.tags.map((tag) => (
+                  <span class="post-tag">#{tag}</span>
+                ))}
+              </div>
+            )}
+            <span class="post-more">{t.more}</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>
+
+<style>
+  .empty {
+    color: var(--color-text-muted);
+    text-align: center;
+  }
+
+  .post-list {
+    list-style: none;
+    padding: 0;
+    margin: 2rem auto 0;
+    max-width: 820px;
+    display: grid;
+    gap: 1.25rem;
+  }
+
+  .post-card {
+    background: var(--color-surface-raised);
+    border: 1px solid rgb(255 255 255 / 0.06);
+    border-radius: var(--radius-lg);
+    transition: border-color 0.2s ease, transform 0.2s ease;
+  }
+
+  .post-card:hover {
+    border-color: var(--color-brand-light);
+    transform: translateY(-2px);
+  }
+
+  .post-link {
+    display: block;
+    padding: 1.5rem 1.75rem;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .post-date {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-muted);
+  }
+
+  .post-title {
+    font-family: var(--font-display);
+    font-size: 1.4rem;
+    margin: 0.4rem 0 0.5rem;
+    color: var(--color-text);
+  }
+
+  .post-desc {
+    color: var(--color-text-soft);
+    margin: 0 0 0.75rem;
+    line-height: 1.6;
+  }
+
+  .post-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .post-tag {
+    font-size: 0.75rem;
+    color: var(--color-brand-light);
+    background: rgb(0 60 255 / 0.12);
+    border-radius: 999px;
+    padding: 0.15rem 0.6rem;
+  }
+
+  .post-more {
+    color: var(--color-accent-cyan);
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+</style>

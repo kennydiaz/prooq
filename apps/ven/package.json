@@ -10,6 +10,7 @@
     "typecheck": "astro check"
   },
   "dependencies": {
+    "@astrojs/sitemap": "^3.7.3",
     "@prooq/config": "workspace:*",
     "@prooq/data-client": "workspace:*",
     "@prooq/styles": "workspace:*",

@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+
+# prooq.com — portal + sucursales país (cada app genera su propio sitemap bajo su base)
+Sitemap: https://prooq.com/sitemap-index.xml
+Sitemap: https://prooq.com/pty/sitemap-index.xml
+Sitemap: https://prooq.com/usa/sitemap-index.xml
+Sitemap: https://prooq.com/esp/sitemap-index.xml
+Sitemap: https://prooq.com/ven/sitemap-index.xml
