@@ -11,6 +11,7 @@ const posts = (await getCollection('blog', ({ data }) => !data.draft))
     description: p.data.description,
     pubDate: p.data.pubDate,
     tags: p.data.tags,
+    heroImage: p.data.heroImage,
   }));
 ---
 

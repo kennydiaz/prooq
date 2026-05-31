@@ -1,12 +1,15 @@
 ---
 // Listado de blog compartido por las apps país. Recibe los posts ya cargados
 // (cada app llama a getCollection en su propia página). Base-aware y localizable.
+// Se muestra como grilla de tarjetas con la imagen destacada de cada artículo.
 export interface BlogListItem {
   slug: string;
   title: string;
   description: string;
   pubDate: Date;
   tags?: string[];
+  /** URL absoluta de la imagen destacada (si el artículo tiene). */
+  heroImage?: string | null;
 }
 
 export interface Props {
@@ -34,30 +37,39 @@ const fmt = (d: Date) =>
   d.toLocaleDateString(locale, { year: 'numeric', month: 'long', day: 'numeric' });
 ---
 
-<section class="section">
+<section class="section blog-list-section">
   <div class="section-container">
     <h1 class="section-title">{t.heading}</h1>
     <p class="section-subtitle">{t.subtitle}</p>
 
     {posts.length === 0 && <p class="empty">{t.empty}</p>}
 
-    <ul class="post-list">
+    <ul class="post-grid">
       {posts.map((post) => (
         <li class="post-card">
           <a href={`${BASE}blog/${post.slug}`} class="post-link">
-            <time datetime={post.pubDate.toISOString()} class="post-date">
-              {fmt(post.pubDate)}
-            </time>
-            <h2 class="post-title">{post.title}</h2>
-            <p class="post-desc">{post.description}</p>
-            {post.tags && post.tags.length > 0 && (
-              <div class="post-tags">
-                {post.tags.map((tag) => (
-                  <span class="post-tag">#{tag}</span>
-                ))}
+            {post.heroImage ? (
+              <img class="post-thumb" src={post.heroImage} alt={post.title} loading="lazy" />
+            ) : (
+              <div class="post-thumb post-thumb--placeholder" aria-hidden="true">
+                <span>PROOQ</span>
               </div>
             )}
-            <span class="post-more">{t.more}</span>
+            <div class="post-body">
+              <time datetime={post.pubDate.toISOString()} class="post-date">
+                {fmt(post.pubDate)}
+              </time>
+              <h2 class="post-title">{post.title}</h2>
+              <p class="post-desc">{post.description}</p>
+              {post.tags && post.tags.length > 0 && (
+                <div class="post-tags">
+                  {post.tags.map((tag) => (
+                    <span class="post-tag">#{tag}</span>
+                  ))}
+                </div>
+              )}
+              <span class="post-more">{t.more}</span>
+            </div>
           </a>
         </li>
       ))}
@@ -66,24 +78,32 @@ const fmt = (d: Date) =>
 </section>
 
 <style>
+  /* El header del sitio es fijo (~116px); subimos el padding superior para que
+     el título "Blog" no quede tapado por el menú. */
+  .blog-list-section {
+    padding-top: clamp(8rem, 6rem + 4vw, 10rem);
+  }
+
   .empty {
     color: var(--color-text-muted);
     text-align: center;
   }
 
-  .post-list {
+  .post-grid {
     list-style: none;
     padding: 0;
     margin: 2rem auto 0;
-    max-width: 820px;
+    max-width: 1100px;
     display: grid;
-    gap: 1.25rem;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
   }
 
   .post-card {
     background: var(--color-surface-raised);
     border: 1px solid rgb(255 255 255 / 0.06);
     border-radius: var(--radius-lg);
+    overflow: hidden;
     transition: border-color 0.2s ease, transform 0.2s ease;
   }
 
@@ -93,10 +113,41 @@ const fmt = (d: Date) =>
   }
 
   .post-link {
-    display: block;
-    padding: 1.5rem 1.75rem;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
     text-decoration: none;
     color: inherit;
+  }
+
+  .post-thumb {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    display: block;
+  }
+
+  .post-thumb--placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--color-brand) 0%, var(--color-surface-deep) 100%);
+  }
+
+  .post-thumb--placeholder span {
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: rgb(255 255 255 / 0.7);
+    font-size: 1.25rem;
+  }
+
+  .post-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1.25rem 1.5rem 1.5rem;
+    flex: 1;
   }
 
   .post-date {
@@ -108,22 +159,23 @@ const fmt = (d: Date) =>
 
   .post-title {
     font-family: var(--font-display);
-    font-size: 1.4rem;
-    margin: 0.4rem 0 0.5rem;
+    font-size: 1.25rem;
+    line-height: 1.25;
+    margin: 0;
     color: var(--color-text);
   }
 
   .post-desc {
     color: var(--color-text-soft);
-    margin: 0 0 0.75rem;
+    margin: 0;
     line-height: 1.6;
+    font-size: 0.95rem;
   }
 
   .post-tags {
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
-    margin-bottom: 0.75rem;
   }
 
   .post-tag {
@@ -135,6 +187,8 @@ const fmt = (d: Date) =>
   }
 
   .post-more {
+    margin-top: auto;
+    padding-top: 0.25rem;
     color: var(--color-accent-cyan);
     font-weight: 600;
     font-size: 0.9rem;
