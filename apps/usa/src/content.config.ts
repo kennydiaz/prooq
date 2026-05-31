@@ -1,6 +1,6 @@
 import { defineCollection, z } from 'astro:content';
-import type { Loader } from 'astro/loaders';
 import { listBlog } from '@prooq/data-client/blog';
+import type { Loader } from 'astro/loaders';
 
 // Colección de blog (Content Layer API de Astro 5) servida desde la BD vía la API.
 // Los artículos se gestionan en el panel admin; este loader trae los publicados de
@@ -11,37 +11,35 @@ function blogApiLoader(country: string): Loader {
     name: 'prooq-blog-api',
     async load({ store, parseData, renderMarkdown, logger }) {
       store.clear();
-      let posts;
       try {
-        posts = await listBlog(country);
+        const posts = await listBlog(country);
+        for (const post of posts) {
+          const data = await parseData({
+            id: post.slug,
+            data: {
+              title: post.title,
+              description: post.description,
+              pubDate: post.pubDate,
+              updatedDate: post.updatedDate ?? undefined,
+              tags: post.tags ?? [],
+              heroImage: post.heroImage ?? undefined,
+              author: post.author,
+              draft: post.draft,
+            },
+          });
+          store.set({
+            id: post.slug,
+            data,
+            body: post.body,
+            rendered: await renderMarkdown(post.body),
+          });
+        }
       } catch (err) {
         logger.warn(
           `No se pudo cargar el blog desde la API (${country}): ${
             err instanceof Error ? err.message : String(err)
           }. El blog quedará vacío en este build.`,
         );
-        return;
-      }
-      for (const post of posts) {
-        const data = await parseData({
-          id: post.slug,
-          data: {
-            title: post.title,
-            description: post.description,
-            pubDate: post.pubDate,
-            updatedDate: post.updatedDate ?? undefined,
-            tags: post.tags ?? [],
-            heroImage: post.heroImage ?? undefined,
-            author: post.author,
-            draft: post.draft,
-          },
-        });
-        store.set({
-          id: post.slug,
-          data,
-          body: post.body,
-          rendered: await renderMarkdown(post.body),
-        });
       }
     },
   };
