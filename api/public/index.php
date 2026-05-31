@@ -33,5 +33,6 @@ $app->add(new Cors());
 (require __DIR__ . '/../src/Routes/track.php')($app);
 (require __DIR__ . '/../src/Routes/stats.php')($app);
 (require __DIR__ . '/../src/Routes/team.php')($app);
+(require __DIR__ . '/../src/Routes/blog.php')($app);
 
 $app->run();
