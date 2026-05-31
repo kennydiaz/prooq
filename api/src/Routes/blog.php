@@ -6,11 +6,13 @@ use Prooq\Api\Db\Connection;
 use Prooq\Api\Middleware\AdminAuth;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\UploadedFileInterface;
 use Slim\App;
 
 // Blog gestionado desde el admin (CMS en BD). Lectura publica por sucursal
 // (country) para que cada app construya su /blog en build time; CRUD protegido
-// con sesion de admin. El cuerpo se guarda en Markdown.
+// con sesion de admin. El cuerpo se guarda en Markdown. La imagen destacada se
+// sube como archivo y se guarda redimensionada a 800px en WebP.
 
 return function (App $app): void {
     // GET /api/blog?country=PA — posts publicados de una sucursal (recientes primero).
@@ -59,13 +61,27 @@ return function (App $app): void {
         return $res->withHeader('Content-Type', 'application/json');
     })->add(new AdminAuth());
 
-    // POST /api/admin/blog — crear post (JSON).
+    // POST /api/admin/blog — crear post (multipart: campos + heroImage opcional).
     $app->post('/api/admin/blog', function (ServerRequestInterface $req, ResponseInterface $res) {
         $body = (array) $req->getParsedBody();
+        $files = $req->getUploadedFiles();
+        if ((int) $req->getHeaderLine('Content-Length') > 0 && $body === [] && $files === []) {
+            return blog_json($res, ['error' => 'upload_exceeds_server_limit'], 413);
+        }
+
         $err = null;
         $fields = blog_validate($body, $err);
         if ($err !== null) {
             return blog_json($res, ['error' => $err], 400);
+        }
+
+        $hero = null;
+        $heroName = blog_store_hero($files['heroImage'] ?? null, $err);
+        if ($err !== null) {
+            return blog_json($res, ['error' => $err], 400);
+        }
+        if ($heroName !== null) {
+            $hero = '/uploads/blog/' . $heroName;
         }
 
         $pdo = Connection::get();
@@ -81,31 +97,52 @@ return function (App $app): void {
         );
         $stmt->execute([
             $fields['country'], $slug, $fields['title'], $fields['description'], $fields['body'],
-            $fields['tags'], $fields['heroImage'], $fields['author'],
+            $fields['tags'], $hero, $fields['author'],
             $fields['pubDate'], $fields['updatedDate'], $fields['draft'],
         ]);
 
         return blog_json($res, ['ok' => true, 'id' => (int) $pdo->lastInsertId(), 'slug' => $slug], 201);
     })->add(new AdminAuth());
 
-    // POST /api/admin/blog/{id} — actualizar post (JSON).
+    // POST /api/admin/blog/{id} — actualizar post (multipart).
     $app->post('/api/admin/blog/{id}', function (ServerRequestInterface $req, ResponseInterface $res, array $args) {
         $id = (int) ($args['id'] ?? 0);
         if ($id <= 0) {
             return blog_json($res, ['error' => 'invalid_id'], 400);
         }
         $pdo = Connection::get();
-        $cur = $pdo->prepare('SELECT id FROM blog_posts WHERE id = ?');
+        $cur = $pdo->prepare('SELECT id, hero_image FROM blog_posts WHERE id = ?');
         $cur->execute([$id]);
-        if ($cur->fetch() === false) {
+        $row = $cur->fetch();
+        if ($row === false) {
             return blog_json($res, ['error' => 'not_found'], 404);
         }
 
         $body = (array) $req->getParsedBody();
+        $files = $req->getUploadedFiles();
+        if ((int) $req->getHeaderLine('Content-Length') > 0 && $body === [] && $files === []) {
+            return blog_json($res, ['error' => 'upload_exceeds_server_limit'], 413);
+        }
+
         $err = null;
         $fields = blog_validate($body, $err);
         if ($err !== null) {
             return blog_json($res, ['error' => $err], 400);
+        }
+
+        // Imagen destacada: si suben una nueva, reemplaza (y borra la subida vieja);
+        // si marcan removeHero, la quita; si no, conserva la actual.
+        $heroUrl = $row['hero_image'];
+        $newHero = blog_store_hero($files['heroImage'] ?? null, $err);
+        if ($err !== null) {
+            return blog_json($res, ['error' => $err], 400);
+        }
+        if ($newHero !== null) {
+            blog_delete_hero($heroUrl);
+            $heroUrl = '/uploads/blog/' . $newHero;
+        } elseif (in_array($body['removeHero'] ?? null, ['1', 'true', true, 1], true)) {
+            blog_delete_hero($heroUrl);
+            $heroUrl = null;
         }
 
         $base = blog_slugify(is_string($body['slug'] ?? null) && trim((string) $body['slug']) !== ''
@@ -120,7 +157,7 @@ return function (App $app): void {
              WHERE id = ?'
         )->execute([
             $fields['country'], $slug, $fields['title'], $fields['description'], $fields['body'],
-            $fields['tags'], $fields['heroImage'], $fields['author'],
+            $fields['tags'], $heroUrl, $fields['author'],
             $fields['pubDate'], $fields['updatedDate'], $fields['draft'], $id,
         ]);
 
@@ -134,11 +171,14 @@ return function (App $app): void {
             return blog_json($res, ['error' => 'invalid_id'], 400);
         }
         $pdo = Connection::get();
-        $stmt = $pdo->prepare('DELETE FROM blog_posts WHERE id = ?');
-        $stmt->execute([$id]);
-        if ($stmt->rowCount() === 0) {
+        $cur = $pdo->prepare('SELECT hero_image FROM blog_posts WHERE id = ?');
+        $cur->execute([$id]);
+        $row = $cur->fetch();
+        if ($row === false) {
             return blog_json($res, ['error' => 'not_found'], 404);
         }
+        blog_delete_hero($row['hero_image']);
+        $pdo->prepare('DELETE FROM blog_posts WHERE id = ?')->execute([$id]);
         return blog_json($res, ['ok' => true], 200);
     })->add(new AdminAuth());
 };
@@ -190,16 +230,16 @@ function blog_row(array $r): array
 
 /**
  * Valida el payload de create/update y devuelve los campos ya normalizados.
- * Setea $err con un codigo si algo falla.
+ * Setea $err con un codigo si algo falla. (La imagen destacada se maneja aparte.)
  *
- * @return array{country:string,title:string,description:string,body:string,tags:?string,heroImage:?string,author:string,pubDate:string,updatedDate:?string,draft:int}
+ * @return array{country:string,title:string,description:string,body:string,tags:?string,author:string,pubDate:string,updatedDate:?string,draft:int}
  */
 function blog_validate(array $body, ?string &$err): array
 {
     $err = null;
     $out = [
         'country' => '', 'title' => '', 'description' => '', 'body' => '',
-        'tags' => null, 'heroImage' => null, 'author' => 'Kenny Diaz',
+        'tags' => null, 'author' => 'Kenny Diaz',
         'pubDate' => '', 'updatedDate' => null, 'draft' => 0,
     ];
 
@@ -231,9 +271,6 @@ function blog_validate(array $body, ?string &$err): array
     if ($author !== '') {
         $out['author'] = $author;
     }
-
-    $hero = is_string($body['heroImage'] ?? null) ? trim((string) $body['heroImage']) : '';
-    $out['heroImage'] = $hero === '' ? null : $hero;
 
     $out['tags'] = blog_tags($body['tags'] ?? null);
     $out['draft'] = in_array($body['draft'] ?? false, [true, 1, '1', 'true'], true) ? 1 : 0;
@@ -304,5 +341,92 @@ function blog_unique_slug(PDO $pdo, string $country, string $base, int $excludeI
         }
         $n++;
         $slug = $base . '-' . $n;
+    }
+}
+
+/**
+ * Guarda la imagen destacada subida: la redimensiona a un lado maximo de 800px
+ * (solo si lo excede), la convierte a WebP y la deja en public/uploads/blog/.
+ * Devuelve el filename .webp, o null si no se subio archivo. Setea $err si falla.
+ */
+function blog_store_hero(?UploadedFileInterface $file, ?string &$err = null): ?string
+{
+    $err = null;
+    if (!$file instanceof UploadedFileInterface || $file->getError() === UPLOAD_ERR_NO_FILE) {
+        return null;
+    }
+    if ($file->getError() !== UPLOAD_ERR_OK) {
+        $err = 'hero_upload_error_' . $file->getError();
+        return null;
+    }
+    $size = $file->getSize();
+    if ($size === null || $size > 10 * 1024 * 1024) {
+        $err = 'hero_too_large_max_10mb';
+        return null;
+    }
+    $mime = $file->getClientMediaType() ?? '';
+    if (!in_array($mime, ['image/jpeg', 'image/png', 'image/webp', 'image/gif'], true)) {
+        $err = 'hero_invalid_mime_type';
+        return null;
+    }
+    if (!extension_loaded('gd') || !function_exists('imagewebp')) {
+        $err = 'webp_not_supported';
+        return null;
+    }
+
+    try {
+        $stream = $file->getStream();
+        $stream->rewind();
+        $data = $stream->getContents();
+    } catch (\Throwable $e) {
+        $err = 'hero_read_failed';
+        return null;
+    }
+
+    $src = @imagecreatefromstring($data);
+    if (!$src instanceof \GdImage) {
+        $err = 'hero_decode_failed';
+        return null;
+    }
+
+    $w = imagesx($src);
+    $h = imagesy($src);
+    $max = 800;
+    $scale = ($w > $max || $h > $max) ? $max / max($w, $h) : 1.0;
+    $nw = max(1, (int) round($w * $scale));
+    $nh = max(1, (int) round($h * $scale));
+
+    $dst = imagecreatetruecolor($nw, $nh);
+    imagealphablending($dst, false);
+    imagesavealpha($dst, true);
+    $transparent = imagecolorallocatealpha($dst, 0, 0, 0, 127);
+    imagefilledrectangle($dst, 0, 0, $nw, $nh, $transparent);
+    imagecopyresampled($dst, $src, 0, 0, 0, 0, $nw, $nh, $w, $h);
+
+    $dir = __DIR__ . '/../../public/uploads/blog';
+    if (!is_dir($dir)) {
+        mkdir($dir, 0o755, true);
+    }
+    $filename = bin2hex(random_bytes(16)) . '.webp';
+    $ok = imagewebp($dst, $dir . '/' . $filename, 82);
+
+    imagedestroy($src);
+    imagedestroy($dst);
+
+    if ($ok !== true) {
+        $err = 'hero_encode_failed';
+        return null;
+    }
+    return $filename;
+}
+
+/** Borra del disco una imagen destacada subida (solo si vive en uploads/blog/). */
+function blog_delete_hero(mixed $heroUrl): void
+{
+    if (is_string($heroUrl) && str_starts_with($heroUrl, '/uploads/blog/')) {
+        $path = __DIR__ . '/../../public/uploads/blog/' . basename($heroUrl);
+        if (is_file($path)) {
+            @unlink($path);
+        }
     }
 }

@@ -63,9 +63,16 @@ const COUNTRIES = [
           <input type="text" name="tags" placeholder="automatización, n8n, PYMEs" />
         </label>
         <label>
-          <span>Imagen destacada (ruta o URL, opcional)</span>
-          <input type="text" name="heroImage" placeholder="/images/articulo.jpg" />
+          <span>Imagen destacada (opcional)</span>
+          <input type="file" name="heroImage" accept="image/jpeg,image/png,image/webp,image/gif" />
+          <small class="hint">Se redimensiona a máx. 800px y se guarda como WebP.</small>
         </label>
+        <div id="hero-current" class="hero-current full" hidden>
+          <img id="hero-current-img" alt="Imagen destacada actual" />
+          <label class="chk inline">
+            <input type="checkbox" name="removeHero" /> Quitar imagen actual
+          </label>
+        </div>
         <label class="full">
           <span>Contenido * (Markdown)</span>
           <textarea name="body" rows="16" required class="mono"></textarea>
@@ -133,8 +140,22 @@ const COUNTRIES = [
   const cancelBtn = document.getElementById('cancel-edit') as HTMLButtonElement | null;
   const formTitle = document.getElementById('form-title');
   const filterCountry = document.getElementById('filter-country') as HTMLSelectElement | null;
+  const heroCurrent = document.getElementById('hero-current');
+  const heroCurrentImg = document.getElementById('hero-current-img') as HTMLImageElement | null;
 
   let posts: BlogPost[] = [];
+
+  // Muestra/oculta la previsualización de la imagen destacada actual (solo en edición).
+  function showHeroCurrent(url: string | null): void {
+    if (!heroCurrent || !heroCurrentImg) return;
+    if (url) {
+      heroCurrentImg.src = url;
+      heroCurrent.hidden = false;
+    } else {
+      heroCurrentImg.removeAttribute('src');
+      heroCurrent.hidden = true;
+    }
+  }
 
   function escapeHtml(s: string): string {
     return s.replace(/[&<>"']/g, (c) =>
@@ -220,6 +241,7 @@ const COUNTRIES = [
     if (formTitle) formTitle.textContent = 'Nuevo artículo';
     if (submitBtn) submitBtn.textContent = 'Publicar artículo';
     if (cancelBtn) cancelBtn.hidden = true;
+    showHeroCurrent(null);
     setStatus('');
   }
 
@@ -235,7 +257,9 @@ const COUNTRIES = [
     (form.elements.namedItem('pubDate') as HTMLInputElement).value = p.pubDate;
     (form.elements.namedItem('updatedDate') as HTMLInputElement).value = p.updatedDate ?? '';
     (form.elements.namedItem('tags') as HTMLInputElement).value = p.tags.join(', ');
-    (form.elements.namedItem('heroImage') as HTMLInputElement).value = p.heroImage ?? '';
+    (form.elements.namedItem('heroImage') as HTMLInputElement).value = ''; // file input: no se puede prerellenar
+    (form.elements.namedItem('removeHero') as HTMLInputElement).checked = false;
+    showHeroCurrent(p.heroImage);
     (form.elements.namedItem('body') as HTMLTextAreaElement).value = p.body;
     (form.elements.namedItem('draft') as HTMLInputElement).checked = p.draft;
     if (formTitle) formTitle.textContent = `Editando: ${p.title}`;
@@ -285,6 +309,8 @@ const COUNTRIES = [
       .map((t) => t.trim())
       .filter(Boolean);
 
+    const heroFile = fd.get('heroImage');
+
     const input: BlogPostInput = {
       country: String(fd.get('country') ?? 'PA'),
       title,
@@ -292,7 +318,8 @@ const COUNTRIES = [
       description,
       body,
       tags,
-      heroImage: String(fd.get('heroImage') ?? '').trim() || null,
+      heroImage: heroFile instanceof File && heroFile.size > 0 ? heroFile : null,
+      removeHero: fd.get('removeHero') !== null,
       author: String(fd.get('author') ?? '').trim() || undefined,
       pubDate,
       updatedDate: String(fd.get('updatedDate') ?? '').trim() || null,
@@ -406,6 +433,21 @@ const COUNTRIES = [
     font-size: 0.75rem;
     text-transform: none;
     letter-spacing: 0;
+  }
+
+  .hero-current {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.25rem;
+  }
+  .hero-current img {
+    max-width: 160px;
+    max-height: 100px;
+    object-fit: cover;
+    border-radius: var(--radius-md);
+    border: 1px solid rgb(255 255 255 / 0.12);
   }
 
   .chk {
