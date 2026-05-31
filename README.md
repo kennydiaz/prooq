@@ -1,9 +1,9 @@
-# PROOQ V2
+# PROOQ
 
 Monorepo de [prooq.com](https://prooq.com) — portal raíz + 4 sucursales país, panel admin (CMS), componentes compartidos y backend PHP unificado.
 
-> Plan completo y fases en [PROOQ_V2_MIGRATION.md](PROOQ_V2_MIGRATION.md).
-> Documentación del sitio V1 (que se está migrando) en [LEGACY_V1.md](LEGACY_V1.md).
+> Histórico del plan de migración en [PROOQ_V2_MIGRATION.md](PROOQ_V2_MIGRATION.md).
+> Documentación del sitio anterior (V1, ya reemplazado) en [LEGACY_V1.md](LEGACY_V1.md).
 
 ---
 
@@ -39,7 +39,7 @@ Los sitios públicos consumen el CMS en **build‑time** (`getGallery`, `getTeam
 ## 🏗️ Estructura
 
 ```
-prooqV2/
+prooq/
 ├── apps/                # Astro 5 estático
 │   ├── portal/          # prooq.com — selector de sucursales
 │   ├── pty/ usa/ esp/ ven/   # sucursales país
