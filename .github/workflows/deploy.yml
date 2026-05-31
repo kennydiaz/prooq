@@ -27,46 +27,16 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build all frontend apps
-        run: pnpm build
-
       - name: Setup SSH agent with deploy key
         uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{ secrets.HOSTINGER_SSH_KEY }}
 
-      - name: Deploy frontend via rsync
-        env:
-          SSH_USER: ${{ secrets.SSH_USER }}
-          SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_PORT: ${{ secrets.SSH_PORT }}
-        run: |
-          set -euo pipefail
-          PORT="${SSH_PORT:-65002}"
-          # accept-new agrega la host key al primer encuentro sin prompt,
-          # evita un step separado de ssh-keyscan (que Hostinger a veces filtra
-          # desde IPs de cloud providers como GitHub Actions runners).
-          SSH_CMD="ssh -p $PORT -o StrictHostKeyChecking=accept-new"
-          TARGET="$SSH_USER@$SSH_HOST"
-          ROOT="~/domains/prooq.com/public_html"
-
-          # Portal en raiz del dominio. NO --delete para preservar /api (subdir
-          # del subdominio api.prooq.com) + cualquier archivo gestionado por
-          # Hostinger (.ssl.txt, .htaccess auto-generado, etc).
-          rsync -av -e "$SSH_CMD" \
-            --exclude pty --exclude usa --exclude esp --exclude ven --exclude api --exclude admin \
-            apps/portal/dist/ "$TARGET:$ROOT/"
-
-          # 4 sucursales en subcarpetas dedicadas (--delete OK)
-          for country in pty usa esp ven; do
-            rsync -av --delete -e "$SSH_CMD" \
-              "apps/$country/dist/" "$TARGET:$ROOT/$country/"
-          done
-
-          # Admin CMS — panel de gestion en prooq.com/admin/ (--delete OK)
-          rsync -av --delete -e "$SSH_CMD" \
-            apps/admin/dist/ "$TARGET:$ROOT/admin/"
-
+      # IMPORTANTE: el API y las migraciones van ANTES del build. El blog es
+      # contenido de BD: cada app lo consulta al API en vivo durante `pnpm build`.
+      # Si construyéramos primero, el API aún no tendría la ruta /api/blog ni la
+      # tabla poblada y el blog saldría vacío. Orden correcto:
+      # desplegar API → migrar → build → desplegar frontends.
       - name: Deploy API via rsync
         env:
           SSH_USER: ${{ secrets.SSH_USER }}
@@ -117,3 +87,40 @@ jobs:
             composer install --no-dev --optimize-autoloader --no-interaction
             # Aplica las migraciones pendientes (idempotente; ignora USE/CREATE DATABASE).
             php bin/migrate.php
+
+      # Ahora que el API en vivo ya expone /api/blog con la tabla poblada, el build
+      # puede traer los posts de cada sucursal y renderizarlos estáticos.
+      - name: Build all frontend apps
+        run: pnpm build
+
+      - name: Deploy frontend via rsync
+        env:
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+        run: |
+          set -euo pipefail
+          PORT="${SSH_PORT:-65002}"
+          # accept-new agrega la host key al primer encuentro sin prompt,
+          # evita un step separado de ssh-keyscan (que Hostinger a veces filtra
+          # desde IPs de cloud providers como GitHub Actions runners).
+          SSH_CMD="ssh -p $PORT -o StrictHostKeyChecking=accept-new"
+          TARGET="$SSH_USER@$SSH_HOST"
+          ROOT="~/domains/prooq.com/public_html"
+
+          # Portal en raiz del dominio. NO --delete para preservar /api (subdir
+          # del subdominio api.prooq.com) + cualquier archivo gestionado por
+          # Hostinger (.ssl.txt, .htaccess auto-generado, etc).
+          rsync -av -e "$SSH_CMD" \
+            --exclude pty --exclude usa --exclude esp --exclude ven --exclude api --exclude admin \
+            apps/portal/dist/ "$TARGET:$ROOT/"
+
+          # 4 sucursales en subcarpetas dedicadas (--delete OK)
+          for country in pty usa esp ven; do
+            rsync -av --delete -e "$SSH_CMD" \
+              "apps/$country/dist/" "$TARGET:$ROOT/$country/"
+          done
+
+          # Admin CMS — panel de gestion en prooq.com/admin/ (--delete OK)
+          rsync -av --delete -e "$SSH_CMD" \
+            apps/admin/dist/ "$TARGET:$ROOT/admin/"

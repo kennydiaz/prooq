@@ -1,0 +1,593 @@
+---
+import AdminLayout from '../layouts/AdminLayout.astro';
+
+// Sucursales que tienen blog. El valor es el country ISO-2 que guarda la BD.
+const COUNTRIES = [
+  ['PA', 'Panamá'],
+  ['US', 'USA'],
+  ['ES', 'España'],
+  ['VE', 'Venezuela'],
+] as const;
+---
+
+<AdminLayout title="Blog">
+  <div class="page-head">
+    <div>
+      <h1>Blog</h1>
+      <p class="page-sub">
+        Artículos del blog por sucursal. El contenido se escribe en Markdown y cada sitio lo
+        publica en <code>/&lt;país&gt;/blog/</code> al reconstruirse. Los borradores no se publican.
+      </p>
+    </div>
+  </div>
+
+  <section class="card">
+    <h2 id="form-title">Nuevo artículo</h2>
+    <form id="post-form" autocomplete="off">
+      <input type="hidden" name="id" id="post-id" value="" />
+      <div class="grid-2">
+        <label>
+          <span>Sucursal *</span>
+          <select name="country" required>
+            {COUNTRIES.map(([code, label]) => (
+              <option value={code}>{label} ({code})</option>
+            ))}
+          </select>
+        </label>
+        <label>
+          <span>Autor</span>
+          <input type="text" name="author" value="Kenny Diaz" />
+        </label>
+        <label class="full">
+          <span>Título *</span>
+          <input type="text" name="title" required />
+        </label>
+        <label class="full">
+          <span>Slug (URL) — se genera del título si lo dejás vacío</span>
+          <input type="text" name="slug" placeholder="mi-articulo" />
+        </label>
+        <label class="full">
+          <span>Descripción / resumen * (meta description)</span>
+          <textarea name="description" rows="2" required></textarea>
+        </label>
+        <label>
+          <span>Fecha de publicación *</span>
+          <input type="date" name="pubDate" required />
+        </label>
+        <label>
+          <span>Fecha de actualización (opcional)</span>
+          <input type="date" name="updatedDate" />
+        </label>
+        <label>
+          <span>Tags (separados por coma)</span>
+          <input type="text" name="tags" placeholder="automatización, n8n, PYMEs" />
+        </label>
+        <label>
+          <span>Imagen destacada (ruta o URL, opcional)</span>
+          <input type="text" name="heroImage" placeholder="/images/articulo.jpg" />
+        </label>
+        <label class="full">
+          <span>Contenido * (Markdown)</span>
+          <textarea name="body" rows="16" required class="mono"></textarea>
+          <small class="hint">
+            Soporta Markdown: <code>## Subtítulo</code>, <code>**negrita**</code>,
+            listas, <code>[enlace](https://…)</code> y citas con <code>&gt;</code>.
+          </small>
+        </label>
+      </div>
+
+      <label class="chk inline">
+        <input type="checkbox" name="draft" /> Guardar como borrador (no se publica)
+      </label>
+
+      <div class="form-actions">
+        <button type="submit" id="submit-btn">Publicar artículo</button>
+        <button type="button" id="cancel-edit" class="ghost-btn" hidden>Cancelar edición</button>
+        <span class="status" id="form-status" aria-live="polite"></span>
+      </div>
+    </form>
+  </section>
+
+  <section class="card">
+    <div class="list-head">
+      <h2>Artículos</h2>
+      <div class="list-tools">
+        <select id="filter-country" class="filter-select">
+          <option value="">Todas las sucursales</option>
+          {COUNTRIES.map(([code, label]) => (
+            <option value={code}>{label} ({code})</option>
+          ))}
+        </select>
+        <button type="button" id="refresh-btn" class="ghost-btn">↻ Refrescar</button>
+      </div>
+    </div>
+    <div id="posts-list" class="posts-list">
+      <p class="muted">Cargando…</p>
+    </div>
+  </section>
+</AdminLayout>
+
+<script>
+  import {
+    createBlogPost,
+    deleteBlogPost,
+    getAdminBlog,
+    type BlogPost,
+    type BlogPostInput,
+    updateBlogPost,
+  } from '@prooq/data-client/blog';
+
+  const BASE = window.__ADMIN_BASE__ ?? '/admin/';
+
+  const COUNTRY_LABELS: Record<string, string> = {
+    PA: 'Panamá',
+    US: 'USA',
+    ES: 'España',
+    VE: 'Venezuela',
+  };
+
+  const form = document.getElementById('post-form') as HTMLFormElement | null;
+  const list = document.getElementById('posts-list');
+  const status = document.getElementById('form-status');
+  const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement | null;
+  const cancelBtn = document.getElementById('cancel-edit') as HTMLButtonElement | null;
+  const formTitle = document.getElementById('form-title');
+  const filterCountry = document.getElementById('filter-country') as HTMLSelectElement | null;
+
+  let posts: BlogPost[] = [];
+
+  function escapeHtml(s: string): string {
+    return s.replace(/[&<>"']/g, (c) =>
+      ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c] ?? c,
+    );
+  }
+
+  function fmtDate(d: string): string {
+    // d viene como 'YYYY-MM-DD'; mostrar sin desfase de zona horaria.
+    const [y, m, day] = d.split('-').map(Number);
+    if (!y || !m || !day) return d;
+    return new Date(y, m - 1, day).toLocaleDateString('es', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
+  }
+
+  function setStatus(msg: string, isError = false): void {
+    if (!status) return;
+    status.textContent = msg;
+    status.classList.toggle('error', isError);
+  }
+
+  function renderPost(p: BlogPost): string {
+    const tags = p.tags.length
+      ? `<div class="post-tags">${p.tags.map((t) => `<span class="tag">#${escapeHtml(t)}</span>`).join('')}</div>`
+      : '';
+    return `
+      <article class="post ${p.draft ? 'is-draft' : ''}" data-id="${p.id}">
+        <div class="post-main">
+          <div class="post-badges">
+            <span class="badge">${escapeHtml(COUNTRY_LABELS[p.country] ?? p.country)}</span>
+            ${p.draft ? '<span class="badge draft-badge">Borrador</span>' : '<span class="badge live-badge">Publicado</span>'}
+          </div>
+          <strong class="post-title">${escapeHtml(p.title)}</strong>
+          <span class="post-meta">/${escapeHtml(p.country.toLowerCase())}/blog/${escapeHtml(p.slug)} · ${fmtDate(p.pubDate)} · por ${escapeHtml(p.author)}</span>
+          <p class="post-desc">${escapeHtml(p.description)}</p>
+          ${tags}
+        </div>
+        <div class="post-actions">
+          <button type="button" class="link-btn edit-btn" data-id="${p.id}">Editar</button>
+          <button type="button" class="link-btn del-btn" data-id="${p.id}">Borrar</button>
+        </div>
+      </article>`;
+  }
+
+  function visiblePosts(): BlogPost[] {
+    const cc = filterCountry?.value ?? '';
+    return cc ? posts.filter((p) => p.country === cc) : posts;
+  }
+
+  function renderList(): void {
+    if (!list) return;
+    const items = visiblePosts();
+    list.innerHTML = items.length
+      ? items.map(renderPost).join('')
+      : '<p class="muted">No hay artículos para este filtro. Creá el primero arriba.</p>';
+    bindRowActions();
+  }
+
+  async function loadList(): Promise<void> {
+    if (!list) return;
+    list.innerHTML = '<p class="muted">Cargando…</p>';
+    try {
+      posts = await getAdminBlog();
+      renderList();
+    } catch (err) {
+      if (err instanceof Error && /\b401\b/.test(err.message)) {
+        window.location.href = `${BASE}login`;
+        return;
+      }
+      console.error(err);
+      list.innerHTML = `<p class="muted error">Error: ${escapeHtml(err instanceof Error ? err.message : String(err))}</p>`;
+    }
+  }
+
+  function resetForm(): void {
+    form?.reset();
+    const idEl = document.getElementById('post-id') as HTMLInputElement | null;
+    if (idEl) idEl.value = '';
+    // reset() devuelve el autor al value por defecto del HTML (Kenny Diaz).
+    if (formTitle) formTitle.textContent = 'Nuevo artículo';
+    if (submitBtn) submitBtn.textContent = 'Publicar artículo';
+    if (cancelBtn) cancelBtn.hidden = true;
+    setStatus('');
+  }
+
+  function startEdit(id: number): void {
+    const p = posts.find((x) => x.id === id);
+    if (!p || !form) return;
+    (document.getElementById('post-id') as HTMLInputElement).value = String(p.id);
+    (form.elements.namedItem('country') as HTMLSelectElement).value = p.country;
+    (form.elements.namedItem('author') as HTMLInputElement).value = p.author;
+    (form.elements.namedItem('title') as HTMLInputElement).value = p.title;
+    (form.elements.namedItem('slug') as HTMLInputElement).value = p.slug;
+    (form.elements.namedItem('description') as HTMLTextAreaElement).value = p.description;
+    (form.elements.namedItem('pubDate') as HTMLInputElement).value = p.pubDate;
+    (form.elements.namedItem('updatedDate') as HTMLInputElement).value = p.updatedDate ?? '';
+    (form.elements.namedItem('tags') as HTMLInputElement).value = p.tags.join(', ');
+    (form.elements.namedItem('heroImage') as HTMLInputElement).value = p.heroImage ?? '';
+    (form.elements.namedItem('body') as HTMLTextAreaElement).value = p.body;
+    (form.elements.namedItem('draft') as HTMLInputElement).checked = p.draft;
+    if (formTitle) formTitle.textContent = `Editando: ${p.title}`;
+    if (submitBtn) submitBtn.textContent = 'Guardar cambios';
+    if (cancelBtn) cancelBtn.hidden = false;
+    setStatus('');
+    form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function bindRowActions(): void {
+    list?.querySelectorAll<HTMLButtonElement>('.edit-btn').forEach((b) =>
+      b.addEventListener('click', () => startEdit(Number(b.dataset.id))),
+    );
+    list?.querySelectorAll<HTMLButtonElement>('.del-btn').forEach((b) =>
+      b.addEventListener('click', async () => {
+        const id = Number(b.dataset.id);
+        if (!confirm('¿Borrar este artículo? Esta acción es irreversible.')) return;
+        b.disabled = true;
+        try {
+          await deleteBlogPost(id);
+          await loadList();
+        } catch (err) {
+          alert('No se pudo borrar.');
+          console.error(err);
+          b.disabled = false;
+        }
+      }),
+    );
+  }
+
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!form || !submitBtn) return;
+
+    const fd = new FormData(form);
+    const title = String(fd.get('title') ?? '').trim();
+    const description = String(fd.get('description') ?? '').trim();
+    const body = String(fd.get('body') ?? '').trim();
+    const pubDate = String(fd.get('pubDate') ?? '').trim();
+    if (title === '' || description === '' || body === '' || pubDate === '') {
+      setStatus('Título, descripción, contenido y fecha son obligatorios.', true);
+      return;
+    }
+
+    const tags = String(fd.get('tags') ?? '')
+      .split(',')
+      .map((t) => t.trim())
+      .filter(Boolean);
+
+    const input: BlogPostInput = {
+      country: String(fd.get('country') ?? 'PA'),
+      title,
+      slug: String(fd.get('slug') ?? '').trim() || undefined,
+      description,
+      body,
+      tags,
+      heroImage: String(fd.get('heroImage') ?? '').trim() || null,
+      author: String(fd.get('author') ?? '').trim() || undefined,
+      pubDate,
+      updatedDate: String(fd.get('updatedDate') ?? '').trim() || null,
+      draft: fd.get('draft') !== null,
+    };
+
+    const editId = Number((document.getElementById('post-id') as HTMLInputElement).value) || 0;
+    submitBtn.disabled = true;
+    setStatus('Guardando…');
+    try {
+      if (editId > 0) await updateBlogPost(editId, input);
+      else await createBlogPost(input);
+      resetForm();
+      setStatus('✔ Guardado');
+      await loadList();
+    } catch (err) {
+      setStatus(`✗ Error: ${err instanceof Error ? err.message : 'desconocido'}`, true);
+    } finally {
+      submitBtn.disabled = false;
+    }
+  });
+
+  cancelBtn?.addEventListener('click', resetForm);
+  filterCountry?.addEventListener('change', renderList);
+  document.getElementById('refresh-btn')?.addEventListener('click', () => {
+    void loadList();
+  });
+
+  void loadList();
+</script>
+
+<style>
+  .page-head {
+    margin-bottom: 2rem;
+  }
+  .page-head h1 {
+    font-family: var(--font-display);
+    margin: 0 0 0.5rem;
+    font-size: 1.75rem;
+  }
+  .page-sub {
+    color: var(--color-text-muted);
+    margin: 0;
+    font-size: 0.95rem;
+    max-width: 680px;
+  }
+  code {
+    background: rgb(255 255 255 / 0.08);
+    border-radius: 4px;
+    padding: 0.05rem 0.35rem;
+    font-size: 0.85em;
+  }
+
+  .card {
+    background: var(--color-surface-raised);
+    border: 1px solid rgb(255 255 255 / 0.06);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+  }
+  .card h2 {
+    margin: 0 0 1rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+  }
+  .grid-2 .full {
+    grid-column: 1 / -1;
+  }
+  label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+  label > span {
+    font-size: 0.78rem;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  input,
+  textarea,
+  select {
+    background: var(--color-surface);
+    border: 1px solid rgb(255 255 255 / 0.12);
+    border-radius: var(--radius-md);
+    padding: 0.55rem 0.75rem;
+    color: var(--color-text);
+    font: inherit;
+  }
+  input:focus,
+  textarea:focus,
+  select:focus {
+    outline: none;
+    border-color: var(--color-accent-cyan);
+  }
+  textarea.mono {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    resize: vertical;
+  }
+  .hint {
+    color: var(--color-text-muted);
+    font-size: 0.75rem;
+    text-transform: none;
+    letter-spacing: 0;
+  }
+
+  .chk {
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--color-text-soft);
+    cursor: pointer;
+  }
+  .chk input {
+    width: auto;
+  }
+  .chk.inline {
+    margin-bottom: 1.25rem;
+  }
+
+  .form-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  button[type='submit'] {
+    background: var(--color-brand);
+    color: var(--color-text);
+    border: none;
+    padding: 0.7rem 1.5rem;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button[type='submit']:hover:not(:disabled) {
+    background: var(--color-brand-darker);
+  }
+  button[type='submit']:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  .ghost-btn {
+    background: transparent;
+    border: 1px solid rgb(255 255 255 / 0.2);
+    color: var(--color-text-soft);
+    padding: 0.45rem 0.95rem;
+    border-radius: var(--radius-md);
+    font-size: 0.85rem;
+    cursor: pointer;
+  }
+  .ghost-btn:hover {
+    background: rgb(255 255 255 / 0.06);
+  }
+  .status {
+    font-size: 0.9rem;
+    color: var(--color-text-muted);
+  }
+  .status.error {
+    color: #ff8080;
+  }
+
+  .list-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+  }
+  .list-head h2 {
+    margin: 0;
+  }
+  .list-tools {
+    display: flex;
+    gap: 0.6rem;
+    align-items: center;
+  }
+  .filter-select {
+    padding: 0.45rem 0.6rem;
+    font-size: 0.85rem;
+  }
+
+  .posts-list {
+    display: grid;
+    gap: 0.85rem;
+  }
+  .post {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.9rem;
+    align-items: start;
+    background: var(--color-surface);
+    border: 1px solid rgb(255 255 255 / 0.06);
+    border-radius: var(--radius-md);
+    padding: 1rem 1.1rem;
+  }
+  .post.is-draft {
+    opacity: 0.7;
+  }
+  .post-main {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    min-width: 0;
+  }
+  .post-badges {
+    display: flex;
+    gap: 0.4rem;
+    margin-bottom: 0.15rem;
+  }
+  .badge {
+    background: rgb(0 60 255 / 0.2);
+    color: var(--color-brand-light);
+    padding: 0.1rem 0.55rem;
+    border-radius: var(--radius-pill);
+    font-size: 0.72rem;
+    font-weight: 600;
+  }
+  .live-badge {
+    background: rgb(0 200 120 / 0.18);
+    color: #4ade80;
+  }
+  .draft-badge {
+    background: rgb(255 179 0 / 0.2);
+    color: var(--color-accent-amber);
+  }
+  .post-title {
+    font-size: 1rem;
+    color: var(--color-text);
+  }
+  .post-meta {
+    color: var(--color-text-muted);
+    font-size: 0.78rem;
+  }
+  .post-desc {
+    color: var(--color-text-soft);
+    font-size: 0.88rem;
+    margin: 0.2rem 0 0;
+    line-height: 1.5;
+  }
+  .post-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-top: 0.35rem;
+  }
+  .tag {
+    font-size: 0.72rem;
+    color: var(--color-brand-light);
+    background: rgb(0 60 255 / 0.12);
+    border-radius: 999px;
+    padding: 0.1rem 0.55rem;
+  }
+  .post-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+  .link-btn {
+    background: transparent;
+    border: none;
+    color: var(--color-text-soft);
+    font-size: 0.82rem;
+    cursor: pointer;
+    padding: 0.2rem 0.3rem;
+  }
+  .link-btn:hover {
+    color: var(--color-text);
+  }
+  .del-btn {
+    color: #ff9090;
+  }
+
+  .muted {
+    color: var(--color-text-muted);
+    text-align: center;
+    padding: 1.5rem;
+  }
+  .muted.error {
+    color: #ff8080;
+  }
+
+  @media (max-width: 600px) {
+    .grid-2 {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

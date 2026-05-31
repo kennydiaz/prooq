@@ -9,8 +9,25 @@ USER="${HOSTINGER_USER:?HOSTINGER_USER no definido}"
 SSH="${USER}@${HOST}"
 API_REMOTE="${HOSTINGER_API:-~/domains/api.prooq.com}"
 
-echo "▶ Building monorepo..."
+# IMPORTANTE: el API y las migraciones van ANTES del build. El blog es contenido
+# de BD: cada app lo consulta al API en vivo durante `pnpm build`. Si
+# construyéramos primero, el API aún no tendría la ruta /api/blog ni la tabla
+# poblada y el blog saldría vacío. Orden: deps → API → migrar → build → frontends.
+
+echo "▶ Installing JS deps..."
 pnpm install --frozen-lockfile
+
+echo "▶ Deploying API → ${SSH}:${API_REMOTE}/"
+rsync -av --delete --exclude '.env' api/public/ "${SSH}:${API_REMOTE}/public_html/"
+rsync -av --delete api/src/ "${SSH}:${API_REMOTE}/src/"
+rsync -av --delete api/bin/ "${SSH}:${API_REMOTE}/bin/"
+rsync -av --delete db/migrations/ "${SSH}:${API_REMOTE}/migrations/"
+rsync -av api/composer.json api/composer.lock "${SSH}:${API_REMOTE}/"
+
+echo "▶ Installing PHP deps + running migrations on remote..."
+ssh "${SSH}" "cd ${API_REMOTE} && composer install --no-dev --optimize-autoloader && php bin/migrate.php"
+
+echo "▶ Building monorepo (el blog se trae del API ya actualizado)..."
 pnpm build
 
 echo "▶ Deploying portal → ${SSH}:~/public_html/"
@@ -22,15 +39,5 @@ for country in pty usa esp ven; do
     echo "▶ Deploying ${country} → ${SSH}:${target}"
     rsync -av --delete "apps/${country}/dist/" "${SSH}:${target}"
 done
-
-echo "▶ Deploying API → ${SSH}:${API_REMOTE}/"
-rsync -av --delete --exclude '.env' api/public/ "${SSH}:${API_REMOTE}/public_html/"
-rsync -av --delete api/src/ "${SSH}:${API_REMOTE}/src/"
-rsync -av --delete api/bin/ "${SSH}:${API_REMOTE}/bin/"
-rsync -av --delete db/migrations/ "${SSH}:${API_REMOTE}/migrations/"
-rsync -av api/composer.json api/composer.lock "${SSH}:${API_REMOTE}/"
-
-echo "▶ Installing PHP deps + running migrations on remote..."
-ssh "${SSH}" "cd ${API_REMOTE} && composer install --no-dev --optimize-autoloader && php bin/migrate.php"
 
 echo "✓ Done."

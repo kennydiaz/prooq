@@ -14,6 +14,8 @@ export interface Props {
   /** Imagen por defecto del Article si el .md no trae heroImage. */
   defaultImage?: string;
   description?: string;
+  /** Autor del artículo (byline visible y author del JSON-LD). */
+  author?: string;
 }
 
 const {
@@ -26,6 +28,7 @@ const {
   orgName = 'PROOQ S.A.',
   defaultImage = '/images/pty.jpg',
   description = '',
+  author = 'Kenny Diaz',
 } = Astro.props;
 
 const BASE = import.meta.env.BASE_URL.replace(/\/?$/, '/');
@@ -39,6 +42,7 @@ const t = {
   home: en ? 'Home' : 'Inicio',
   blog: 'Blog',
   updated: en ? 'updated' : 'actualizado',
+  by: en ? 'By' : 'Por',
   back: en ? '← Back to blog' : '← Volver al blog',
   crumbs: en ? 'Breadcrumb' : 'Migas de pan',
 };
@@ -55,7 +59,7 @@ const articleLd = {
   dateModified: (updatedDate ?? pubDate).toISOString(),
   image: abs(heroImage ?? defaultImage),
   mainEntityOfPage: { '@type': 'WebPage', '@id': url },
-  author: { '@type': 'Organization', name: orgName, url: ORIGIN },
+  author: { '@type': 'Person', name: author },
   publisher: {
     '@type': 'Organization',
     name: orgName,
@@ -85,6 +89,8 @@ const breadcrumbLd = {
     <header class="article-header">
       <h1 class="article-title">{title}</h1>
       <p class="article-meta">
+        {author && <span class="article-author">{t.by} {author}</span>}
+        {author && <span aria-hidden="true"> · </span>}
         <time datetime={published}>{fmt(pubDate)}</time>
         {updatedDate && <span> · {t.updated} {fmt(updatedDate)}</span>}
       </p>
@@ -148,6 +154,11 @@ const breadcrumbLd = {
     color: var(--color-text-muted);
     font-size: 0.9rem;
     margin: 0 0 0.75rem;
+  }
+
+  .article-author {
+    color: var(--color-text-soft);
+    font-weight: 600;
   }
 
   .article-tags {
