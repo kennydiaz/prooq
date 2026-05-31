@@ -1,6 +1,6 @@
 {
   "name": "prooq/api",
-  "description": "PROOQ V2 backend — Slim 4 + PDO/MySQL para api.prooq.com",
+  "description": "PROOQ backend — Slim 4 + PDO/MySQL para api.prooq.com",
   "type": "project",
   "license": "proprietary",
   "require": {
