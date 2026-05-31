@@ -85,7 +85,9 @@ export async function listBlog(country?: string): Promise<BlogPost[]> {
 export async function getBlogPost(country: string, slug: string): Promise<BlogPost> {
   const res = await fetch(new URL(`/api/blog/${country}/${slug}`, apiBase()));
   if (!res.ok) throw new Error(`getBlogPost failed: ${res.status}`);
-  return absolutizeHero([(await res.json()) as BlogPost])[0];
+  const post = (await res.json()) as BlogPost;
+  absolutizeHero([post]); // muta heroImage en sitio
+  return post;
 }
 
 // Admin: todos los posts (incluye borradores).
