@@ -311,6 +311,20 @@ const locationDetails = [
           </article>
         ))}
       </div>
+
+      <figure class="team-moment fade-in">
+        <img
+          src={`${BASE}images/team/innova-emision.jpg`}
+          alt="Parte del equipo de PROOQ junto a Innova Emisión en Ciudad de Panamá"
+          width="1200"
+          height="1200"
+          loading="lazy"
+        />
+        <figcaption>
+          Parte de nuestro equipo junto a <strong>Innova Emisión</strong>, nuestro aliado
+          en soluciones de gestión y facturación electrónica · Ciudad de Panamá, 2026
+        </figcaption>
+      </figure>
     </div>
   </section>
 
@@ -364,6 +378,30 @@ const locationDetails = [
 </BaseLayout>
 
 <style>
+  /* Momento del equipo: foto destacada dentro de "Nuestro Equipo" */
+  .team-moment {
+    max-width: 620px;
+    margin: 3rem auto 0;
+    text-align: center;
+  }
+  .team-moment img {
+    width: 100%;
+    height: auto;
+    border-radius: var(--radius-lg);
+    border: 1px solid rgb(255 255 255 / 0.08);
+    box-shadow: var(--shadow-card);
+  }
+  .team-moment figcaption {
+    margin-top: 1rem;
+    color: var(--color-brand-light);
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
+  .team-moment figcaption strong {
+    color: var(--color-text);
+    font-weight: 600;
+  }
+
   /* SuiteHub feature section — destacada, mas grande que las demás */
   .suitehub-feature {
     background: radial-gradient(
