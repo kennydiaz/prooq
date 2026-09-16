@@ -2,6 +2,7 @@ export { default as BlogArticle } from './BlogArticle.astro';
 export { default as BlogList } from './BlogList.astro';
 export { default as Header } from './Header.astro';
 export { default as Footer } from './Footer.astro';
+export { default as Careers } from './Careers.astro';
 export { default as ChatFab } from './ChatFab.astro';
 export { default as ConstellationNetwork } from './ConstellationNetwork.astro';
 export { default as CountriesMenu } from './CountriesMenu.astro';

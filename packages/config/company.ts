@@ -62,5 +62,12 @@ export const CERTIFICATIONS = [
   'Adobe',
 ] as const;
 
+/**
+ * Formulario público de postulación de HubPro (atajo de modules/personal/postular.php).
+ * Cada envío entra a HubPro como "candidato nuevo por revisar", así que todas las
+ * sucursales enlazan aquí en vez de tener un formulario propio.
+ */
+export const JOBS_APPLICATION_URL = 'https://hubpro.prooq.com/empleo.php';
+
 /** PAC autorizados por la DGI con los que hay integración propia. */
 export const DGI_PAC_COUNT = 5;
