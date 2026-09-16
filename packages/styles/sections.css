@@ -75,6 +75,11 @@
 }
 
 /* Services */
+.services-more {
+  margin: 2rem 0 0;
+  text-align: center;
+}
+
 .services-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));

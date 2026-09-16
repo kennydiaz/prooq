@@ -8,6 +8,7 @@ import { SUITEHUB, SUITEHUB_FEATURED_VERTICALS } from '@prooq/config/suitehub';
 import { getTeam } from '@prooq/data-client/team';
 import { ChatFab, Hero, Starfield } from '@prooq/ui';
 import clientsData from '../data/clients.json';
+import { HOME_SERVICES } from '../data/services';
 import BaseLayout from '../layouts/BaseLayout.astro';
 
 const BASE = import.meta.env.BASE_URL.replace(/\/?$/, '/');
@@ -49,82 +50,6 @@ const featuredClients = [
 ]
   .slice(0, MARQUEE_SIZE)
   .map((c) => ({ name: c.name, logo: `${BASE}images/clientes/${encodeURIComponent(c.img)}` }));
-
-const services = [
-  {
-    icon: '🤖',
-    title: 'Agentes Inteligentes con n8n',
-    description: 'Automatización avanzada y agentes inteligentes para empresas.',
-    features: ['Workflows N8N', 'Chatbots IA', 'Integraciones API', 'Procesos automatizados'],
-  },
-  {
-    icon: '📹',
-    title: 'Seguridad Electrónica',
-    description: 'Soluciones avanzadas de videovigilancia y control de acceso para tu negocio.',
-    features: [
-      'CCTV / Videovigilancia',
-      'Control de acceso',
-      'Alarmas inteligentes',
-      'Monitoreo 24/7',
-    ],
-  },
-  {
-    icon: '🌐',
-    title: 'Desarrollo Web',
-    description: 'Soluciones web profesionales para empresas y negocios.',
-    features: ['Landing pages', 'Sitios corporativos', 'E-commerce', 'Aplicaciones web'],
-  },
-  {
-    icon: '🔒',
-    title: 'Ciberseguridad y Protección de Datos',
-    description: 'Control de accesos, encriptación y monitoreo continuo para tu empresa.',
-    features: [
-      'Threat detection',
-      'Encriptación at rest',
-      'Políticas de acceso',
-      'Auditorías de cumplimiento',
-    ],
-  },
-  {
-    icon: '🔌',
-    title: 'Redes Cableadas e Infraestructura',
-    description: 'Diseño y administración de redes locales, remotas y en la nube.',
-    features: [
-      'Cableado Cat6/Cat7',
-      'Switches y routers',
-      'Redes locales / cloud',
-      'VPN y acceso remoto',
-    ],
-  },
-  {
-    icon: '🧑‍💻',
-    title: 'Sistemas Administrativos',
-    description: 'Software a medida para optimizar la gestión de tu empresa.',
-    features: ['Integración ERP', 'Dashboards', 'Automatización de procesos', 'Analítica de datos'],
-  },
-  {
-    icon: '🛠️',
-    title: 'Automatización y Control Inteligente',
-    description: 'Soluciones para automatizar procesos, edificios y sistemas de seguridad.',
-    features: [
-      'Automatización de edificios',
-      'IoT',
-      'Sensores inteligentes',
-      'Control de procesos',
-    ],
-  },
-  {
-    icon: '💡',
-    title: 'Consultoría Tecnológica',
-    description: 'Asesoramos a empresas en la adopción eficiente de tecnología.',
-    features: [
-      'Transformación digital',
-      'Auditorías técnicas',
-      'Selección de proveedores',
-      'Roadmaps tecnológicos',
-    ],
-  },
-];
 
 const stats = [
   { value: `${GROUP_EXPERIENCE_YEARS}+`, label: 'Años de experiencia' },
@@ -342,17 +267,17 @@ const locationDetails = [
         Además de SuiteHub ofrecemos servicios de infraestructura, seguridad, automatización y consultoría para empresas en Panamá.
       </p>
       <div class="services-grid">
-        {services.map((s) => (
+        {HOME_SERVICES.map((s) => (
           <article class="service-card fade-in">
             <div class="service-icon" aria-hidden="true">{s.icon}</div>
             <h3>{s.title}</h3>
             <p>{s.description}</p>
-            <ul>
-              {s.features.map((f) => <li>{f}</li>)}
-            </ul>
           </article>
         ))}
       </div>
+      <p class="services-more fade-in">
+        <a href={`${BASE}servicios`} class="portfolio-link">Ver todos los servicios →</a>
+      </p>
       <div class="services-actions fade-in">
         <a
           href="https://wa.me/50762082617?text=Hola%2C%20quiero%20cotizar%20servicios%20de%20infraestructura"

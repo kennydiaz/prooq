@@ -2,102 +2,10 @@
 import { GROUP_EXPERIENCE_YEARS, GROUP_TRAJECTORY_SINCE } from '@prooq/config/company';
 import { getTeam } from '@prooq/data-client/team';
 import { Hero, MeteorShower } from '@prooq/ui';
+import { HOME_SERVICES } from '../data/services';
 import BaseLayout from '../layouts/BaseLayout.astro';
 
 const BASE = import.meta.env.BASE_URL.replace(/\/?$/, '/');
-
-const services = [
-  {
-    icon: '🌐',
-    title: 'Desarrollo Web',
-    description: 'Soluciones web profesionales para empresas y negocios.',
-    features: ['Landing pages', 'Sitios corporativos', 'E-commerce', 'Aplicaciones web'],
-  },
-  {
-    icon: '💻',
-    title: 'Instalación y Activación de Software',
-    description: 'Instalación profesional de software y paquetes empresariales.',
-    features: [
-      'Licencias originales',
-      'Suite ofimática',
-      'Software contable',
-      'Soporte post-instalación',
-    ],
-  },
-  {
-    icon: '📡',
-    title: 'Redes y Conectividad',
-    description: 'Optimización y configuración de redes empresariales y residenciales.',
-    features: [
-      'Wi-Fi empresarial',
-      'Switches y routers',
-      'Cableado estructurado',
-      'Diagnóstico de red',
-    ],
-  },
-  {
-    icon: '🖨️',
-    title: 'Impresoras y Periféricos',
-    description: 'Instalación y configuración de impresoras y periféricos de oficina.',
-    features: ['Impresoras multifunción', 'Escáneres', 'POS y lectoras', 'Mantenimiento'],
-  },
-  {
-    icon: '🔒',
-    title: 'Seguridad Digital',
-    description: 'Protección y optimización de sistemas y dispositivos.',
-    features: ['Antivirus empresariales', 'Firewalls', 'Backups automáticos', 'Auditorías'],
-  },
-  {
-    icon: '🖥️',
-    title: 'Servicios Remotos y Asistencia Técnica',
-    description: 'Soporte y soluciones rápidas sin visita presencial.',
-    features: [
-      'Acceso remoto seguro',
-      'Soporte por chat/video',
-      'Diagnóstico en línea',
-      'Reparaciones express',
-    ],
-  },
-  {
-    icon: '☁️',
-    title: 'Servicios en la Nube',
-    description: 'Configuración y gestión de servicios cloud empresariales.',
-    features: [
-      'Microsoft 365',
-      'Google Workspace',
-      'Almacenamiento en la nube',
-      'Migración a la nube',
-    ],
-  },
-  {
-    icon: '⚡',
-    title: 'Optimización y Mantenimiento Digital',
-    description: 'Mejora de rendimiento y mantenimiento profesional de sistemas.',
-    features: [
-      'Tuning de rendimiento',
-      'Limpieza de sistemas',
-      'Actualizaciones',
-      'Plan preventivo',
-    ],
-  },
-  {
-    icon: '🛠️',
-    title: 'Asesorías y Configuraciones Especiales',
-    description: 'Soluciones personalizadas y configuración de dispositivos inteligentes.',
-    features: [
-      'Setup IoT/Smart Home',
-      'Personalización avanzada',
-      'Migración de datos',
-      'Recuperación de información',
-    ],
-  },
-  {
-    icon: '🤖',
-    title: 'Agentes Inteligentes con n8n (NUEVO)',
-    description: 'Automatización avanzada y agentes inteligentes para empresas.',
-    features: ['Workflows N8N', 'Chatbots IA', 'Integraciones API', 'Procesos automatizados'],
-  },
-];
 
 const stats = [
   { value: `${GROUP_EXPERIENCE_YEARS}+`, label: 'Años de experiencia' },
@@ -224,17 +132,17 @@ const locationDetails = [
       <h2 class="section-title fade-in">Servicios Especiales</h2>
       <p class="section-subtitle fade-in">Soluciones tecnológicas integrales para empresas modernas</p>
       <div class="services-grid">
-        {services.map((s) => (
+        {HOME_SERVICES.map((s) => (
           <article class="service-card fade-in">
             <div class="service-icon" aria-hidden="true">{s.icon}</div>
             <h3>{s.title}</h3>
             <p>{s.description}</p>
-            <ul>
-              {s.features.map((f) => <li>{f}</li>)}
-            </ul>
           </article>
         ))}
       </div>
+      <p class="services-more fade-in">
+        <a href={`${BASE}servicios`} class="portfolio-link">Ver todos los servicios →</a>
+      </p>
     </div>
   </section>
 
