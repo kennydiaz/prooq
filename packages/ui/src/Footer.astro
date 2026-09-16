@@ -57,6 +57,32 @@ const {
   socialSubtitle = 'Mantente conectado y descubre las últimas novedades',
 } = Astro.props;
 
+// Links secundarios que salieron del menú principal. Solo páginas que existen en cada app.
+const BASE = import.meta.env.BASE_URL.replace(/\/?$/, '/');
+const FOOTER_LINKS_BY_COUNTRY: Record<Country, { label: string; href: string }[]> = {
+  pty: [
+    { label: 'Galería', href: `${BASE}gallery` },
+    { label: 'Descargas', href: `${BASE}downloads` },
+    { label: 'Trabaja con nosotros', href: `${BASE}trabaja-con-nosotros` },
+  ],
+  usa: [
+    { label: 'Gallery', href: `${BASE}gallery` },
+    { label: 'Downloads', href: `${BASE}downloads` },
+    { label: 'Careers', href: `${BASE}careers` },
+  ],
+  esp: [
+    { label: 'Galería', href: `${BASE}gallery` },
+    { label: 'Descargas', href: `${BASE}downloads` },
+    { label: 'Trabaja con nosotros', href: `${BASE}trabaja-con-nosotros` },
+  ],
+  ven: [
+    { label: 'Galería', href: `${BASE}gallery` },
+    { label: 'Descargas', href: `${BASE}downloads` },
+    { label: 'Trabaja con nosotros', href: `${BASE}trabaja-con-nosotros` },
+  ],
+};
+const footerLinks = country ? FOOTER_LINKS_BY_COUNTRY[country] : [];
+
 const tel = contact.phone?.replace(/[^\d+]/g, '');
 const whats = contact.whatsapp?.replace(/[^\d]/g, '');
 ---
@@ -101,6 +127,12 @@ const whats = contact.whatsapp?.replace(/[^\d]/g, '');
       )}
     </ul>
   </section>
+
+  {footerLinks.length > 0 && (
+    <nav class="footer-links" aria-label={country === 'usa' ? 'More links' : 'Más enlaces'}>
+      {footerLinks.map((l) => <a href={l.href}>{l.label}</a>)}
+    </nav>
+  )}
 
   <div class="copyright">
     &copy; {copyrightYear} <strong>{copyrightName}</strong> — Todos los derechos reservados.
@@ -189,6 +221,28 @@ const whats = contact.whatsapp?.replace(/[^\d]/g, '');
 
   .contact-list a:hover,
   .contact-list a:focus-visible {
+    color: var(--color-accent-cyan);
+  }
+
+  .footer-links {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0.5rem 2rem 1.25rem;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem 2rem;
+  }
+
+  .footer-links a {
+    color: var(--color-text-soft);
+    font-size: 0.9rem;
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+
+  .footer-links a:hover,
+  .footer-links a:focus-visible {
     color: var(--color-accent-cyan);
   }
 
