@@ -9,9 +9,17 @@ export interface ContactInfo {
   address?: string;
 }
 
+/** Datos legales opcionales. Solo la sucursal a la que pertenecen debe pasarlos. */
+export interface LegalInfo {
+  taxLabel?: string;
+  taxId?: string;
+  note?: string;
+}
+
 export interface Props {
   country?: Country;
   contact?: ContactInfo;
+  legal?: LegalInfo;
   copyrightYear?: number;
   copyrightName?: string;
   socialTitle?: string;
@@ -42,6 +50,7 @@ const DEFAULT_CONTACT_BY_COUNTRY: Record<Country, ContactInfo> = {
 const {
   country,
   contact = country ? DEFAULT_CONTACT_BY_COUNTRY[country] : { email: 'info@prooq.com' },
+  legal,
   copyrightYear = new Date().getFullYear(),
   copyrightName = 'PROOQ S.A.',
   socialTitle = 'Síguenos en Nuestras Redes',
@@ -95,6 +104,13 @@ const whats = contact.whatsapp?.replace(/[^\d]/g, '');
 
   <div class="copyright">
     &copy; {copyrightYear} <strong>{copyrightName}</strong> — Todos los derechos reservados.
+    {legal && (legal.taxId || legal.note) && (
+      <p class="legal">
+        {legal.taxId && <span>{[legal.taxLabel, legal.taxId].filter(Boolean).join(' ')}</span>}
+        {legal.taxId && legal.note && ' · '}
+        {legal.note && <span>{legal.note}</span>}
+      </p>
+    )}
   </div>
 </footer>
 
@@ -184,6 +200,12 @@ const whats = contact.whatsapp?.replace(/[^\d]/g, '');
     color: var(--color-text-muted);
     font-size: 0.85rem;
     border-top: 1px solid rgb(255 255 255 / 0.05);
+  }
+
+  .copyright .legal {
+    margin: 0.5rem 0 0;
+    font-size: 0.78rem;
+    color: var(--color-text-muted);
   }
 
   .copyright strong {
