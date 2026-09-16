@@ -18,6 +18,36 @@ const featuredVerticals = SUITEHUB_FEATURED_VERTICALS.map((v, i) =>
 ).join(', ');
 const moreVerticals = SUITEHUB.verticalCount - SUITEHUB_FEATURED_VERTICALS.length;
 
+// Franja de logos: mismos datos que el fallback de /pty/clientes. Primero los nombres
+// destacados; si alguno sale del JSON se completa con el resto hasta 18.
+const MARQUEE_SIZE = 18;
+const FEATURED_CLIENTS = [
+  'Melo',
+  'Kimberly Clark',
+  'Cepsa',
+  'FRD Furukawa',
+  'Emerson',
+  'Icontec',
+  'Raenco',
+  'Multicentro',
+  'Senniaf',
+  'INAMU',
+  'Royal Canin',
+  'Eptisa',
+  'Bonlac',
+  'Grupo Macro',
+  'Oficorp Panamá',
+  'Unileven',
+  'Topal',
+  'Toplast',
+];
+const featuredClients = [
+  ...FEATURED_CLIENTS.flatMap((name) => clientsData.filter((c) => c.name === name)),
+  ...clientsData.filter((c) => !FEATURED_CLIENTS.includes(c.name)),
+]
+  .slice(0, MARQUEE_SIZE)
+  .map((c) => ({ name: c.name, logo: `${BASE}images/clientes/${encodeURIComponent(c.img)}` }));
+
 const services = [
   {
     icon: '🤖',
@@ -240,7 +270,7 @@ const locationDetails = [
               Conocer SuiteHub →
             </a>
             <a
-              href="https://wa.me/50762082617?text=Hola%2C%20quiero%20info%20de%20SuiteHub"
+              href="https://wa.me/50766326006?text=Hola%2C%20quiero%20info%20de%20SuiteHub"
               target="_blank"
               rel="noopener noreferrer"
               class="suitehub-cta-secondary"
@@ -256,6 +286,29 @@ const locationDetails = [
           <div class="suitehub-stat"><span class="stat-num">+{SUITEHUB_ACTIVE_INSTANCES}</span><span class="stat-lbl">instancias activas</span></div>
         </div>
       </div>
+    </div>
+  </section>
+
+  <section id="clientes" class="section section-clients" aria-labelledby="clientes-title">
+    <div class="section-container">
+      <h2 id="clientes-title" class="section-title fade-in">Empresas que confían en PROOQ</h2>
+    </div>
+    <div class="clients-marquee">
+      <ul class="clients-track">
+        {featuredClients.map((c) => (
+          <li class="clients-logo">
+            <img src={c.logo} alt={c.name} width="200" height="200" loading="lazy" decoding="async" />
+          </li>
+        ))}
+        {featuredClients.map((c) => (
+          <li class="clients-logo clients-logo-dup" aria-hidden="true">
+            <img src={c.logo} alt="" width="200" height="200" loading="lazy" decoding="async" />
+          </li>
+        ))}
+      </ul>
+    </div>
+    <div class="section-container clients-more">
+      <a href={`${BASE}clientes`} class="portfolio-link">Ver los {clientsData.length} clientes →</a>
     </div>
   </section>
 
@@ -276,6 +329,16 @@ const locationDetails = [
             </ul>
           </article>
         ))}
+      </div>
+      <div class="services-actions fade-in">
+        <a
+          href="https://wa.me/50762082617?text=Hola%2C%20quiero%20cotizar%20servicios%20de%20infraestructura"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="suitehub-cta-secondary"
+        >
+          💬 Cotizar servicios e infraestructura
+        </a>
       </div>
     </div>
   </section>
@@ -572,6 +635,85 @@ const locationDetails = [
     letter-spacing: 0.04em;
   }
 
+  .services-actions {
+    display: flex;
+    justify-content: center;
+    margin-top: 2.5rem;
+  }
+
+  /* Franja de logos de clientes: marquesina CSS pura, sin JavaScript */
+  .section-clients .section-title {
+    text-align: center;
+  }
+
+  .clients-marquee {
+    overflow: hidden;
+    mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  }
+
+  .clients-track {
+    list-style: none;
+    margin: 0;
+    padding: 0.5rem 0;
+    display: flex;
+    gap: 1.25rem;
+    width: max-content;
+    animation: clients-scroll 60s linear infinite;
+  }
+
+  .clients-marquee:hover .clients-track {
+    animation-play-state: paused;
+  }
+
+  .clients-logo {
+    flex: none;
+    width: 150px;
+    height: 90px;
+    background: #ffffff;
+    border-radius: var(--radius-lg);
+    padding: 0.75rem 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .clients-logo img {
+    max-width: 100%;
+    max-height: 64px;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+  }
+
+  .clients-more {
+    text-align: center;
+    margin-top: 2rem;
+  }
+
+  @keyframes clients-scroll {
+    to {
+      transform: translateX(calc(-50% - 0.625rem));
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .clients-track {
+      animation: none;
+      width: auto;
+      flex-wrap: wrap;
+      justify-content: center;
+      padding: 0.5rem 1rem;
+    }
+    .clients-marquee {
+      mask-image: none;
+      -webkit-mask-image: none;
+    }
+    .clients-logo-dup {
+      display: none;
+    }
+  }
+
   @media (max-width: 900px) {
     .suitehub-grid {
       grid-template-columns: 1fr;
@@ -591,6 +733,7 @@ const locationDetails = [
     -webkit-backdrop-filter: blur(6px);
   }
   main .section-about,
+  main .section-clients,
   main .section-portfolio {
     background: rgb(10 24 51 / 0.55);
     backdrop-filter: blur(6px);
