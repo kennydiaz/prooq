@@ -1,11 +1,22 @@
 ---
-import { DGI_PAC_COUNT, GROUP_EXPERIENCE_YEARS } from '@prooq/config/company';
+import {
+  DGI_PAC_COUNT,
+  GROUP_EXPERIENCE_YEARS,
+  SUITEHUB_ACTIVE_INSTANCES,
+} from '@prooq/config/company';
+import { SUITEHUB, SUITEHUB_FEATURED_VERTICALS } from '@prooq/config/suitehub';
 import { getTeam } from '@prooq/data-client/team';
 import { ChatFab, HeroParallax, Starfield } from '@prooq/ui';
 import clientsData from '../data/clients.json';
 import BaseLayout from '../layouts/BaseLayout.astro';
 
 const BASE = import.meta.env.BASE_URL.replace(/\/?$/, '/');
+
+// "HUB Taller, Restaurant, POS, …" derivado del catálogo para que no vuelva a quedar rezagado.
+const featuredVerticals = SUITEHUB_FEATURED_VERTICALS.map((v, i) =>
+  i === 0 ? v : v.replace(/^HUB /, ''),
+).join(', ');
+const moreVerticals = SUITEHUB.verticalCount - SUITEHUB_FEATURED_VERTICALS.length;
 
 const services = [
   {
@@ -215,16 +226,17 @@ const locationDetails = [
           </h2>
           <p class="suitehub-lead">
             Plataforma de gestión para PYMEs con facturación electrónica multi-jurisdicción,
-            multi-sucursal, automatizaciones y API REST. 4 ediciones desde <strong>$19/mes</strong>.
+            multi-sucursal, automatizaciones y API REST. {SUITEHUB.editionCount} ediciones desde
+            <strong>${SUITEHUB.priceFromUsd}/mes</strong>.
           </p>
           <ul class="suitehub-features">
-            <li>✓ Facturación electrónica DGI Panamá (en vivo)</li>
-            <li>✓ 12 verticales especializadas (HUB Taller, Restaurant, POS, Pet, Beauty, Clinic, Gym, Hotel, +5)</li>
+            <li>✓ Facturación electrónica DGI Panamá, integrada de fábrica</li>
+            <li>✓ {SUITEHUB.verticalCount} verticales especializadas ({featuredVerticals}, +{moreVerticals})</li>
             <li>✓ WhatsApp Business + automatizaciones</li>
             <li>✓ Disponible en español e inglés</li>
           </ul>
           <div class="suitehub-actions">
-            <a href="https://suitehub.net/" target="_blank" rel="noopener" class="suitehub-cta-primary">
+            <a href={SUITEHUB.url} target="_blank" rel="noopener" class="suitehub-cta-primary">
               Conocer SuiteHub →
             </a>
             <a
@@ -238,10 +250,10 @@ const locationDetails = [
           </div>
         </div>
         <div class="suitehub-stats fade-in">
-          <div class="suitehub-stat"><span class="stat-num">$19</span><span class="stat-lbl">desde / mes</span></div>
-          <div class="suitehub-stat"><span class="stat-num">4</span><span class="stat-lbl">países objetivo</span></div>
-          <div class="suitehub-stat"><span class="stat-num">12</span><span class="stat-lbl">verticales HUB</span></div>
-          <div class="suitehub-stat"><span class="stat-num">+30</span><span class="stat-lbl">PYMEs en producción</span></div>
+          <div class="suitehub-stat"><span class="stat-num">${SUITEHUB.priceFromUsd}</span><span class="stat-lbl">desde / mes</span></div>
+          <div class="suitehub-stat"><span class="stat-num">{SUITEHUB.countryCount}</span><span class="stat-lbl">países objetivo</span></div>
+          <div class="suitehub-stat"><span class="stat-num">{SUITEHUB.verticalCount}</span><span class="stat-lbl">verticales HUB</span></div>
+          <div class="suitehub-stat"><span class="stat-num">+{SUITEHUB_ACTIVE_INSTANCES}</span><span class="stat-lbl">instancias activas</span></div>
         </div>
       </div>
     </div>
