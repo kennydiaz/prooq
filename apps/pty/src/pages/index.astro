@@ -12,10 +12,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
 const BASE = import.meta.env.BASE_URL.replace(/\/?$/, '/');
 
-// "HUB Taller, Restaurant, POS, …" derivado del catálogo para que no vuelva a quedar rezagado.
-const featuredVerticals = SUITEHUB_FEATURED_VERTICALS.map((v, i) =>
-  i === 0 ? v : v.replace(/^HUB /, ''),
-).join(', ');
+// Verticales destacadas con su badge del kit de marca; derivadas del catálogo para que no
+// vuelvan a quedar rezagadas.
+const featuredVerticals = SUITEHUB_FEATURED_VERTICALS.map((v) => ({
+  ...v,
+  badge: `${BASE}images/suitehub/hub-${v.slug}-badge.svg`,
+}));
 const moreVerticals = SUITEHUB.verticalCount - SUITEHUB_FEATURED_VERTICALS.length;
 
 // Franja de logos: mismos datos que el fallback de /pty/clientes. Primero los nombres
@@ -251,7 +253,15 @@ const locationDetails = [
         <div class="suitehub-content fade-in">
           <div class="suitehub-eyebrow">⚡ Producto propio · PA · US · VE · ES</div>
           <h2 class="section-title">
-            <span class="brand-name">SuiteHub</span><br />
+            <a href={SUITEHUB.url} target="_blank" rel="noopener" class="brand-link">
+              <img
+                src={`${BASE}images/suitehub/suitehub-logo-white.png`}
+                alt="SuiteHub"
+                width="1200"
+                height="421"
+                class="brand-logo"
+              />
+            </a>
             <span>Suite empresarial que sí escala</span>
           </h2>
           <p class="suitehub-lead">
@@ -261,9 +271,24 @@ const locationDetails = [
           </p>
           <ul class="suitehub-features">
             <li>✓ Facturación electrónica DGI Panamá, integrada de fábrica</li>
-            <li>✓ {SUITEHUB.verticalCount} verticales especializadas ({featuredVerticals}, +{moreVerticals})</li>
+            <li>✓ {SUITEHUB.verticalCount} verticales especializadas</li>
             <li>✓ WhatsApp Business + automatizaciones</li>
             <li>✓ Disponible en español e inglés</li>
+          </ul>
+          <ul class="suitehub-verticals" aria-label="Verticales destacadas de SuiteHub">
+            {featuredVerticals.map((v) => (
+              <li>
+                <a href={v.url} target="_blank" rel="noopener" class="vertical-chip">
+                  <img src={v.badge} alt="" width="32" height="32" loading="lazy" />
+                  <span>{v.name}</span>
+                </a>
+              </li>
+            ))}
+            <li>
+              <a href={`${SUITEHUB.url}verticales/`} target="_blank" rel="noopener" class="vertical-chip vertical-chip-more">
+                +{moreVerticals} más
+              </a>
+            </li>
           </ul>
           <div class="suitehub-actions">
             <a href={SUITEHUB.url} target="_blank" rel="noopener" class="suitehub-cta-primary">
@@ -350,7 +375,8 @@ const locationDetails = [
           <h2 class="section-title">Sobre PROOQ S.A.</h2>
           <p>
             PROOQ S.A. es la sede principal del grupo, con base en Ciudad de Panamá. Desde aquí
-            coordinamos las operaciones regionales y desarrollamos <strong>SuiteHub</strong>,
+            coordinamos las operaciones regionales y desarrollamos
+            <a href={SUITEHUB.url} target="_blank" rel="noopener" class="suitehub-inline-link"><strong>SuiteHub</strong></a>,
             nuestra plataforma SaaS multi-jurisdicción para PYMEs en Panamá, USA, Venezuela y España.
           </p>
           <p>
@@ -511,15 +537,83 @@ const locationDetails = [
     margin-bottom: 1.25rem;
   }
 
-  .brand-name {
-    font-size: 3rem;
-    line-height: 1;
-    background: linear-gradient(45deg, var(--color-brand-light), var(--color-accent-cyan));
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    color: transparent;
-    display: inline-block;
+  .brand-link {
+    display: block;
+    width: fit-content;
+    margin-bottom: 0.25rem;
+    border-radius: var(--radius-lg);
+    transition: transform 0.3s ease, filter 0.3s ease;
+  }
+
+  .brand-link:hover,
+  .brand-link:focus-visible {
+    transform: translateY(-2px);
+    filter: drop-shadow(0 6px 18px rgb(21 130 245 / 0.35));
+  }
+
+  /* El PNG del kit trae aire a la izquierda del hexágono (~8.5% del ancho): se
+     compensa para alinear el badge con el texto. */
+  .brand-logo {
+    display: block;
+    width: 260px;
+    max-width: 100%;
+    height: auto;
+    margin-left: -22px;
+  }
+
+  .suitehub-verticals {
+    list-style: none;
+    padding: 0;
+    margin: -1rem 0 2rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .vertical-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.3rem 0.85rem 0.3rem 0.3rem;
+    background: rgb(255 255 255 / 0.04);
+    border: 1px solid rgb(255 255 255 / 0.1);
+    border-radius: var(--radius-pill);
+    color: var(--color-text-soft);
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+  }
+
+  .vertical-chip img {
+    width: 28px;
+    height: 28px;
+    flex: none;
+  }
+
+  .vertical-chip:hover,
+  .vertical-chip:focus-visible {
+    border-color: rgb(0 198 231 / 0.45);
+    background: rgb(0 198 231 / 0.08);
+    color: var(--color-text);
+  }
+
+  .vertical-chip-more {
+    height: 100%;
+    padding-left: 0.85rem;
+    color: var(--color-accent-cyan);
+  }
+
+  .suitehub-inline-link {
+    color: inherit;
+    text-decoration: underline;
+    text-decoration-color: rgb(0 198 231 / 0.5);
+    text-underline-offset: 3px;
+  }
+
+  .suitehub-inline-link:hover,
+  .suitehub-inline-link:focus-visible {
+    color: var(--color-accent-cyan);
   }
 
   .suitehub-content .section-title {
@@ -719,7 +813,7 @@ const locationDetails = [
       grid-template-columns: 1fr;
       gap: 2rem;
     }
-    .brand-name { font-size: 2.4rem; }
+    .brand-logo { width: 220px; margin-left: -19px; }
   }
 </style>
 

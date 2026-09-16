@@ -21,18 +21,31 @@ export const SUITEHUB = {
   countryCount: 4,
 } as const;
 
+export interface SuiteHubVertical {
+  name: string;
+  /** Slug del kit de marca: badge en public/images/suitehub/hub-<slug>-badge.svg. */
+  slug: string;
+  /** Página del vertical en suitehub.net. Si aún no tiene, apunta al listado. */
+  url: string;
+}
+
+const verticalUrl = (slug?: string): string =>
+  slug ? `${SUITEHUB.url}verticales/${slug}/` : `${SUITEHUB.url}verticales/`;
+
 /**
  * Verticales destacadas en la home de Panamá.
  * OJO: es "Salon", nunca "Beauty". El rename se hizo en septiembre de 2026
  * y quedó rezagado en este sitio.
+ * Pet, Clinic, Gym y Hotel todavía no tienen página propia en suitehub.net
+ * (404 en septiembre de 2026): enlazan al listado de verticales.
  */
-export const SUITEHUB_FEATURED_VERTICALS = [
-  'HUB Taller',
-  'HUB Restaurant',
-  'HUB POS',
-  'HUB Pet',
-  'HUB Salon',
-  'HUB Clinic',
-  'HUB Gym',
-  'HUB Hotel',
-] as const;
+export const SUITEHUB_FEATURED_VERTICALS: readonly SuiteHubVertical[] = [
+  { name: 'HUB Taller', slug: 'taller', url: verticalUrl('taller') },
+  { name: 'HUB Restaurant', slug: 'restaurant', url: verticalUrl('restaurant') },
+  { name: 'HUB POS', slug: 'pos', url: verticalUrl('pos') },
+  { name: 'HUB Pet', slug: 'pet', url: verticalUrl() },
+  { name: 'HUB Salon', slug: 'salon', url: verticalUrl('salon') },
+  { name: 'HUB Clinic', slug: 'clinic', url: verticalUrl() },
+  { name: 'HUB Gym', slug: 'gym', url: verticalUrl() },
+  { name: 'HUB Hotel', slug: 'hotel', url: verticalUrl() },
+];
