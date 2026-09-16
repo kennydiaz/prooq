@@ -58,15 +58,6 @@
   transform: translateY(0);
 }
 
-/* Hero extras (secondary CTA + location badge debajo del Hero) */
-.hero-extras {
-  margin-top: 1rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1rem;
-}
-
 .cta-secondary {
   display: inline-block;
   padding: 0.75rem 1.5rem;
@@ -81,13 +72,6 @@
 .cta-secondary:focus-visible {
   background: var(--color-brand-light);
   color: var(--color-surface);
-}
-
-.hero-location {
-  color: var(--color-text-soft);
-  font-size: 0.95rem;
-  opacity: 0.85;
-  margin: 0;
 }
 
 /* Services */

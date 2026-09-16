@@ -6,7 +6,7 @@ import {
 } from '@prooq/config/company';
 import { SUITEHUB, SUITEHUB_FEATURED_VERTICALS } from '@prooq/config/suitehub';
 import { getTeam } from '@prooq/data-client/team';
-import { ChatFab, HeroParallax, Starfield } from '@prooq/ui';
+import { ChatFab, Hero, Starfield } from '@prooq/ui';
 import clientsData from '../data/clients.json';
 import BaseLayout from '../layouts/BaseLayout.astro';
 
@@ -235,23 +235,21 @@ const locationDetails = [
 >
   <Starfield />
 
-  <HeroParallax
-    title="PROOQ"
-    subtitle="Soluciones tecnológicas integrales para empresas"
-    description="Especialistas en cableado estructurado, seguridad electrónica y automatización empresarial en Panamá"
+  <Hero
+    eyebrow="Sede principal · Ciudad de Panamá"
+    title="Tecnología que hace crecer tu empresa"
+    highlight="crecer"
+    description="Cableado estructurado, seguridad electrónica, automatización y software para empresas en Panamá. Distribuidor principal de SuiteHub en el país."
     cta={{ label: 'Conoce SuiteHub', href: '#suitehub' }}
-  >
-    <div class="hero-extras">
-      <a href="#contact" class="cta-secondary">Contáctanos</a>
-      <p class="hero-location">📍 Ciudad de Panamá, Panamá 🇵🇦</p>
-    </div>
-  </HeroParallax>
+    secondaryCta={{ label: 'Contáctanos', href: '#contact' }}
+    tags={['🤖 Agentes IA', '📹 Seguridad electrónica', '🔌 Redes e infraestructura', '🧾 Facturación DGI']}
+  />
 
   <section id="suitehub" class="section section-services suitehub-feature">
     <div class="section-container">
       <div class="suitehub-grid">
         <div class="suitehub-content fade-in">
-          <div class="suitehub-eyebrow">⚡ Producto propio · PA · US · VE · ES</div>
+          <div class="suitehub-eyebrow">🏅 Distribuidor principal en Panamá</div>
           <h2 class="section-title">
             <a href={SUITEHUB.url} target="_blank" rel="noopener" class="brand-link">
               <img
@@ -375,9 +373,9 @@ const locationDetails = [
           <h2 class="section-title">Sobre PROOQ S.A.</h2>
           <p>
             PROOQ S.A. es la sede principal del grupo, con base en Ciudad de Panamá. Desde aquí
-            coordinamos las operaciones regionales y desarrollamos
+            coordinamos las operaciones regionales y somos el distribuidor principal en Panamá de
             <a href={SUITEHUB.url} target="_blank" rel="noopener" class="suitehub-inline-link"><strong>SuiteHub</strong></a>,
-            nuestra plataforma SaaS multi-jurisdicción para PYMEs en Panamá, USA, Venezuela y España.
+            la plataforma de gestión multi-jurisdicción para PYMEs.
           </p>
           <p>
             Combinamos infraestructura técnica (cableado estructurado, seguridad electrónica,

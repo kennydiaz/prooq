@@ -1,7 +1,7 @@
 ---
 import { GROUP_EXPERIENCE_YEARS } from '@prooq/config/company';
 import { getTeam } from '@prooq/data-client/team';
-import { ConstellationNetwork, HeroParallax } from '@prooq/ui';
+import { ConstellationNetwork, Hero } from '@prooq/ui';
 import BaseLayout from '../layouts/BaseLayout.astro';
 
 const BASE = import.meta.env.BASE_URL.replace(/\/?$/, '/');
@@ -194,17 +194,15 @@ const locationDetails = [
 >
   <ConstellationNetwork />
 
-  <HeroParallax
-    title="PROOQ"
-    subtitle="Comprehensive technology solutions for businesses"
-    description="Specialists in structured cabling, electronic security, and business automation in the United States"
+  <Hero
+    eyebrow="Elmwood Park, IL · United States"
+    title="Technology that moves your business forward"
+    highlight="forward"
+    description="Specialists in structured cabling, electronic security, and business automation in the United States."
     cta={{ label: 'Discover our services', href: '#servicios' }}
-  >
-    <div class="hero-extras">
-      <a href="#contact" class="cta-secondary">Contact us</a>
-      <p class="hero-location">📍 Elmwood Park, IL — United States 🇺🇸</p>
-    </div>
-  </HeroParallax>
+    secondaryCta={{ label: 'Contact us', href: '#contact' }}
+    tags={['📹 Electronic security', '🌐 Networks & servers', '🤖 Smart automation', '🔒 Cybersecurity']}
+  />
 
   <section id="servicios" class="section section-services">
     <div class="section-container">

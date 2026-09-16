@@ -5,7 +5,7 @@ export { default as Footer } from './Footer.astro';
 export { default as ChatFab } from './ChatFab.astro';
 export { default as ConstellationNetwork } from './ConstellationNetwork.astro';
 export { default as CountriesMenu } from './CountriesMenu.astro';
-export { default as HeroParallax } from './HeroParallax.astro';
+export { default as Hero } from './Hero.astro';
 export { default as MeteorShower } from './MeteorShower.astro';
 export { default as Nebula } from './Nebula.astro';
 export { default as NeonPriceSticker } from './NeonPriceSticker.astro';

@@ -1,7 +1,7 @@
 ---
 import { GROUP_EXPERIENCE_YEARS } from '@prooq/config/company';
 import { getTeam } from '@prooq/data-client/team';
-import { HeroParallax, Nebula } from '@prooq/ui';
+import { Hero, Nebula } from '@prooq/ui';
 import BaseLayout from '../layouts/BaseLayout.astro';
 
 const BASE = import.meta.env.BASE_URL.replace(/\/?$/, '/');
@@ -173,17 +173,15 @@ const locationDetails = [
 >
   <Nebula />
 
-  <HeroParallax
-    title="PROOQ España"
-    subtitle="Desarrollo Web & Agentes Inteligentes"
-    description="Transformamos tu negocio con soluciones tecnológicas avanzadas desde Cádiz para toda España"
-    cta={{ label: 'Nuestros Servicios', href: '#servicios' }}
-  >
-    <div class="hero-extras">
-      <a href="#contact" class="cta-secondary">Contáctanos</a>
-      <p class="hero-location">📍 Cádiz, Andalucía — España 🇪🇸</p>
-    </div>
-  </HeroParallax>
+  <Hero
+    eyebrow="Cádiz, Andalucía · España"
+    title="Desarrollo web y agentes inteligentes para tu negocio"
+    highlight="agentes inteligentes"
+    description="Transformamos tu negocio con soluciones tecnológicas avanzadas desde Cádiz para toda España."
+    cta={{ label: 'Nuestros servicios', href: '#servicios' }}
+    secondaryCta={{ label: 'Contáctanos', href: '#contact' }}
+    tags={['💻 Desarrollo web', '🤖 Agentes inteligentes', '📱 Consultoría digital', '⚡ Automatización']}
+  />
 
   <section id="servicios" class="section section-services">
     <div class="section-container">
