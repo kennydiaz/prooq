@@ -1,4 +1,5 @@
 ---
+import { GROUP_EXPERIENCE_YEARS } from '@prooq/config/company';
 import { getTeam } from '@prooq/data-client/team';
 import { ConstellationNetwork, HeroParallax } from '@prooq/ui';
 import BaseLayout from '../layouts/BaseLayout.astro';
@@ -89,7 +90,7 @@ const services = [
 ];
 
 const stats = [
-  { value: '20+', label: 'Years of experience' },
+  { value: `${GROUP_EXPERIENCE_YEARS}+`, label: 'Years of experience' },
   { value: '100+', label: 'Clients served' },
   { value: '24/7', label: 'Support availability' },
 ];

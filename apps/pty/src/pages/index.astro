@@ -1,6 +1,8 @@
 ---
+import { DGI_PAC_COUNT, GROUP_EXPERIENCE_YEARS } from '@prooq/config/company';
 import { getTeam } from '@prooq/data-client/team';
 import { ChatFab, HeroParallax, Starfield } from '@prooq/ui';
+import clientsData from '../data/clients.json';
 import BaseLayout from '../layouts/BaseLayout.astro';
 
 const BASE = import.meta.env.BASE_URL.replace(/\/?$/, '/');
@@ -82,9 +84,9 @@ const services = [
 ];
 
 const stats = [
-  { value: '25+', label: 'Años de experiencia' },
-  { value: '200+', label: 'Clientes en Panamá' },
-  { value: '15+', label: 'Profesionales' },
+  { value: `${GROUP_EXPERIENCE_YEARS}+`, label: 'Años de experiencia' },
+  { value: `${clientsData.length}`, label: 'Clientes en Panamá' },
+  { value: `${DGI_PAC_COUNT}`, label: 'PAC integrados con la DGI' },
 ];
 
 // Equipo desde el CMS (build-time) con fallback hardcodeado si la API falla.

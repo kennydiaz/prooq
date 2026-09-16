@@ -1,4 +1,5 @@
 ---
+import { GROUP_EXPERIENCE_YEARS } from '@prooq/config/company';
 import { getTeam } from '@prooq/data-client/team';
 import { HeroParallax, Nebula } from '@prooq/ui';
 import BaseLayout from '../layouts/BaseLayout.astro';
@@ -45,9 +46,9 @@ const services = [
 ];
 
 const stats = [
-  { value: '50+', label: 'Proyectos Completados' },
-  { value: '100%', label: 'Clientes Satisfechos' },
-  { value: '15+', label: 'Soporte Técnico' },
+  { value: `${GROUP_EXPERIENCE_YEARS}+`, label: 'Años de experiencia' },
+  { value: '50+', label: 'Proyectos completados' },
+  { value: '24/7', label: 'Soporte remoto' },
 ];
 
 // Equipo desde el CMS (build-time) con fallback hardcodeado si la API falla.

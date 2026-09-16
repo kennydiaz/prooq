@@ -1,4 +1,5 @@
 ---
+import { GROUP_EXPERIENCE_YEARS, GROUP_TRAJECTORY_SINCE } from '@prooq/config/company';
 import { getTeam } from '@prooq/data-client/team';
 import { HeroParallax, MeteorShower } from '@prooq/ui';
 import BaseLayout from '../layouts/BaseLayout.astro';
@@ -99,9 +100,9 @@ const services = [
 ];
 
 const stats = [
-  { value: '25+', label: 'Años de experiencia' },
+  { value: `${GROUP_EXPERIENCE_YEARS}+`, label: 'Años de experiencia' },
   { value: '500+', label: 'Clientes atendidos' },
-  { value: '1999', label: 'Fundada en Venezuela' },
+  { value: `${GROUP_TRAJECTORY_SINCE}`, label: 'Trayectoria desde' },
 ];
 
 // Equipo desde el CMS (build-time) con fallback hardcodeado si la API falla.
@@ -204,7 +205,7 @@ const locationDetails = [
 
 <BaseLayout
   title="PROOQ Venezuela — Tecnología y Soluciones Digitales | Puerto La Cruz"
-  description="PROOQ S.A. — Especialistas en redes, seguridad digital, software y automatización en Venezuela. Fundada en 1999."
+  description={`PROOQ en Venezuela: redes, seguridad digital, software y automatización para empresas. Trayectoria del equipo desde ${GROUP_TRAJECTORY_SINCE}.`}
 >
   <MeteorShower />
 
@@ -243,12 +244,12 @@ const locationDetails = [
     <div class="section-container">
       <div class="about-grid">
         <div class="fade-in">
-          <h2 class="section-title">Sobre PROOQ S.A.</h2>
+          <h2 class="section-title">Sobre PROOQ en Venezuela</h2>
           <p>
-            PROOQ S.A. es una empresa líder en cableado estructurado, seguridad electrónica
-            y automatización de sistemas empresariales. Fundada en Venezuela en 1999, nos
-            especializamos en ofrecer soluciones tecnológicas integrales para mejorar la
-            eficiencia y seguridad de negocios en diversos sectores.
+            La operación de PROOQ en Venezuela ofrece redes, seguridad digital, software y
+            automatización a empresas de todo el país. Detrás hay una trayectoria que arranca
+            en {GROUP_TRAJECTORY_SINCE} con el equipo fundador y que hoy se apoya en la estructura
+            del grupo, con base en Ciudad de Panamá y presencia en Estados Unidos y España.
           </p>
           <p>
             Más de dos décadas acompañando a empresas venezolanas con servicios de redes,
