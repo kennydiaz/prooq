@@ -1,90 +1,60 @@
 ---
+import {
+  DGI_PAC_COUNT,
+  GROUP_EXPERIENCE_YEARS,
+  SUITEHUB_ACTIVE_INSTANCES,
+} from '@prooq/config/company';
+import { SUITEHUB, SUITEHUB_FEATURED_VERTICALS } from '@prooq/config/suitehub';
 import { getTeam } from '@prooq/data-client/team';
-import { ChatFab, HeroParallax, Starfield } from '@prooq/ui';
+import { ChatFab, Hero, Starfield } from '@prooq/ui';
+import clientsData from '../data/clients.json';
+import { HOME_SERVICES } from '../data/services';
 import BaseLayout from '../layouts/BaseLayout.astro';
 
 const BASE = import.meta.env.BASE_URL.replace(/\/?$/, '/');
 
-const services = [
-  {
-    icon: '🤖',
-    title: 'Agentes Inteligentes con n8n',
-    description: 'Automatización avanzada y agentes inteligentes para empresas.',
-    features: ['Workflows N8N', 'Chatbots IA', 'Integraciones API', 'Procesos automatizados'],
-  },
-  {
-    icon: '📹',
-    title: 'Seguridad Electrónica',
-    description: 'Soluciones avanzadas de videovigilancia y control de acceso para tu negocio.',
-    features: [
-      'CCTV / Videovigilancia',
-      'Control de acceso',
-      'Alarmas inteligentes',
-      'Monitoreo 24/7',
-    ],
-  },
-  {
-    icon: '🌐',
-    title: 'Desarrollo Web',
-    description: 'Soluciones web profesionales para empresas y negocios.',
-    features: ['Landing pages', 'Sitios corporativos', 'E-commerce', 'Aplicaciones web'],
-  },
-  {
-    icon: '🔒',
-    title: 'Ciberseguridad y Protección de Datos',
-    description: 'Control de accesos, encriptación y monitoreo continuo para tu empresa.',
-    features: [
-      'Threat detection',
-      'Encriptación at rest',
-      'Políticas de acceso',
-      'Auditorías de cumplimiento',
-    ],
-  },
-  {
-    icon: '🔌',
-    title: 'Redes Cableadas e Infraestructura',
-    description: 'Diseño y administración de redes locales, remotas y en la nube.',
-    features: [
-      'Cableado Cat6/Cat7',
-      'Switches y routers',
-      'Redes locales / cloud',
-      'VPN y acceso remoto',
-    ],
-  },
-  {
-    icon: '🧑‍💻',
-    title: 'Sistemas Administrativos',
-    description: 'Software a medida para optimizar la gestión de tu empresa.',
-    features: ['Integración ERP', 'Dashboards', 'Automatización de procesos', 'Analítica de datos'],
-  },
-  {
-    icon: '🛠️',
-    title: 'Automatización y Control Inteligente',
-    description: 'Soluciones para automatizar procesos, edificios y sistemas de seguridad.',
-    features: [
-      'Automatización de edificios',
-      'IoT',
-      'Sensores inteligentes',
-      'Control de procesos',
-    ],
-  },
-  {
-    icon: '💡',
-    title: 'Consultoría Tecnológica',
-    description: 'Asesoramos a empresas en la adopción eficiente de tecnología.',
-    features: [
-      'Transformación digital',
-      'Auditorías técnicas',
-      'Selección de proveedores',
-      'Roadmaps tecnológicos',
-    ],
-  },
+// Verticales destacadas con su badge del kit de marca; derivadas del catálogo para que no
+// vuelvan a quedar rezagadas.
+const featuredVerticals = SUITEHUB_FEATURED_VERTICALS.map((v) => ({
+  ...v,
+  badge: `${BASE}images/suitehub/hub-${v.slug}-badge.svg`,
+}));
+const moreVerticals = SUITEHUB.verticalCount - SUITEHUB_FEATURED_VERTICALS.length;
+
+// Franja de logos: mismos datos que el fallback de /pty/clientes. Primero los nombres
+// destacados; si alguno sale del JSON se completa con el resto hasta 18.
+const MARQUEE_SIZE = 18;
+const FEATURED_CLIENTS = [
+  'Melo',
+  'Kimberly Clark',
+  'Cepsa',
+  'FRD Furukawa',
+  'Emerson',
+  'Icontec',
+  'Raenco',
+  'Multicentro',
+  'Senniaf',
+  'INAMU',
+  'Royal Canin',
+  'Eptisa',
+  'Bonlac',
+  'Grupo Macro',
+  'Oficorp Panamá',
+  'Unileven',
+  'Topal',
+  'Toplast',
 ];
+const featuredClients = [
+  ...FEATURED_CLIENTS.flatMap((name) => clientsData.filter((c) => c.name === name)),
+  ...clientsData.filter((c) => !FEATURED_CLIENTS.includes(c.name)),
+]
+  .slice(0, MARQUEE_SIZE)
+  .map((c) => ({ name: c.name, logo: `${BASE}images/clientes/${encodeURIComponent(c.img)}` }));
 
 const stats = [
-  { value: '25+', label: 'Años de experiencia' },
-  { value: '200+', label: 'Clientes en Panamá' },
-  { value: '15+', label: 'Profesionales' },
+  { value: `${GROUP_EXPERIENCE_YEARS}+`, label: 'Años de experiencia' },
+  { value: `${clientsData.length}`, label: 'Clientes en Panamá' },
+  { value: `${DGI_PAC_COUNT}`, label: 'PAC integrados con la DGI' },
 ];
 
 // Equipo desde el CMS (build-time) con fallback hardcodeado si la API falla.
@@ -190,43 +160,65 @@ const locationDetails = [
 >
   <Starfield />
 
-  <HeroParallax
-    title="PROOQ"
-    subtitle="Soluciones tecnológicas integrales para empresas"
-    description="Especialistas en cableado estructurado, seguridad electrónica y automatización empresarial en Panamá"
+  <Hero
+    eyebrow="Sede principal · Ciudad de Panamá"
+    title="Tecnología que hace crecer tu empresa"
+    highlight="crecer"
+    description="Cableado estructurado, seguridad electrónica, automatización y software para empresas en Panamá. Distribuidor principal de SuiteHub en el país."
     cta={{ label: 'Conoce SuiteHub', href: '#suitehub' }}
-  >
-    <div class="hero-extras">
-      <a href="#contact" class="cta-secondary">Contáctanos</a>
-      <p class="hero-location">📍 Ciudad de Panamá, Panamá 🇵🇦</p>
-    </div>
-  </HeroParallax>
+    secondaryCta={{ label: 'Contáctanos', href: '#contact' }}
+    tags={['🤖 Agentes IA', '📹 Seguridad electrónica', '🔌 Redes e infraestructura', '🧾 Facturación DGI']}
+  />
 
   <section id="suitehub" class="section section-services suitehub-feature">
     <div class="section-container">
       <div class="suitehub-grid">
         <div class="suitehub-content fade-in">
-          <div class="suitehub-eyebrow">⚡ Producto propio · PA · US · VE · ES</div>
+          <div class="suitehub-eyebrow">🏅 Distribuidor principal en Panamá</div>
           <h2 class="section-title">
-            <span class="brand-name">SuiteHub</span><br />
+            <a href={SUITEHUB.url} target="_blank" rel="noopener" class="brand-link">
+              <img
+                src={`${BASE}images/suitehub/suitehub-logo-white.png`}
+                alt="SuiteHub"
+                width="1200"
+                height="421"
+                class="brand-logo"
+              />
+            </a>
             <span>Suite empresarial que sí escala</span>
           </h2>
           <p class="suitehub-lead">
             Plataforma de gestión para PYMEs con facturación electrónica multi-jurisdicción,
-            multi-sucursal, automatizaciones y API REST. 4 ediciones desde <strong>$19/mes</strong>.
+            multi-sucursal, automatizaciones y API REST. {SUITEHUB.editionCount} ediciones desde
+            <strong>${SUITEHUB.priceFromUsd}/mes</strong>.
           </p>
           <ul class="suitehub-features">
-            <li>✓ Facturación electrónica DGI Panamá (en vivo)</li>
-            <li>✓ 12 verticales especializadas (HUB Taller, Restaurant, POS, Pet, Beauty, Clinic, Gym, Hotel, +5)</li>
+            <li>✓ Facturación electrónica DGI Panamá, integrada de fábrica</li>
+            <li>✓ {SUITEHUB.verticalCount} verticales especializadas</li>
             <li>✓ WhatsApp Business + automatizaciones</li>
             <li>✓ Disponible en español e inglés</li>
           </ul>
+          <ul class="suitehub-verticals" aria-label="Verticales destacadas de SuiteHub">
+            {featuredVerticals.map((v) => (
+              <li>
+                <a href={v.url} target="_blank" rel="noopener" class="vertical-chip">
+                  <img src={v.badge} alt="" width="32" height="32" loading="lazy" />
+                  <span>{v.name}</span>
+                </a>
+              </li>
+            ))}
+            <li>
+              <a href={`${SUITEHUB.url}verticales/`} target="_blank" rel="noopener" class="vertical-chip vertical-chip-more">
+                +{moreVerticals} más
+              </a>
+            </li>
+          </ul>
           <div class="suitehub-actions">
-            <a href="https://suitehub.net/" target="_blank" rel="noopener" class="suitehub-cta-primary">
+            <a href={SUITEHUB.url} target="_blank" rel="noopener" class="suitehub-cta-primary">
               Conocer SuiteHub →
             </a>
             <a
-              href="https://wa.me/50762082617?text=Hola%2C%20quiero%20info%20de%20SuiteHub"
+              href="https://wa.me/50766326006?text=Hola%2C%20quiero%20info%20de%20SuiteHub"
               target="_blank"
               rel="noopener noreferrer"
               class="suitehub-cta-secondary"
@@ -236,12 +228,35 @@ const locationDetails = [
           </div>
         </div>
         <div class="suitehub-stats fade-in">
-          <div class="suitehub-stat"><span class="stat-num">$19</span><span class="stat-lbl">desde / mes</span></div>
-          <div class="suitehub-stat"><span class="stat-num">4</span><span class="stat-lbl">países objetivo</span></div>
-          <div class="suitehub-stat"><span class="stat-num">12</span><span class="stat-lbl">verticales HUB</span></div>
-          <div class="suitehub-stat"><span class="stat-num">+30</span><span class="stat-lbl">PYMEs en producción</span></div>
+          <div class="suitehub-stat"><span class="stat-num">${SUITEHUB.priceFromUsd}</span><span class="stat-lbl">desde / mes</span></div>
+          <div class="suitehub-stat"><span class="stat-num">{SUITEHUB.countryCount}</span><span class="stat-lbl">países objetivo</span></div>
+          <div class="suitehub-stat"><span class="stat-num">{SUITEHUB.verticalCount}</span><span class="stat-lbl">verticales HUB</span></div>
+          <div class="suitehub-stat"><span class="stat-num">+{SUITEHUB_ACTIVE_INSTANCES}</span><span class="stat-lbl">instancias activas</span></div>
         </div>
       </div>
+    </div>
+  </section>
+
+  <section id="clientes" class="section section-clients" aria-labelledby="clientes-title">
+    <div class="section-container">
+      <h2 id="clientes-title" class="section-title fade-in">Empresas que confían en PROOQ</h2>
+    </div>
+    <div class="clients-marquee">
+      <ul class="clients-track">
+        {featuredClients.map((c) => (
+          <li class="clients-logo">
+            <img src={c.logo} alt={c.name} width="200" height="200" loading="lazy" decoding="async" />
+          </li>
+        ))}
+        {featuredClients.map((c) => (
+          <li class="clients-logo clients-logo-dup" aria-hidden="true">
+            <img src={c.logo} alt="" width="200" height="200" loading="lazy" decoding="async" />
+          </li>
+        ))}
+      </ul>
+    </div>
+    <div class="section-container clients-more">
+      <a href={`${BASE}clientes`} class="portfolio-link">Ver los {clientsData.length} clientes →</a>
     </div>
   </section>
 
@@ -252,16 +267,26 @@ const locationDetails = [
         Además de SuiteHub ofrecemos servicios de infraestructura, seguridad, automatización y consultoría para empresas en Panamá.
       </p>
       <div class="services-grid">
-        {services.map((s) => (
+        {HOME_SERVICES.map((s) => (
           <article class="service-card fade-in">
             <div class="service-icon" aria-hidden="true">{s.icon}</div>
             <h3>{s.title}</h3>
             <p>{s.description}</p>
-            <ul>
-              {s.features.map((f) => <li>{f}</li>)}
-            </ul>
           </article>
         ))}
+      </div>
+      <p class="services-more fade-in">
+        <a href={`${BASE}servicios`} class="portfolio-link">Ver todos los servicios →</a>
+      </p>
+      <div class="services-actions fade-in">
+        <a
+          href="https://wa.me/50762082617?text=Hola%2C%20quiero%20cotizar%20servicios%20de%20infraestructura"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="suitehub-cta-secondary"
+        >
+          💬 Cotizar servicios e infraestructura
+        </a>
       </div>
     </div>
   </section>
@@ -273,8 +298,9 @@ const locationDetails = [
           <h2 class="section-title">Sobre PROOQ S.A.</h2>
           <p>
             PROOQ S.A. es la sede principal del grupo, con base en Ciudad de Panamá. Desde aquí
-            coordinamos las operaciones regionales y desarrollamos <strong>SuiteHub</strong>,
-            nuestra plataforma SaaS multi-jurisdicción para PYMEs en Panamá, USA, Venezuela y España.
+            coordinamos las operaciones regionales y somos el distribuidor principal en Panamá de
+            <a href={SUITEHUB.url} target="_blank" rel="noopener" class="suitehub-inline-link"><strong>SuiteHub</strong></a>,
+            la plataforma de gestión multi-jurisdicción para PYMEs.
           </p>
           <p>
             Combinamos infraestructura técnica (cableado estructurado, seguridad electrónica,
@@ -434,15 +460,83 @@ const locationDetails = [
     margin-bottom: 1.25rem;
   }
 
-  .brand-name {
-    font-size: 3rem;
-    line-height: 1;
-    background: linear-gradient(45deg, var(--color-brand-light), var(--color-accent-cyan));
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    color: transparent;
-    display: inline-block;
+  .brand-link {
+    display: block;
+    width: fit-content;
+    margin-bottom: 0.25rem;
+    border-radius: var(--radius-lg);
+    transition: transform 0.3s ease, filter 0.3s ease;
+  }
+
+  .brand-link:hover,
+  .brand-link:focus-visible {
+    transform: translateY(-2px);
+    filter: drop-shadow(0 6px 18px rgb(21 130 245 / 0.35));
+  }
+
+  /* El PNG del kit trae aire a la izquierda del hexágono (~8.5% del ancho): se
+     compensa para alinear el badge con el texto. */
+  .brand-logo {
+    display: block;
+    width: 260px;
+    max-width: 100%;
+    height: auto;
+    margin-left: -22px;
+  }
+
+  .suitehub-verticals {
+    list-style: none;
+    padding: 0;
+    margin: -1rem 0 2rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .vertical-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.3rem 0.85rem 0.3rem 0.3rem;
+    background: rgb(255 255 255 / 0.04);
+    border: 1px solid rgb(255 255 255 / 0.1);
+    border-radius: var(--radius-pill);
+    color: var(--color-text-soft);
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+  }
+
+  .vertical-chip img {
+    width: 28px;
+    height: 28px;
+    flex: none;
+  }
+
+  .vertical-chip:hover,
+  .vertical-chip:focus-visible {
+    border-color: rgb(0 198 231 / 0.45);
+    background: rgb(0 198 231 / 0.08);
+    color: var(--color-text);
+  }
+
+  .vertical-chip-more {
+    height: 100%;
+    padding-left: 0.85rem;
+    color: var(--color-accent-cyan);
+  }
+
+  .suitehub-inline-link {
+    color: inherit;
+    text-decoration: underline;
+    text-decoration-color: rgb(0 198 231 / 0.5);
+    text-underline-offset: 3px;
+  }
+
+  .suitehub-inline-link:hover,
+  .suitehub-inline-link:focus-visible {
+    color: var(--color-accent-cyan);
   }
 
   .suitehub-content .section-title {
@@ -558,12 +652,91 @@ const locationDetails = [
     letter-spacing: 0.04em;
   }
 
+  .services-actions {
+    display: flex;
+    justify-content: center;
+    margin-top: 2.5rem;
+  }
+
+  /* Franja de logos de clientes: marquesina CSS pura, sin JavaScript */
+  .section-clients .section-title {
+    text-align: center;
+  }
+
+  .clients-marquee {
+    overflow: hidden;
+    mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  }
+
+  .clients-track {
+    list-style: none;
+    margin: 0;
+    padding: 0.5rem 0;
+    display: flex;
+    gap: 1.25rem;
+    width: max-content;
+    animation: clients-scroll 60s linear infinite;
+  }
+
+  .clients-marquee:hover .clients-track {
+    animation-play-state: paused;
+  }
+
+  .clients-logo {
+    flex: none;
+    width: 150px;
+    height: 90px;
+    background: #ffffff;
+    border-radius: var(--radius-lg);
+    padding: 0.75rem 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .clients-logo img {
+    max-width: 100%;
+    max-height: 64px;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+  }
+
+  .clients-more {
+    text-align: center;
+    margin-top: 2rem;
+  }
+
+  @keyframes clients-scroll {
+    to {
+      transform: translateX(calc(-50% - 0.625rem));
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .clients-track {
+      animation: none;
+      width: auto;
+      flex-wrap: wrap;
+      justify-content: center;
+      padding: 0.5rem 1rem;
+    }
+    .clients-marquee {
+      mask-image: none;
+      -webkit-mask-image: none;
+    }
+    .clients-logo-dup {
+      display: none;
+    }
+  }
+
   @media (max-width: 900px) {
     .suitehub-grid {
       grid-template-columns: 1fr;
       gap: 2rem;
     }
-    .brand-name { font-size: 2.4rem; }
+    .brand-logo { width: 220px; margin-left: -19px; }
   }
 </style>
 
@@ -577,6 +750,7 @@ const locationDetails = [
     -webkit-backdrop-filter: blur(6px);
   }
   main .section-about,
+  main .section-clients,
   main .section-portfolio {
     background: rgb(10 24 51 / 0.55);
     backdrop-filter: blur(6px);

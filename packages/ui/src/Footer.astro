@@ -9,9 +9,17 @@ export interface ContactInfo {
   address?: string;
 }
 
+/** Datos legales opcionales. Solo la sucursal a la que pertenecen debe pasarlos. */
+export interface LegalInfo {
+  taxLabel?: string;
+  taxId?: string;
+  note?: string;
+}
+
 export interface Props {
   country?: Country;
   contact?: ContactInfo;
+  legal?: LegalInfo;
   copyrightYear?: number;
   copyrightName?: string;
   socialTitle?: string;
@@ -42,11 +50,38 @@ const DEFAULT_CONTACT_BY_COUNTRY: Record<Country, ContactInfo> = {
 const {
   country,
   contact = country ? DEFAULT_CONTACT_BY_COUNTRY[country] : { email: 'info@prooq.com' },
+  legal,
   copyrightYear = new Date().getFullYear(),
   copyrightName = 'PROOQ S.A.',
   socialTitle = 'Síguenos en Nuestras Redes',
   socialSubtitle = 'Mantente conectado y descubre las últimas novedades',
 } = Astro.props;
+
+// Links secundarios que salieron del menú principal. Solo páginas que existen en cada app.
+const BASE = import.meta.env.BASE_URL.replace(/\/?$/, '/');
+const FOOTER_LINKS_BY_COUNTRY: Record<Country, { label: string; href: string }[]> = {
+  pty: [
+    { label: 'Galería', href: `${BASE}gallery` },
+    { label: 'Descargas', href: `${BASE}downloads` },
+    { label: 'Trabaja con nosotros', href: `${BASE}trabaja-con-nosotros` },
+  ],
+  usa: [
+    { label: 'Gallery', href: `${BASE}gallery` },
+    { label: 'Downloads', href: `${BASE}downloads` },
+    { label: 'Careers', href: `${BASE}careers` },
+  ],
+  esp: [
+    { label: 'Galería', href: `${BASE}gallery` },
+    { label: 'Descargas', href: `${BASE}downloads` },
+    { label: 'Trabaja con nosotros', href: `${BASE}trabaja-con-nosotros` },
+  ],
+  ven: [
+    { label: 'Galería', href: `${BASE}gallery` },
+    { label: 'Descargas', href: `${BASE}downloads` },
+    { label: 'Trabaja con nosotros', href: `${BASE}trabaja-con-nosotros` },
+  ],
+};
+const footerLinks = country ? FOOTER_LINKS_BY_COUNTRY[country] : [];
 
 const tel = contact.phone?.replace(/[^\d+]/g, '');
 const whats = contact.whatsapp?.replace(/[^\d]/g, '');
@@ -93,8 +128,21 @@ const whats = contact.whatsapp?.replace(/[^\d]/g, '');
     </ul>
   </section>
 
+  {footerLinks.length > 0 && (
+    <nav class="footer-links" aria-label={country === 'usa' ? 'More links' : 'Más enlaces'}>
+      {footerLinks.map((l) => <a href={l.href}>{l.label}</a>)}
+    </nav>
+  )}
+
   <div class="copyright">
     &copy; {copyrightYear} <strong>{copyrightName}</strong> — Todos los derechos reservados.
+    {legal && (legal.taxId || legal.note) && (
+      <p class="legal">
+        {legal.taxId && <span>{[legal.taxLabel, legal.taxId].filter(Boolean).join(' ')}</span>}
+        {legal.taxId && legal.note && ' · '}
+        {legal.note && <span>{legal.note}</span>}
+      </p>
+    )}
   </div>
 </footer>
 
@@ -176,6 +224,28 @@ const whats = contact.whatsapp?.replace(/[^\d]/g, '');
     color: var(--color-accent-cyan);
   }
 
+  .footer-links {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0.5rem 2rem 1.25rem;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem 2rem;
+  }
+
+  .footer-links a {
+    color: var(--color-text-soft);
+    font-size: 0.9rem;
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+
+  .footer-links a:hover,
+  .footer-links a:focus-visible {
+    color: var(--color-accent-cyan);
+  }
+
   .copyright {
     max-width: 1200px;
     margin: 0 auto;
@@ -184,6 +254,12 @@ const whats = contact.whatsapp?.replace(/[^\d]/g, '');
     color: var(--color-text-muted);
     font-size: 0.85rem;
     border-top: 1px solid rgb(255 255 255 / 0.05);
+  }
+
+  .copyright .legal {
+    margin: 0.5rem 0 0;
+    font-size: 0.78rem;
+    color: var(--color-text-muted);
   }
 
   .copyright strong {

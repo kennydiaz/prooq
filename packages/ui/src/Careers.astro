@@ -1,0 +1,252 @@
+---
+/**
+ * Sección "Trabaja con nosotros". No tiene formulario propio: envía al formulario
+ * público de HubPro, donde llegan todas las postulaciones y sus notificaciones.
+ */
+import { JOBS_APPLICATION_URL } from '@prooq/config/company';
+
+export interface Props {
+  lang?: 'es' | 'en';
+  /** Áreas en las que se suele buscar gente en esta sucursal. */
+  areas?: string[];
+}
+
+const { lang = 'es', areas = [] } = Astro.props;
+
+const COPY = {
+  es: {
+    eyebrow: 'Trabaja con nosotros',
+    title: 'Construye tecnología con el equipo PROOQ',
+    lead: 'Buscamos personas con ganas de crecer en proyectos reales para empresas. Si quieres formar parte del equipo, envíanos tu postulación y la revisamos.',
+    areasTitle: 'Áreas en las que trabajamos',
+    stepsTitle: 'Cómo postularte',
+    steps: [
+      {
+        title: 'Completa el formulario',
+        text: 'Tus datos de contacto, tu experiencia y tu hoja de vida.',
+      },
+      { title: 'Revisamos tu perfil', text: 'Nuestro equipo lee cada postulación que recibe.' },
+      { title: 'Te contactamos', text: 'Si tu perfil encaja con una vacante, te escribimos.' },
+    ],
+    cta: 'Postularme ahora',
+    note: 'El formulario se abre en hubpro.prooq.com, nuestra plataforma de gestión de personal.',
+  },
+  en: {
+    eyebrow: 'Careers',
+    title: 'Build technology with the PROOQ team',
+    lead: 'We are looking for people who want to grow working on real projects for businesses. If you would like to join the team, send us your application and we will review it.',
+    areasTitle: 'Areas we work in',
+    stepsTitle: 'How to apply',
+    steps: [
+      { title: 'Fill out the form', text: 'Your contact details, experience and résumé.' },
+      { title: 'We review your profile', text: 'Our team reads every application we receive.' },
+      { title: 'We get in touch', text: 'If your profile fits an opening, we will reach out.' },
+    ],
+    cta: 'Apply now',
+    note: 'The form opens on hubpro.prooq.com, our HR platform. It is currently available in Spanish.',
+  },
+} as const;
+
+const t = COPY[lang];
+---
+
+<section class="section careers">
+  <div class="section-container careers-inner">
+    <header class="careers-head">
+      <p class="careers-eyebrow">{t.eyebrow}</p>
+      <h1 class="careers-title">{t.title}</h1>
+      <p class="careers-lead">{t.lead}</p>
+      <a href={JOBS_APPLICATION_URL} target="_blank" rel="noopener" class="careers-cta">
+        {t.cta} <span aria-hidden="true">↗</span>
+      </a>
+      <p class="careers-note">{t.note}</p>
+    </header>
+
+    {areas.length > 0 && (
+      <div class="careers-block">
+        <h2 class="careers-subtitle">{t.areasTitle}</h2>
+        <ul class="careers-areas">
+          {areas.map((a) => <li>{a}</li>)}
+        </ul>
+      </div>
+    )}
+
+    <div class="careers-block">
+      <h2 class="careers-subtitle">{t.stepsTitle}</h2>
+      <ol class="careers-steps">
+        {t.steps.map((s, i) => (
+          <li class="careers-step">
+            <span class="careers-step-num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+            <h3>{s.title}</h3>
+            <p>{s.text}</p>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </div>
+</section>
+
+<style>
+  .careers {
+    padding-top: 9rem;
+    background: rgb(5 13 31 / 0.62);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+  }
+
+  .careers-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 3.5rem;
+    animation: careers-rise 0.8s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+
+  @keyframes careers-rise {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  .careers-head {
+    max-width: 44rem;
+  }
+
+  .careers-eyebrow {
+    display: inline-block;
+    margin: 0 0 1.25rem;
+    padding: 0.35rem 0.9rem;
+    border: 1px solid rgb(0 198 231 / 0.3);
+    border-radius: var(--radius-pill);
+    background: rgb(0 198 231 / 0.1);
+    color: var(--color-accent-cyan);
+    font-size: 0.85rem;
+    font-weight: 500;
+  }
+
+  .careers-title {
+    margin: 0 0 1.25rem;
+    font-family: var(--font-body);
+    font-size: clamp(2.2rem, 4.5vw, 3.6rem);
+    font-weight: 700;
+    line-height: 1.08;
+    letter-spacing: -0.02em;
+    color: var(--color-text);
+    text-wrap: balance;
+  }
+
+  .careers-lead {
+    margin: 0 0 2rem;
+    color: var(--color-text-muted);
+    font-size: 1.15rem;
+    line-height: 1.7;
+  }
+
+  .careers-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.95rem 1.8rem;
+    border-radius: var(--radius-pill);
+    background: linear-gradient(135deg, var(--color-brand) 0%, var(--color-brand-light) 100%);
+    box-shadow: var(--shadow-cta), inset 0 1px 0 rgb(255 255 255 / 0.25);
+    color: var(--color-text);
+    font-weight: 600;
+    text-decoration: none;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+  }
+
+  .careers-cta:hover,
+  .careers-cta:focus-visible {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-cta-hover), inset 0 1px 0 rgb(255 255 255 / 0.25);
+  }
+
+  .careers-note {
+    margin: 1rem 0 0;
+    color: var(--color-text-subtle);
+    font-size: 0.85rem;
+  }
+
+  .careers-subtitle {
+    margin: 0 0 1.25rem;
+    font-family: var(--font-body);
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--color-text-soft);
+  }
+
+  .careers-areas {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+  }
+
+  .careers-areas li {
+    padding: 0.55rem 1rem;
+    border: 1px solid rgb(255 255 255 / 0.12);
+    border-radius: var(--radius-pill);
+    background: rgb(255 255 255 / 0.04);
+    color: var(--color-text-soft);
+    font-size: 0.9rem;
+  }
+
+  .careers-steps {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.25rem;
+  }
+
+  .careers-step {
+    padding: 1.5rem;
+    border: 1px solid rgb(255 255 255 / 0.08);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface-raised);
+  }
+
+  .careers-step-num {
+    display: block;
+    margin-bottom: 0.75rem;
+    font-family: var(--font-display);
+    font-size: 1.4rem;
+    color: var(--color-brand-light);
+  }
+
+  .careers-step h3 {
+    margin: 0 0 0.4rem;
+    font-size: 1.05rem;
+    color: var(--color-text);
+  }
+
+  .careers-step p {
+    margin: 0;
+    color: var(--color-text-muted);
+    line-height: 1.6;
+  }
+
+  @media (max-width: 640px) {
+    .careers {
+      padding-top: 7.5rem;
+    }
+    .careers-cta {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .careers-inner {
+      animation: none;
+    }
+  }
+</style>

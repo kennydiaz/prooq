@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="224" height="224" viewBox="228 23 224 224" role="img"><title>HUB Restaurant</title><path d="M 425 147.12 L 393 202.58 Q 386 214.7 372 214.7 L 308 214.7 Q 294 214.7 287 202.58 L 255 147.12 Q 248 135 255 122.88 L 287 67.42 Q 294 55.3 308 55.3 L 372 55.3 Q 386 55.3 393 67.42 L 425 122.88 Q 432 135 425 147.12 Z" fill="#EA580C"/>
+    <rect x="318" y="106" width="3" height="18" rx="1.5" fill="#fff"/>
+    <rect x="323.5" y="106" width="3" height="18" rx="1.5" fill="#fff"/>
+    <rect x="329" y="106" width="3" height="18" rx="1.5" fill="#fff"/>
+    <rect x="317" y="121" width="15" height="9" rx="3" fill="#fff"/>
+    <rect x="322" y="128" width="5" height="42" rx="2.5" fill="#fff"/>
+    <path d="M 354 106 Q 362 114 362 134 L 362 136 L 351 136 L 351 122 Q 351 110 354 106 Z" fill="#fff"/>
+    <rect x="353" y="134" width="5" height="36" rx="2.5" fill="#fff"/></svg>

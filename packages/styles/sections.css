@@ -58,15 +58,6 @@
   transform: translateY(0);
 }
 
-/* Hero extras (secondary CTA + location badge debajo del Hero) */
-.hero-extras {
-  margin-top: 1rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1rem;
-}
-
 .cta-secondary {
   display: inline-block;
   padding: 0.75rem 1.5rem;
@@ -83,14 +74,12 @@
   color: var(--color-surface);
 }
 
-.hero-location {
-  color: var(--color-text-soft);
-  font-size: 0.95rem;
-  opacity: 0.85;
-  margin: 0;
+/* Services */
+.services-more {
+  margin: 2rem 0 0;
+  text-align: center;
 }
 
-/* Services */
 .services-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));

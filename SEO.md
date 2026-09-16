@@ -74,9 +74,8 @@ tráfico (y alimenta a ChatGPT/Copilot, que usan el índice de Bing).
 ## 4. Mantenimiento de contenido (lo que mueve la aguja a mediano plazo)
 
 - **Publica en el blog con regularidad.** Cada artículo nuevo = otra puerta de entrada desde
-  Google. Crea un `.md` en `apps/pty/src/content/blog/` (mira
-  [`automatizacion-n8n-pymes-panama.md`](apps/pty/src/content/blog/automatizacion-n8n-pymes-panama.md)
-  como plantilla).
+  Google. Los artículos se crean en el panel admin (`prooq.com/admin` → Blog); ver
+  [Cómo agregar un nuevo artículo](#cómo-agregar-un-nuevo-artículo-al-blog).
 - Apunta a búsquedas reales de tus clientes panameños:
   - "automatización con n8n para PYMEs" ✅ (ya publicado)
   - "cómo elegir cámaras de seguridad / CCTV para un negocio"
@@ -90,25 +89,35 @@ tráfico (y alimenta a ChatGPT/Copilot, que usan el índice de Bing).
 
 ---
 
+## Cola de publicación — blog de Panamá
+
+Prioridad acordada en el plan de refrescamiento de septiembre de 2026. Ya publicados en `/pty/blog`:
+`automatizacion-n8n-pymes-panama`, `sistemas-a-medida-pymes-panama` y
+`camaras-seguridad-negocio-panama`.
+
+| # | Slug | Estado |
+|---|------|--------|
+| 1 | `resolucion-dgi-201-6299-que-cambia` | Borrador escrito, pendiente de revisar cifras y cargar en el admin |
+| 2 | `software-para-restaurantes-panama` | Pendiente |
+| 3 | `sistema-para-taller-mecanico-panama` | Pendiente |
+| 4 | `cctv-para-negocios-panama-guia` | Pendiente; evaluar si se solapa con `camaras-seguridad-negocio-panama` |
+| 5 | `cuanto-cuesta-cablear-una-oficina-en-panama` | Pendiente |
+| 6 | `control-de-acceso-para-oficinas-panama` | Pendiente |
+
+---
+
 ## Cómo agregar un nuevo artículo al blog
 
-1. Crea `apps/<pais>/src/content/blog/mi-slug.md` (pty/usa/esp/ven). El nombre del archivo
-   define la URL: `prooq.com/<pais>/blog/mi-slug`. Cada país tiene su propio blog localizado;
-   publica el artículo donde tenga sentido (o adáptalo en cada uno).
-2. Frontmatter mínimo:
-   ```yaml
-   ---
-   title: "Título con la keyword"
-   description: "Resumen de 1-2 frases (sale en Google y al compartir)."
-   pubDate: 2026-06-01
-   tags: ["seguridad electrónica", "Panamá"]
-   heroImage: "/images/..."   # opcional, ruta dentro de apps/pty/public
-   draft: false               # ponlo en true mientras lo escribes
-   ---
-   ```
-3. Escribe el cuerpo en Markdown. Se renderiza en `/<pais>/blog/<slug>` con sus JSON-LD `Article` +
-   `BreadcrumbList` y aparece en el listado `/<pais>/blog` automáticamente.
-4. `git push` → se despliega solo. El `sitemap-index.xml` de ese país se regenera con la nueva URL.
+El blog vive en la base de datos (tabla `blog_posts`), no en archivos `.md` del repo.
+
+1. Entra a `prooq.com/admin` → **Blog** → nuevo artículo. Elige la sucursal (PA/US/ES/VE); cada
+   país tiene su blog localizado. El slug define la URL: `prooq.com/<pais>/blog/<slug>`.
+2. Completa título, descripción (sale en Google y al compartir), fecha, tags, imagen opcional y
+   el cuerpo en Markdown. Déjalo como borrador mientras lo escribes.
+3. Al publicarlo queda guardado al instante, pero el sitio es estático: **solo aparece tras un
+   nuevo build/deploy**. El build trae los artículos desde la API, los renderiza en
+   `/<pais>/blog/<slug>` con JSON-LD `Article` + `BreadcrumbList` y regenera el
+   `sitemap-index.xml` de ese país.
 
 ---
 

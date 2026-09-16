@@ -1,95 +1,14 @@
 ---
+import { GROUP_EXPERIENCE_YEARS } from '@prooq/config/company';
 import { getTeam } from '@prooq/data-client/team';
-import { ConstellationNetwork, HeroParallax } from '@prooq/ui';
+import { ConstellationNetwork, Hero } from '@prooq/ui';
+import { HOME_SERVICES } from '../data/services';
 import BaseLayout from '../layouts/BaseLayout.astro';
 
 const BASE = import.meta.env.BASE_URL.replace(/\/?$/, '/');
 
-const services = [
-  {
-    icon: '📹',
-    title: 'Electronic Security',
-    description: 'Advanced solutions to protect your home and business.',
-    features: [
-      'CCTV & video surveillance',
-      'Access control systems',
-      'Smart alarms',
-      '24/7 monitoring',
-    ],
-  },
-  {
-    icon: '🔌',
-    title: 'Wired Networks',
-    description: 'Installation and maintenance of high-quality structured cabling and networks.',
-    features: [
-      'Cat6/Cat7 cabling',
-      'Network design',
-      'Switch & router config',
-      'Maintenance plans',
-    ],
-  },
-  {
-    icon: '🧑‍💻',
-    title: 'Administrative Systems',
-    description: 'Custom software to optimize your business management.',
-    features: ['ERP integration', 'Custom dashboards', 'Workflow automation', 'Data analytics'],
-  },
-  {
-    icon: '🛠️',
-    title: 'Technical Support',
-    description: 'Specialized technical support for all our services.',
-    features: [
-      'On-site visits',
-      'Remote troubleshooting',
-      'SLA support plans',
-      'Emergency response',
-    ],
-  },
-  {
-    icon: '🤖',
-    title: 'Automation & Smart Control',
-    description: 'Solutions to automate processes, buildings, and security systems.',
-    features: ['Building automation', 'IoT integration', 'Smart sensors', 'Process control'],
-  },
-  {
-    icon: '🔒',
-    title: 'Cybersecurity & Data Protection',
-    description:
-      'Protect your information with access control, encryption, and continuous monitoring.',
-    features: ['Threat detection', 'Encryption at rest', 'Access policies', 'Compliance audits'],
-  },
-  {
-    icon: '🌐',
-    title: 'Network & Server Infrastructure',
-    description: 'Design and management of local, remote, and cloud networks.',
-    features: [
-      'Server deployment',
-      'VPN & remote access',
-      'Cloud infrastructure',
-      'Load balancing',
-    ],
-  },
-  {
-    icon: '💡',
-    title: 'Technology Consulting',
-    description: 'We advise companies on efficient technology adoption.',
-    features: ['Digital transformation', 'Tech stack audits', 'Vendor selection', 'Roadmaps'],
-  },
-  {
-    icon: '🛠️',
-    title: 'Comprehensive Projects',
-    description: 'End-to-end implementations from design to deployment.',
-    features: [
-      'Project management',
-      'Multi-vendor coordination',
-      'Phased rollouts',
-      'Post-launch support',
-    ],
-  },
-];
-
 const stats = [
-  { value: '20+', label: 'Years of experience' },
+  { value: `${GROUP_EXPERIENCE_YEARS}+`, label: 'Years of experience' },
   { value: '100+', label: 'Clients served' },
   { value: '24/7', label: 'Support availability' },
 ];
@@ -193,34 +112,32 @@ const locationDetails = [
 >
   <ConstellationNetwork />
 
-  <HeroParallax
-    title="PROOQ"
-    subtitle="Comprehensive technology solutions for businesses"
-    description="Specialists in structured cabling, electronic security, and business automation in the United States"
+  <Hero
+    eyebrow="Elmwood Park, IL · United States"
+    title="Technology that moves your business forward"
+    highlight="forward"
+    description="Specialists in structured cabling, electronic security, and business automation in the United States."
     cta={{ label: 'Discover our services', href: '#servicios' }}
-  >
-    <div class="hero-extras">
-      <a href="#contact" class="cta-secondary">Contact us</a>
-      <p class="hero-location">📍 Elmwood Park, IL — United States 🇺🇸</p>
-    </div>
-  </HeroParallax>
+    secondaryCta={{ label: 'Contact us', href: '#contact' }}
+    tags={['📹 Electronic security', '🌐 Networks & servers', '🤖 Smart automation', '🔒 Cybersecurity']}
+  />
 
   <section id="servicios" class="section section-services">
     <div class="section-container">
       <h2 class="section-title fade-in">Special Services</h2>
       <p class="section-subtitle fade-in">Comprehensive technology solutions for modern businesses</p>
       <div class="services-grid">
-        {services.map((s) => (
+        {HOME_SERVICES.map((s) => (
           <article class="service-card fade-in">
             <div class="service-icon" aria-hidden="true">{s.icon}</div>
             <h3>{s.title}</h3>
             <p>{s.description}</p>
-            <ul>
-              {s.features.map((f) => <li>{f}</li>)}
-            </ul>
           </article>
         ))}
       </div>
+      <p class="services-more fade-in">
+        <a href={`${BASE}services`} class="portfolio-link">See all services →</a>
+      </p>
     </div>
   </section>
 

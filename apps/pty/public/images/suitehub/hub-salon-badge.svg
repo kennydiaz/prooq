@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="224" height="224" viewBox="228 23 224 224" role="img"><title>HUB Salon</title><path d="M 425 147.12 L 393 202.58 Q 386 214.7 372 214.7 L 308 214.7 Q 294 214.7 287 202.58 L 255 147.12 Q 248 135 255 122.88 L 287 67.42 Q 294 55.3 308 55.3 L 372 55.3 Q 386 55.3 393 67.42 L 425 122.88 Q 432 135 425 147.12 Z" fill="#DB2777"/>
+    <circle cx="327" cy="160" r="10" fill="none" stroke="#fff" stroke-width="5"/>
+    <circle cx="353" cy="160" r="10" fill="none" stroke="#fff" stroke-width="5"/>
+    <line x1="327" y1="160" x2="351" y2="108" stroke="#fff" stroke-width="6" stroke-linecap="round"/>
+    <line x1="353" y1="160" x2="329" y2="108" stroke="#fff" stroke-width="6" stroke-linecap="round"/>
+    <circle cx="340" cy="137" r="3.5" fill="#DB2777"/></svg>

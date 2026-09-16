@@ -4,6 +4,8 @@ import type { Country } from '@prooq/config/tailwind.preset';
 export interface NavItem {
   label: string;
   href: string;
+  /** Se pinta como botón destacado (acción principal del menú). */
+  cta?: boolean;
 }
 
 export interface Props {
@@ -18,48 +20,36 @@ export interface Props {
 const BASE = import.meta.env.BASE_URL.replace(/\/?$/, '/');
 
 // Solo links a paginas que EXISTEN en cada app (no rompemos con 404s).
-// Galería ahora es gestionada por el CMS — un único panel admin, contenido
-// filtrado por country en la página pública.
+// Menú corto a propósito: el logo ya lleva al inicio, y Galería / Descargas (herramientas
+// para clientes existentes) viven en el pie de página. Contacto va como botón.
 const DEFAULT_NAV_BY_COUNTRY: Record<Country, readonly NavItem[]> = {
   pty: [
-    { label: 'Inicio', href: BASE },
-    { label: 'SuiteHub', href: `${BASE}#suitehub` },
-    { label: 'Clientes', href: `${BASE}clientes` },
     { label: 'Servicios', href: `${BASE}servicios` },
+    { label: 'Clientes', href: `${BASE}clientes` },
     { label: 'Blog', href: `${BASE}blog` },
-    { label: 'Galería', href: `${BASE}gallery` },
-    { label: 'Descargas', href: `${BASE}downloads` },
-    { label: 'Contacto', href: `${BASE}#contact` },
+    { label: 'Empleo', href: `${BASE}trabaja-con-nosotros` },
+    { label: 'Contacto', href: `${BASE}#contact`, cta: true },
   ],
   usa: [
-    { label: 'Home', href: BASE },
-    { label: 'SuiteHub', href: 'https://suitehub.net/en/' },
-    { label: 'Clients', href: `${BASE}clientes` },
-    { label: 'Services', href: `${BASE}servicios` },
+    { label: 'Services', href: `${BASE}services` },
+    { label: 'Clients', href: `${BASE}clients` },
     { label: 'Blog', href: `${BASE}blog` },
-    { label: 'Gallery', href: `${BASE}gallery` },
-    { label: 'Downloads', href: `${BASE}downloads` },
-    { label: 'Contact', href: `${BASE}#contact` },
+    { label: 'Careers', href: `${BASE}careers` },
+    { label: 'Contact', href: `${BASE}#contact`, cta: true },
   ],
   esp: [
-    { label: 'Inicio', href: BASE },
-    { label: 'SuiteHub', href: 'https://suitehub.net/' },
-    { label: 'Clientes', href: `${BASE}clientes` },
     { label: 'Servicios', href: `${BASE}servicios` },
+    { label: 'Clientes', href: `${BASE}clientes` },
     { label: 'Blog', href: `${BASE}blog` },
-    { label: 'Galería', href: `${BASE}gallery` },
-    { label: 'Descargas', href: `${BASE}downloads` },
-    { label: 'Contacto', href: `${BASE}#contact` },
+    { label: 'Empleo', href: `${BASE}trabaja-con-nosotros` },
+    { label: 'Contacto', href: `${BASE}#contact`, cta: true },
   ],
   ven: [
-    { label: 'Inicio', href: BASE },
-    { label: 'SuiteHub', href: 'https://suitehub.net/' },
-    { label: 'Clientes', href: `${BASE}clientes` },
     { label: 'Servicios', href: `${BASE}servicios` },
+    { label: 'Clientes', href: `${BASE}clientes` },
     { label: 'Blog', href: `${BASE}blog` },
-    { label: 'Galería', href: `${BASE}gallery` },
-    { label: 'Descargas', href: `${BASE}downloads` },
-    { label: 'Contacto', href: `${BASE}#contact` },
+    { label: 'Empleo', href: `${BASE}trabaja-con-nosotros` },
+    { label: 'Contacto', href: `${BASE}#contact`, cta: true },
   ],
 };
 
@@ -67,7 +57,7 @@ const {
   country,
   logoSrc,
   logoAlt = 'PROOQ',
-  navItems = country ? DEFAULT_NAV_BY_COUNTRY[country] : [{ label: 'Inicio', href: BASE }],
+  navItems = country ? DEFAULT_NAV_BY_COUNTRY[country] : [],
 } = Astro.props;
 ---
 
@@ -98,7 +88,7 @@ const {
       data-open="false"
     >
       {navItems.map((item) => (
-        <a href={item.href} class="nav-link">{item.label}</a>
+        <a href={item.href} class={item.cta ? 'nav-link nav-cta' : 'nav-link'}>{item.label}</a>
       ))}
       <slot name="countries-menu" />
     </nav>
@@ -170,6 +160,22 @@ const {
     background: rgb(255 255 255 / 0.1);
   }
 
+  .nav-cta {
+    background: linear-gradient(135deg, var(--color-brand) 0%, var(--color-brand-light) 100%);
+    border-radius: var(--radius-pill);
+    padding: 0.55rem 1.3rem;
+    font-weight: 600;
+    box-shadow: var(--shadow-cta);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+  }
+
+  .nav-cta:hover,
+  .nav-cta:focus-visible {
+    background: linear-gradient(135deg, var(--color-brand) 0%, var(--color-brand-light) 100%);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-cta-hover);
+  }
+
   .menu-toggle {
     display: none;
     background: transparent;
@@ -229,6 +235,11 @@ const {
 
     .nav-link {
       padding: 10px 12px;
+    }
+
+    .nav-cta {
+      text-align: center;
+      margin-top: 4px;
     }
 
     .nav-container {

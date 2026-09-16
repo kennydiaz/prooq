@@ -1,53 +1,16 @@
 ---
+import { GROUP_EXPERIENCE_YEARS } from '@prooq/config/company';
 import { getTeam } from '@prooq/data-client/team';
-import { HeroParallax, Nebula } from '@prooq/ui';
+import { Hero, Nebula } from '@prooq/ui';
+import { HOME_SERVICES } from '../data/services';
 import BaseLayout from '../layouts/BaseLayout.astro';
 
 const BASE = import.meta.env.BASE_URL.replace(/\/?$/, '/');
 
-const services = [
-  {
-    icon: '💻',
-    title: 'Desarrollo Web',
-    description:
-      'Sitios web modernos, responsivos y optimizados. Desde landing pages hasta aplicaciones web complejas con las últimas tecnologías.',
-    features: [
-      'Diseño responsive y moderno',
-      'Optimización SEO',
-      'E-commerce y tiendas online',
-      'Aplicaciones web personalizadas',
-    ],
-  },
-  {
-    icon: '🤖',
-    title: 'Agentes Inteligentes',
-    description:
-      'Chatbots e IA conversacional para automatizar la atención al cliente y mejorar la experiencia de usuario las 24/7.',
-    features: [
-      'Chatbots inteligentes',
-      'Asistentes virtuales',
-      'Automatización de procesos',
-      'Integración con sistemas existentes',
-    ],
-  },
-  {
-    icon: '📱',
-    title: 'Consultoría Digital',
-    description:
-      'Asesoramiento especializado en transformación digital para empresas locales en Cádiz y toda Andalucía.',
-    features: [
-      'Estrategia digital',
-      'Análisis de procesos',
-      'Implementación tecnológica',
-      'Formación y soporte',
-    ],
-  },
-];
-
 const stats = [
-  { value: '50+', label: 'Proyectos Completados' },
-  { value: '100%', label: 'Clientes Satisfechos' },
-  { value: '15+', label: 'Soporte Técnico' },
+  { value: `${GROUP_EXPERIENCE_YEARS}+`, label: 'Años de experiencia' },
+  { value: '50+', label: 'Proyectos completados' },
+  { value: '24/7', label: 'Soporte remoto' },
 ];
 
 // Equipo desde el CMS (build-time) con fallback hardcodeado si la API falla.
@@ -172,34 +135,32 @@ const locationDetails = [
 >
   <Nebula />
 
-  <HeroParallax
-    title="PROOQ España"
-    subtitle="Desarrollo Web & Agentes Inteligentes"
-    description="Transformamos tu negocio con soluciones tecnológicas avanzadas desde Cádiz para toda España"
-    cta={{ label: 'Nuestros Servicios', href: '#servicios' }}
-  >
-    <div class="hero-extras">
-      <a href="#contact" class="cta-secondary">Contáctanos</a>
-      <p class="hero-location">📍 Cádiz, Andalucía — España 🇪🇸</p>
-    </div>
-  </HeroParallax>
+  <Hero
+    eyebrow="Cádiz, Andalucía · España"
+    title="Desarrollo web y agentes inteligentes para tu negocio"
+    highlight="agentes inteligentes"
+    description="Transformamos tu negocio con soluciones tecnológicas avanzadas desde Cádiz para toda España."
+    cta={{ label: 'Nuestros servicios', href: '#servicios' }}
+    secondaryCta={{ label: 'Contáctanos', href: '#contact' }}
+    tags={['💻 Desarrollo web', '🤖 Agentes inteligentes', '📱 Consultoría digital', '⚡ Automatización']}
+  />
 
   <section id="servicios" class="section section-services">
     <div class="section-container">
       <h2 class="section-title fade-in">Nuestros Servicios</h2>
       <p class="section-subtitle fade-in">Soluciones tecnológicas integrales para empresas modernas</p>
       <div class="services-grid">
-        {services.map((s) => (
+        {HOME_SERVICES.map((s) => (
           <article class="service-card fade-in">
             <div class="service-icon" aria-hidden="true">{s.icon}</div>
             <h3>{s.title}</h3>
             <p>{s.description}</p>
-            <ul>
-              {s.features.map((f) => <li>{f}</li>)}
-            </ul>
           </article>
         ))}
       </div>
+      <p class="services-more fade-in">
+        <a href={`${BASE}servicios`} class="portfolio-link">Ver todos los servicios →</a>
+      </p>
     </div>
   </section>
 
@@ -308,7 +269,6 @@ const locationDetails = [
     </div>
   </section>
 </BaseLayout>
-
 
 <script>
   // Fade-in al scroll — IntersectionObserver replicado del V1.

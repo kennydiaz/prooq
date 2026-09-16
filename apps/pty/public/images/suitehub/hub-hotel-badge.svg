@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="224" height="224" viewBox="228 23 224 224" role="img"><title>HUB Hotel</title><path d="M 425 147.12 L 393 202.58 Q 386 214.7 372 214.7 L 308 214.7 Q 294 214.7 287 202.58 L 255 147.12 Q 248 135 255 122.88 L 287 67.42 Q 294 55.3 308 55.3 L 372 55.3 Q 386 55.3 393 67.42 L 425 122.88 Q 432 135 425 147.12 Z" fill="#CA8A04"/>
+    <path d="M 311 152 A 29 29 0 0 1 369 152 Z" fill="#fff"/>
+    <rect x="304" y="152" width="72" height="9" rx="4" fill="#fff"/>
+    <rect x="338" y="116" width="4" height="8" rx="2" fill="#fff"/>
+    <circle cx="340" cy="115" r="4.5" fill="#fff"/>
+    <rect x="307" y="161" width="66" height="3" rx="1.5" fill="#854D0E"/></svg>

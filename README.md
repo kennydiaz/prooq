@@ -49,7 +49,7 @@ prooq/
 │   ├── config/          # tsconfig, biome, tokens TS, tipos Country, SOCIAL_LINKS
 │   ├── styles/          # Tailwind v4 (@theme tokens + globals + sections)
 │   ├── ui/              # componentes Astro: base (Header, Footer, ChatFab, CountriesMenu,
-│   │                    #   HeroParallax, NeonPriceSticker, SocialLinks), fondos animados
+│   │                    #   Hero, NeonPriceSticker, SocialLinks), fondos animados
 │   │                    #   (Warp, Starfield, ConstellationNetwork, Nebula, MeteorShower) y VisitTracker
 │   └── data-client/     # cliente TS tipado para la API: clients, downloads, chat,
 │                        #   gallery, stats, track, team
