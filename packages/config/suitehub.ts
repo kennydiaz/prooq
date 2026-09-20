@@ -16,7 +16,7 @@ export const SUITEHUB = {
   /** Ediciones: Hub Lite, Hub Core, Hub Pro, Hub Enterprise. */
   editionCount: 4,
   /** Verticales publicadas en suitehub.net. */
-  verticalCount: 15,
+  verticalCount: 17,
   /** Jurisdicciones con facturación electrónica resuelta o en soft launch. */
   countryCount: 4,
 } as const;
