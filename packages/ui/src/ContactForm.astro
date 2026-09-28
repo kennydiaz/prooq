@@ -159,6 +159,7 @@ const t = en
         if (r.ok && j.ok) {
           form.reset();
           estado.textContent = form.dataset.msgOk || '';
+          (window as any).gtag?.('event', 'generate_lead', { method: 'formulario' });
         } else {
           estado.textContent = j.error || form.dataset.msgError || '';
           boton.disabled = false;

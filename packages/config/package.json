@@ -9,6 +9,7 @@
     "./tailwind.preset": "./tailwind.preset.ts",
     "./social": "./social.ts",
     "./company": "./company.ts",
-    "./suitehub": "./suitehub.ts"
+    "./suitehub": "./suitehub.ts",
+    "./analytics": "./analytics.ts"
   }
 }

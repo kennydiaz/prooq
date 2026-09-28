@@ -5,9 +5,13 @@
  * Fire-and-forget: nunca bloquea ni rompe el render. En dev local no envía a
  * la API de producción (ver trackVisit en @prooq/data-client/track).
  *
+ * Si `GA_ID` (@prooq/config/analytics) tiene valor, también carga Google Analytics 4.
+ *
  * Props:
  *   site — código de sucursal: pty | usa | esp | ven | portal.
  */
+import { GA_ID } from '@prooq/config/analytics';
+
 export interface Props {
   site: string;
 }
@@ -16,6 +20,18 @@ const { site } = Astro.props;
 ---
 
 <div id="prooq-visit-tracker" data-site={site} hidden aria-hidden="true"></div>
+
+{GA_ID && (
+  <>
+    <script is:inline async src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}></script>
+    <script is:inline define:vars={{ GA_ID, site }}>
+      window.dataLayer = window.dataLayer || [];
+      window.gtag = function () { window.dataLayer.push(arguments); };
+      window.gtag('js', new Date());
+      window.gtag('config', GA_ID, { sucursal: site });
+    </script>
+  </>
+)}
 
 <script>
   import { trackVisit } from '@prooq/data-client/track';
