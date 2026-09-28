@@ -1,6 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# RETIRADO 2026-09-27. Este respaldo quedó desfasado: publica la API en
+# ~/domains/api.prooq.com (la real está en ~/domains/prooq.com/public_html/api,
+# docroot api/public) y usa `rsync --delete`, que en esas rutas borraría archivos
+# en producción. El único despliegue válido es .github/workflows/deploy.yml
+# (Actions → Deploy → Run workflow si hace falta relanzarlo a mano).
+echo "scripts/deploy.sh está retirado: usa el workflow .github/workflows/deploy.yml" >&2
+exit 1
+
 # Deploy manual a Hostinger — usar solo como fallback cuando GitHub Actions falle.
 # Requiere: HOSTINGER_HOST y HOSTINGER_USER en el entorno + clave SSH configurada.
 

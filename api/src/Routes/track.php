@@ -28,6 +28,9 @@ return function (App $app): void {
 
         $ip = track_client_ip($req);
         $country = track_resolve_country($ip);
+        // Se guarda la IP recortada (IPv4 /24, IPv6 /48): el país ya está resuelto
+        // y la completa no hace falta. No identifica a la persona.
+        $ip = track_ip_recortada($ip);
 
         Connection::get()->prepare(
             'INSERT INTO page_visits (path, site, country, ip, user_agent, referrer)
@@ -53,10 +56,26 @@ function track_client_ip(ServerRequestInterface $req): ?string
     return is_string($ip) && $ip !== '' ? substr($ip, 0, 45) : null;
 }
 
+/** IPv4 → /24 (último octeto en 0), IPv6 → /48. Lo que no es IP se deja igual. */
+function track_ip_recortada(?string $ip): ?string
+{
+    if ($ip === null || $ip === '') {
+        return $ip;
+    }
+    $bin = @inet_pton($ip);
+    if ($bin === false) {
+        return $ip;
+    }
+    $bin = strlen($bin) === 4 ? substr($bin, 0, 3) . "\0" : substr($bin, 0, 6) . str_repeat("\0", 10);
+    $out = inet_ntop($bin);
+    return $out === false ? null : $out;
+}
+
 /**
  * Pais (ISO-2) de una IP. IPs privadas/loopback -> null. Cachea por IP
- * reutilizando un country ya resuelto en page_visits, y si no, hace un lookup
- * best-effort a ip-api.com (sin API key, timeout corto). Si falla -> null.
+ * reutilizando un country ya resuelto en page_visits (por IP recortada), y si no,
+ * hace un lookup best-effort a ipwho.is por HTTPS (sin API key, timeout corto).
+ * Si falla -> null.
  */
 function track_resolve_country(?string $ip): ?string
 {
@@ -72,7 +91,7 @@ function track_resolve_country(?string $ip): ?string
         $stmt = Connection::get()->prepare(
             'SELECT country FROM page_visits WHERE ip = ? AND country IS NOT NULL LIMIT 1'
         );
-        $stmt->execute([$ip]);
+        $stmt->execute([track_ip_recortada($ip)]);
         $cached = $stmt->fetchColumn();
         if (is_string($cached) && $cached !== '') {
             return $cached;
@@ -81,7 +100,7 @@ function track_resolve_country(?string $ip): ?string
         // Sin cache; seguimos al lookup externo.
     }
 
-    $ch = curl_init('http://ip-api.com/json/' . urlencode($ip) . '?fields=status,countryCode');
+    $ch = curl_init('https://ipwho.is/' . rawurlencode($ip) . '?fields=success,country_code');
     if ($ch === false) {
         return null;
     }
@@ -96,11 +115,11 @@ function track_resolve_country(?string $ip): ?string
     if (is_string($out)) {
         $j = json_decode($out, true);
         if (is_array($j)
-            && ($j['status'] ?? '') === 'success'
-            && is_string($j['countryCode'] ?? null)
-            && preg_match('/^[A-Z]{2}$/', $j['countryCode']) === 1
+            && !empty($j['success'])
+            && is_string($j['country_code'] ?? null)
+            && preg_match('/^[A-Z]{2}$/', $j['country_code']) === 1
         ) {
-            return $j['countryCode'];
+            return $j['country_code'];
         }
     }
     return null;
