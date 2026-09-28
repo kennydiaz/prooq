@@ -6,7 +6,7 @@ import {
 } from '@prooq/config/company';
 import { SUITEHUB, SUITEHUB_FEATURED_VERTICALS } from '@prooq/config/suitehub';
 import { getTeam } from '@prooq/data-client/team';
-import { ChatFab, Hero, Starfield } from '@prooq/ui';
+import { ChatFab, ContactForm, Hero, Starfield } from '@prooq/ui';
 import clientsData from '../data/clients.json';
 import { HOME_SERVICES } from '../data/services';
 import BaseLayout from '../layouts/BaseLayout.astro';
@@ -399,6 +399,8 @@ const locationDetails = [
       </div>
     </div>
   </section>
+
+  <ContactForm country="pty" />
 
   <ChatFab country="pty" />
 </BaseLayout>

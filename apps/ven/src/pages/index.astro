@@ -1,7 +1,7 @@
 ---
 import { GROUP_EXPERIENCE_YEARS, GROUP_TRAJECTORY_SINCE } from '@prooq/config/company';
 import { getTeam } from '@prooq/data-client/team';
-import { Hero, MeteorShower } from '@prooq/ui';
+import { ContactForm, Hero, MeteorShower } from '@prooq/ui';
 import { HOME_SERVICES } from '../data/services';
 import BaseLayout from '../layouts/BaseLayout.astro';
 
@@ -239,6 +239,8 @@ const locationDetails = [
       </div>
     </div>
   </section>
+
+  <ContactForm country="ven" />
 </BaseLayout>
 
 <script>

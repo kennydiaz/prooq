@@ -1,7 +1,7 @@
 ---
 import { GROUP_EXPERIENCE_YEARS } from '@prooq/config/company';
 import { getTeam } from '@prooq/data-client/team';
-import { ConstellationNetwork, Hero } from '@prooq/ui';
+import { ConstellationNetwork, ContactForm, Hero } from '@prooq/ui';
 import { HOME_SERVICES } from '../data/services';
 import BaseLayout from '../layouts/BaseLayout.astro';
 
@@ -233,6 +233,8 @@ const locationDetails = [
       </div>
     </div>
   </section>
+
+  <ContactForm country="usa" />
 </BaseLayout>
 
 <script>

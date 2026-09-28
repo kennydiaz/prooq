@@ -1,0 +1,172 @@
+---
+/**
+ * Formulario de contacto de prooq.com: publica en HubPro (lead.php), que crea el lead
+ * y avisa a ventas. Sin backend propio: fetch "simple" (form-urlencoded) desde el navegador;
+ * HubPro valida el origen, el honeypot y el tiempo de llenado. Si falla, se ofrece WhatsApp.
+ * Ver infra/arquitectura/12-propuesta-reorganizacion.md (C1).
+ */
+import type { Country } from '@prooq/config/tailwind.preset';
+
+export interface Props {
+  country?: Country;
+}
+const { country = 'pty' } = Astro.props;
+const endpoint = import.meta.env.PUBLIC_LEADS_URL || 'https://hubpro.prooq.com/lead.php';
+const en = country === 'usa';
+const t = en
+  ? {
+      title: 'Tell us what you need',
+      sub: 'We reply the same business day.',
+      nombre: 'Your name',
+      empresa: 'Company (optional)',
+      email: 'Email',
+      telefono: 'Phone / WhatsApp',
+      interes: 'What are you interested in?',
+      mensaje: 'Message',
+      enviar: 'Send',
+      enviando: 'Sending…',
+      ok: 'Thank you! We received your message and will contact you soon.',
+      falta: 'We need your name and an email or phone.',
+      error: 'We could not send it. Please reach us on WhatsApp.',
+      opciones: [
+        'SuiteHub software',
+        'Networks & infrastructure',
+        'Security cameras',
+        'Custom development',
+        'Other',
+      ],
+    }
+  : {
+      title: 'Cuéntanos qué necesitas',
+      sub: 'Respondemos el mismo día hábil.',
+      nombre: 'Tu nombre',
+      empresa: 'Empresa (opcional)',
+      email: 'Correo',
+      telefono: 'Teléfono / WhatsApp',
+      interes: '¿Qué te interesa?',
+      mensaje: 'Mensaje',
+      enviar: 'Enviar',
+      enviando: 'Enviando…',
+      ok: '¡Gracias! Recibimos tu mensaje y te contactamos pronto.',
+      falta: 'Necesitamos tu nombre y un correo o teléfono.',
+      error: 'No pudimos enviarlo. Escríbenos por WhatsApp.',
+      opciones: [
+        'Software SuiteHub',
+        'Redes e infraestructura',
+        'Cámaras de seguridad',
+        'Desarrollo a medida',
+        'Otro',
+      ],
+    };
+---
+<section id="contacto" class="section section-contact-form">
+  <div class="section-container">
+    <div class="cf-card fade-in">
+      <h2 class="section-title">{t.title}</h2>
+      <p class="cf-sub">{t.sub}</p>
+      <form class="cf-form" data-endpoint={endpoint}
+            data-msg-ok={t.ok} data-msg-falta={t.falta} data-msg-error={t.error} data-msg-enviando={t.enviando}>
+        <input type="hidden" name="sitio" value="prooq" />
+        <input type="hidden" name="t" value="0" />
+        <div class="cf-hp" aria-hidden="true"><label>Company <input type="text" name="company" tabindex="-1" autocomplete="off" /></label></div>
+        <input name="nombre" required maxlength="150" placeholder={t.nombre} aria-label={t.nombre} autocomplete="name" />
+        <input name="empresa" maxlength="150" placeholder={t.empresa} aria-label={t.empresa} autocomplete="organization" />
+        <input type="email" name="email" maxlength="150" placeholder={t.email} aria-label={t.email} autocomplete="email" />
+        <input type="tel" name="telefono" maxlength="40" placeholder={t.telefono} aria-label={t.telefono} autocomplete="tel" />
+        <select name="interes" class="cf-full" aria-label={t.interes}>
+          <option value="">{t.interes}</option>
+          {t.opciones.map((o) => <option value={o}>{o}</option>)}
+        </select>
+        <textarea name="mensaje" rows="4" maxlength="2000" class="cf-full" placeholder={t.mensaje} aria-label={t.mensaje}></textarea>
+        <div class="cf-full cf-acciones">
+          <button type="submit" class="cf-boton">{t.enviar}</button>
+          <p class="cf-estado" role="status" aria-live="polite"></p>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+
+<style>
+  .cf-card {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 2rem;
+    border-radius: var(--radius-lg);
+    background: var(--color-surface-raised);
+    border: 1px solid rgb(255 255 255 / 0.08);
+    box-shadow: var(--shadow-card);
+  }
+  .cf-sub { color: var(--color-text-secondary); margin: 0.25rem 0 1.5rem; }
+  .cf-form { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; }
+  .cf-form input, .cf-form select, .cf-form textarea {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    border-radius: var(--radius-md);
+    border: 1px solid rgb(255 255 255 / 0.12);
+    background: rgb(255 255 255 / 0.04);
+    color: var(--color-text);
+    font: inherit;
+  }
+  .cf-form select option { color: #111; }
+  .cf-form input::placeholder, .cf-form textarea::placeholder { color: var(--color-text-muted); }
+  .cf-form input:focus, .cf-form select:focus, .cf-form textarea:focus {
+    outline: none;
+    border-color: var(--color-accent-cyan);
+  }
+  .cf-full { grid-column: 1 / -1; }
+  .cf-acciones { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem; }
+  .cf-boton {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    padding: 0.875rem 1.75rem; border: 0; border-radius: var(--radius-pill);
+    font: inherit; font-weight: 600; cursor: pointer; color: var(--color-text);
+    background: linear-gradient(45deg, var(--color-brand), var(--color-brand-light));
+    box-shadow: var(--shadow-cta); transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  .cf-boton:hover, .cf-boton:focus-visible { transform: translateY(-2px); box-shadow: var(--shadow-cta-hover); }
+  .cf-boton:disabled { opacity: 0.6; cursor: default; transform: none; }
+  .cf-estado { color: var(--color-text-secondary); font-size: 0.9rem; margin: 0; }
+  .cf-hp { position: absolute; left: -9999px; }
+  @media (max-width: 640px) {
+    .cf-card { padding: 1.4rem; }
+    .cf-form { grid-template-columns: 1fr; }
+  }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLFormElement>('form.cf-form').forEach((form) => {
+    const inicio = Date.now();
+    const estado = form.querySelector<HTMLElement>('.cf-estado')!;
+    const boton = form.querySelector<HTMLButtonElement>('button[type=submit]')!;
+    form.addEventListener('submit', async (ev) => {
+      ev.preventDefault();
+      const datos = new FormData(form);
+      if (!String(datos.get('nombre') || '').trim()
+        || (!String(datos.get('email') || '').trim() && !String(datos.get('telefono') || '').trim())) {
+        estado.textContent = form.dataset.msgFalta || '';
+        return;
+      }
+      datos.set('t', String(Date.now() - inicio));
+      datos.set('pagina', location.pathname);
+      boton.disabled = true;
+      estado.textContent = form.dataset.msgEnviando || '';
+      try {
+        const r = await fetch(form.dataset.endpoint!, {
+          method: 'POST',
+          body: new URLSearchParams(datos as unknown as Record<string, string>),
+        });
+        const j = await r.json().catch(() => ({ ok: false }));
+        if (r.ok && j.ok) {
+          form.reset();
+          estado.textContent = form.dataset.msgOk || '';
+        } else {
+          estado.textContent = j.error || form.dataset.msgError || '';
+          boton.disabled = false;
+        }
+      } catch {
+        estado.textContent = form.dataset.msgError || '';
+        boton.disabled = false;
+      }
+    });
+  });
+</script>
