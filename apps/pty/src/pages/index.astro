@@ -338,19 +338,35 @@ const locationDetails = [
         ))}
       </div>
 
-      <figure class="team-moment fade-in">
-        <img
-          src={`${BASE}images/team/innova-emision.jpg`}
-          alt="Parte del equipo de PROOQ junto a Innova Emisión en Ciudad de Panamá"
-          width="1200"
-          height="1200"
-          loading="lazy"
-        />
-        <figcaption>
-          Parte de nuestro equipo junto a <strong>Innova Emisión</strong>, nuestro aliado
-          en soluciones de gestión y facturación electrónica · Ciudad de Panamá, 2026
-        </figcaption>
-      </figure>
+      <div class="team-moment fade-in">
+        <figure class="team-moment-photo">
+          <img
+            src={`${BASE}images/team/innova-emision.jpg`}
+            alt="Parte del equipo de PROOQ junto al equipo de Innova Emisión en Ciudad de Panamá"
+            width="1200"
+            height="1200"
+            loading="lazy"
+          />
+          <figcaption>
+            Parte de nuestro equipo junto al equipo de <strong>Innova Emisión</strong> ·
+            Ciudad de Panamá, 2026
+          </figcaption>
+        </figure>
+
+        <aside class="team-moment-note">
+          <p class="moment-eyebrow">Reconocimiento</p>
+          <h3>Buenas herramientas, vengan de donde vengan</h3>
+          <p>
+            <strong>Innova Emisión</strong> es una empresa panameña con años de recorrido en el
+            mercado, y resuelve bien algo que a muchos negocios del país les cuesta: cerrar el día
+            con los números claros y la facturación electrónica ante la DGI en regla.
+          </p>
+          <p>
+            Competimos en el mismo mercado y lo hemos visto funcionando en campo: se nota el
+            trabajo detrás. Reconocer un buen producto nos parece lo justo.
+          </p>
+        </aside>
+      </div>
     </div>
   </section>
 
@@ -406,10 +422,18 @@ const locationDetails = [
 </BaseLayout>
 
 <style>
-  /* Momento del equipo: foto destacada dentro de "Nuestro Equipo" */
+  /* Momento del equipo: foto destacada + reconocimiento a Innova Emisión.
+     Es una recomendación de producto, no una alianza comercial. */
   .team-moment {
-    max-width: 620px;
-    margin: 3rem auto 0;
+    max-width: 1040px;
+    margin: 3.5rem auto 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2.5rem;
+    align-items: center;
+  }
+  .team-moment-photo {
+    margin: 0;
     text-align: center;
   }
   .team-moment img {
@@ -428,6 +452,50 @@ const locationDetails = [
   .team-moment figcaption strong {
     color: var(--color-text);
     font-weight: 600;
+  }
+  .team-moment-note {
+    text-align: left;
+  }
+  .moment-eyebrow {
+    display: inline-block;
+    margin: 0 0 1rem;
+    padding: 0.35rem 0.9rem;
+    border: 1px solid rgb(0 198 231 / 0.3);
+    border-radius: var(--radius-pill);
+    background: rgb(0 198 231 / 0.1);
+    color: var(--color-accent-cyan);
+    font-size: 0.8rem;
+    font-weight: 500;
+  }
+  .team-moment-note h3 {
+    margin: 0 0 1rem;
+    font-family: var(--font-body);
+    font-size: 1.6rem;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    color: var(--color-text);
+    text-wrap: balance;
+  }
+  .team-moment-note p {
+    margin: 0 0 1rem;
+    color: var(--color-text-muted);
+    line-height: 1.7;
+  }
+  .team-moment-note p:last-child {
+    margin-bottom: 0;
+  }
+  .team-moment-note strong {
+    color: var(--color-text-soft);
+    font-weight: 600;
+  }
+
+  @media (max-width: 860px) {
+    .team-moment {
+      grid-template-columns: 1fr;
+      gap: 2rem;
+      max-width: 620px;
+    }
   }
 
   /* SuiteHub feature section — destacada, mas grande que las demás */
